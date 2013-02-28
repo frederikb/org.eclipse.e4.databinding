@@ -1,6 +1,6 @@
 /.project
 /*/*/bin/
-/*/*/target
+/*/*/target/
 *~
 *.rej
 *.bak
@@ -8,3 +8,4 @@ javacore.*
 heapdump.*
 core.*
 Snap.*
+tests/org.eclipse.jface.tests.databinding/jfacebindingtests.jar
