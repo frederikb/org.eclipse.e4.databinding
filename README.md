@@ -1,7 +1,10 @@
-Platform UI
+Platform UI - Databinding
 ===========
 
-Platform UI provides the basic building blocks for user interfaces built with Eclipse. Some of these form the Eclipse Rich Client Platform (RCP) and can be used for arbitrary rich client applications, while others are specific to the Eclipse IDE. The Platform UI codebase is built on top of the Eclipse Standard Widget Toolkit (SWT), which is developed as an independent project.
+This repo is the e4 fork of the Platform UI Databinding support.
+
+It had all of the projects filtered from
+git://git.eclipse.org/gitroot/platform/eclipse.platform.ui.git
 
 For more information, refer to the [Platform UI wiki page] [1].
 
