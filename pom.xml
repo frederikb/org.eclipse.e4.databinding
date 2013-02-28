@@ -27,6 +27,9 @@
     <module>bundles/org.eclipse.core.databinding.observable</module>
     <module>bundles/org.eclipse.core.databinding.property</module>
     <module>bundles/org.eclipse.jface.databinding</module>
+    <module>features/org.eclipse.e4.databinding.feature</module>
+    <module>features/org.eclipse.e4.databinding.tests.feature</module>
+    <module>build/org.eclipse.e4.databinding.update</module>
   </modules>
 </project>
 
