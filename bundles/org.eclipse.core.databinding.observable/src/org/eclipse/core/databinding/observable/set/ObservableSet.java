@@ -30,41 +30,45 @@ import org.eclipse.core.databinding.observable.Realm;
  * listeners may be invoked from any thread.
  * </p>
  * 
+ * @param <E>
+ * 
  * @since 1.0
  * 
  */
-public abstract class ObservableSet extends AbstractObservable implements
-		IObservableSet {
+public abstract class ObservableSet<E> extends AbstractObservable implements
+		IObservableSet<E> {
 
-	protected Set wrappedSet;
+	protected Set<E> wrappedSet;
 
 	private boolean stale = false;
 
 	protected Object elementType;
 
-	protected ObservableSet(Set wrappedSet, Object elementType) {
+	protected ObservableSet(Set<E> wrappedSet, Object elementType) {
 		this(Realm.getDefault(), wrappedSet, elementType);
 	}
 
-	protected ObservableSet(Realm realm, Set wrappedSet, Object elementType) {
+	protected ObservableSet(Realm realm, Set<E> wrappedSet, Object elementType) {
 		super(realm);
 		this.wrappedSet = wrappedSet;
 		this.elementType = elementType;
 	}
 
-	public synchronized void addSetChangeListener(ISetChangeListener listener) {
+	public synchronized void addSetChangeListener(
+			ISetChangeListener<? super E> listener) {
 		addListener(SetChangeEvent.TYPE, listener);
 	}
 
-	public synchronized void removeSetChangeListener(ISetChangeListener listener) {
+	public synchronized void removeSetChangeListener(
+			ISetChangeListener<? super E> listener) {
 		removeListener(SetChangeEvent.TYPE, listener);
 	}
 
-	protected void fireSetChange(SetDiff diff) {
+	protected void fireSetChange(SetDiff<E> diff) {
 		// fire general change event first
 		super.fireChange();
 
-		fireEvent(new SetChangeEvent(this, diff));
+		fireEvent(new SetChangeEvent<E>(this, diff));
 	}
 
 	public boolean contains(Object o) {
@@ -72,7 +76,7 @@ public abstract class ObservableSet extends AbstractObservable implements
 		return wrappedSet.contains(o);
 	}
 
-	public boolean containsAll(Collection c) {
+	public boolean containsAll(Collection<?> c) {
 		getterCalled();
 		return wrappedSet.containsAll(c);
 	}
@@ -92,10 +96,10 @@ public abstract class ObservableSet extends AbstractObservable implements
 		return wrappedSet.isEmpty();
 	}
 
-	public Iterator iterator() {
+	public Iterator<E> iterator() {
 		getterCalled();
-		final Iterator wrappedIterator = wrappedSet.iterator();
-		return new Iterator() {
+		final Iterator<E> wrappedIterator = wrappedSet.iterator();
+		return new Iterator<E>() {
 
 			public void remove() {
 				throw new UnsupportedOperationException();
@@ -106,7 +110,7 @@ public abstract class ObservableSet extends AbstractObservable implements
 				return wrappedIterator.hasNext();
 			}
 
-			public Object next() {
+			public E next() {
 				ObservableTracker.getterCalled(ObservableSet.this);
 				return wrappedIterator.next();
 			}
@@ -123,7 +127,7 @@ public abstract class ObservableSet extends AbstractObservable implements
 		return wrappedSet.toArray();
 	}
 
-	public Object[] toArray(Object[] a) {
+	public <T> T[] toArray(T[] a) {
 		getterCalled();
 		return wrappedSet.toArray(a);
 	}
@@ -137,11 +141,11 @@ public abstract class ObservableSet extends AbstractObservable implements
 		ObservableTracker.getterCalled(this);
 	}
 
-	public boolean add(Object o) {
+	public boolean add(E o) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean addAll(Collection c) {
+	public boolean addAll(Collection<? extends E> c) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -149,11 +153,11 @@ public abstract class ObservableSet extends AbstractObservable implements
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean removeAll(Collection c) {
+	public boolean removeAll(Collection<?> c) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean retainAll(Collection c) {
+	public boolean retainAll(Collection<?> c) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -188,7 +192,7 @@ public abstract class ObservableSet extends AbstractObservable implements
 	 * @param wrappedSet
 	 *            The wrappedSet to set.
 	 */
-	protected void setWrappedSet(Set wrappedSet) {
+	protected void setWrappedSet(Set<E> wrappedSet) {
 		this.wrappedSet = wrappedSet;
 	}
 

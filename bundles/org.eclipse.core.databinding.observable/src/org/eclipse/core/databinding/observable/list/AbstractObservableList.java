@@ -39,11 +39,13 @@ import org.eclipse.core.runtime.AssertionFailedException;
  * listeners may be invoked from any thread.
  * </p>
  * 
+ * @param <E>
+ * 
  * @since 1.0
  * 
  */
-public abstract class AbstractObservableList extends AbstractList implements
-		IObservableList {
+public abstract class AbstractObservableList<E> extends AbstractList<E>
+		implements IObservableList<E> {
 	private final class PrivateChangeSupport extends ChangeSupport {
 		private PrivateChangeSupport(Realm realm) {
 			super(realm);
@@ -67,7 +69,7 @@ public abstract class AbstractObservableList extends AbstractList implements
 	private volatile boolean disposed = false;
 
 	/**
-	 * @param realm 
+	 * @param realm
 	 * 
 	 */
 	public AbstractObservableList(Realm realm) {
@@ -83,7 +85,7 @@ public abstract class AbstractObservableList extends AbstractList implements
 	public AbstractObservableList() {
 		this(Realm.getDefault());
 	}
-	
+
 	/**
 	 * Returns whether this observable list has any registered listeners.
 	 * 
@@ -99,22 +101,24 @@ public abstract class AbstractObservableList extends AbstractList implements
 		return false;
 	}
 
-	public synchronized void addListChangeListener(IListChangeListener listener) {
+	public synchronized void addListChangeListener(
+			IListChangeListener<E> listener) {
 		if (!disposed) {
 			changeSupport.addListener(ListChangeEvent.TYPE, listener);
 		}
 	}
 
-	public synchronized void removeListChangeListener(IListChangeListener listener) {
+	public synchronized void removeListChangeListener(
+			IListChangeListener<E> listener) {
 		if (!disposed) {
 			changeSupport.removeListener(ListChangeEvent.TYPE, listener);
 		}
 	}
 
-	protected void fireListChange(ListDiff diff) {
+	protected void fireListChange(ListDiff<E> diff) {
 		// fire general change event first
 		fireChange();
-		changeSupport.fireEvent(new ListChangeEvent(this, diff));
+		changeSupport.fireEvent(new ListChangeEvent<E>(this, diff));
 	}
 
 	public synchronized void addChangeListener(IChangeListener listener) {
@@ -234,10 +238,10 @@ public abstract class AbstractObservableList extends AbstractList implements
 		return super.contains(o);
 	}
 
-	public Iterator iterator() {
+	public Iterator<E> iterator() {
 		getterCalled();
-		final Iterator wrappedIterator = super.iterator();
-		return new Iterator() {
+		final Iterator<E> wrappedIterator = super.iterator();
+		return new Iterator<E>() {
 			public void remove() {
 				wrappedIterator.remove();
 			}
@@ -246,7 +250,7 @@ public abstract class AbstractObservableList extends AbstractList implements
 				return wrappedIterator.hasNext();
 			}
 
-			public Object next() {
+			public E next() {
 				return wrappedIterator.next();
 			}
 		};
@@ -257,14 +261,14 @@ public abstract class AbstractObservableList extends AbstractList implements
 		return super.toArray();
 	}
 
-	public Object[] toArray(Object a[]) {
+	public <T> T[] toArray(T a[]) {
 		getterCalled();
 		return super.toArray(a);
 	}
 
 	// Modification Operations
 
-	public boolean add(Object o) {
+	public boolean add(E o) {
 		getterCalled();
 		return super.add(o);
 	}
@@ -287,12 +291,13 @@ public abstract class AbstractObservableList extends AbstractList implements
 	 *            range <code>0 &lt;= newIndex &lt; size()</code>.
 	 * @return the element that was moved.
 	 * @throws IndexOutOfBoundsException
-	 *             if either argument is out of range (<code>0 &lt;= index &lt; size()</code>).
+	 *             if either argument is out of range (
+	 *             <code>0 &lt;= index &lt; size()</code>).
 	 * @see ListDiffVisitor#handleMove(int, int, Object)
 	 * @see ListDiff#accept(ListDiffVisitor)
 	 * @since 1.1
 	 */
-	public Object move(int oldIndex, int newIndex) {
+	public E move(int oldIndex, int newIndex) {
 		checkRealm();
 		int size = doGetSize();
 		if (oldIndex < 0 || oldIndex >= size)
@@ -301,7 +306,7 @@ public abstract class AbstractObservableList extends AbstractList implements
 		if (newIndex < 0 || newIndex >= size)
 			throw new IndexOutOfBoundsException(
 					"newIndex: " + newIndex + ", size:" + size); //$NON-NLS-1$ //$NON-NLS-2$
-		Object element = remove(oldIndex);
+		E element = remove(oldIndex);
 		add(newIndex, element);
 		return element;
 	}
@@ -313,27 +318,27 @@ public abstract class AbstractObservableList extends AbstractList implements
 
 	// Bulk Modification Operations
 
-	public boolean containsAll(Collection c) {
+	public boolean containsAll(Collection<?> c) {
 		getterCalled();
 		return super.containsAll(c);
 	}
 
-	public boolean addAll(Collection c) {
+	public boolean addAll(Collection<? extends E> c) {
 		getterCalled();
 		return super.addAll(c);
 	}
 
-	public boolean addAll(int index, Collection c) {
+	public boolean addAll(int index, Collection<? extends E> c) {
 		getterCalled();
 		return super.addAll(c);
 	}
 
-	public boolean removeAll(Collection c) {
+	public boolean removeAll(Collection<?> c) {
 		getterCalled();
 		return super.removeAll(c);
 	}
 
-	public boolean retainAll(Collection c) {
+	public boolean retainAll(Collection<?> c) {
 		getterCalled();
 		return super.retainAll(c);
 	}
@@ -363,7 +368,7 @@ public abstract class AbstractObservableList extends AbstractList implements
 	public Realm getRealm() {
 		return realm;
 	}
-	
+
 	/**
 	 * Asserts that the realm is the current realm.
 	 * 

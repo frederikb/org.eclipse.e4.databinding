@@ -33,12 +33,26 @@ public class IdentityMapTest extends TestCase {
 
 	Object key;
 	Object value;
+	Map.Entry entry;
 
 	protected void setUp() throws Exception {
 		super.setUp();
 		map = new IdentityMap();
 		key = new Object();
 		value = new Object();
+		entry = new Map.Entry() {
+			public Object getKey() {
+				return key;
+			}
+
+			public Object getValue() {
+				return value;
+			}
+
+			public Object setValue(Object arg0) {
+				throw new UnsupportedOperationException();
+			}
+		};
 	}
 
 	public void testConstructor_NullComparer() {
@@ -290,7 +304,7 @@ public class IdentityMapTest extends TestCase {
 
 	public void testEntrySet_Add() {
 		try {
-			map.entrySet().add(key);
+			map.entrySet().add(entry);
 			fail("Expected UnsupportedOperationException");
 		} catch (UnsupportedOperationException expected) {
 		}

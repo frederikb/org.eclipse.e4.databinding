@@ -79,18 +79,18 @@ import org.eclipse.core.runtime.Status;
  */
 public abstract class Realm {
 
-	private static ThreadLocal defaultRealm = new ThreadLocal();
+	private static ThreadLocal<Realm> defaultRealm = new ThreadLocal<Realm>();
 
 	/**
-	 * Returns the default realm for the calling thread, or <code>null</code>
-	 * if no default realm has been set.
+	 * Returns the default realm for the calling thread, or <code>null</code> if
+	 * no default realm has been set.
 	 * 
 	 * @return the default realm, or <code>null</code>
 	 */
 	public static Realm getDefault() {
-		return (Realm) defaultRealm.get();
+		return defaultRealm.get();
 	}
-	
+
 	/**
 	 * Sets the default realm for the calling thread, returning the current
 	 * default thread. This method is inherently unsafe, it is recommended to
@@ -115,11 +115,11 @@ public abstract class Realm {
 	abstract public boolean isCurrent();
 
 	private Thread workerThread;
-	
+
 	private volatile Timer timer;
 
 	Queue workQueue = new Queue();
-	
+
 	/**
 	 * Runs the given runnable. If an exception occurs within the runnable, it
 	 * is logged and not re-thrown. If the runnable implements
@@ -135,15 +135,14 @@ public abstract class Realm {
 		} else {
 			safeRunnable = new ISafeRunnable() {
 				public void handleException(Throwable exception) {
-					Policy
-							.getLog()
-							.log(
-									new Status(
-											IStatus.ERROR,
-											Policy.JFACE_DATABINDING,
-											IStatus.OK,
-											"Unhandled exception: " + exception.getMessage(), exception)); //$NON-NLS-1$
+					Policy.getLog()
+							.log(new Status(
+									IStatus.ERROR,
+									Policy.JFACE_DATABINDING,
+									IStatus.OK,
+									"Unhandled exception: " + exception.getMessage(), exception)); //$NON-NLS-1$
 				}
+
 				public void run() throws Exception {
 					runnable.run();
 				}

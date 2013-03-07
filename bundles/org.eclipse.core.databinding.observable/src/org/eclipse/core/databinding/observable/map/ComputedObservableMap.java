@@ -36,24 +36,30 @@ import org.eclipse.core.internal.databinding.identity.IdentitySet;
 /**
  * Maps objects to one of their attributes. Tracks changes to the underlying
  * observable set of objects (keys), as well as changes to attribute values.
+ * 
+ * @param <K>
+ *            type of the keys to the map
+ * @param <V>
+ *            type of the values in the map
  */
-public abstract class ComputedObservableMap extends AbstractObservableMap {
+public abstract class ComputedObservableMap<K, V> extends
+		AbstractObservableMap<K, V> {
 
-	private IObservableSet keySet;
+	private IObservableSet<K> keySet;
 
-	private Set knownKeys;
+	private Set<K> knownKeys;
 
 	private Object valueType;
 
-	private ISetChangeListener setChangeListener = new ISetChangeListener() {
-		public void handleSetChange(SetChangeEvent event) {
-			Set addedKeys = new HashSet(event.diff.getAdditions());
-			Set removedKeys = new HashSet(event.diff.getRemovals());
-			Map oldValues = new HashMap();
-			Map newValues = new HashMap();
-			for (Iterator it = removedKeys.iterator(); it.hasNext();) {
-				Object removedKey = it.next();
-				Object oldValue = null;
+	private ISetChangeListener<K> setChangeListener = new ISetChangeListener<K>() {
+		public void handleSetChange(SetChangeEvent<K> event) {
+			Set<K> addedKeys = new HashSet<K>(event.diff.getAdditions());
+			Set<K> removedKeys = new HashSet<K>(event.diff.getRemovals());
+			Map<K, V> oldValues = new HashMap<K, V>();
+			Map<K, V> newValues = new HashMap<K, V>();
+			for (Iterator<K> it = removedKeys.iterator(); it.hasNext();) {
+				K removedKey = it.next();
+				V oldValue = null;
 				if (removedKey != null) {
 					oldValue = doGet(removedKey);
 					unhookListener(removedKey);
@@ -61,9 +67,9 @@ public abstract class ComputedObservableMap extends AbstractObservableMap {
 				}
 				oldValues.put(removedKey, oldValue);
 			}
-			for (Iterator it = addedKeys.iterator(); it.hasNext();) {
-				Object addedKey = it.next();
-				Object newValue = null;
+			for (Iterator<K> it = addedKeys.iterator(); it.hasNext();) {
+				K addedKey = it.next();
+				V newValue = null;
 				if (addedKey != null) {
 					newValue = doGet(addedKey);
 					hookListener(addedKey);
@@ -71,8 +77,9 @@ public abstract class ComputedObservableMap extends AbstractObservableMap {
 				}
 				newValues.put(addedKey, newValue);
 			}
+			Set<K> changedKeys = Collections.emptySet();
 			fireMapChange(Diffs.createMapDiff(addedKeys, removedKeys,
-					Collections.EMPTY_SET, oldValues, newValues));
+					changedKeys, oldValues, newValues));
 		}
 	};
 
@@ -82,32 +89,32 @@ public abstract class ComputedObservableMap extends AbstractObservableMap {
 		}
 	};
 
-	private Set entrySet = new EntrySet();
+	private Set<Map.Entry<K, V>> entrySet = new EntrySet();
 
-	private class EntrySet extends AbstractSet {
+	private class EntrySet extends AbstractSet<Map.Entry<K, V>> {
 
-		public Iterator iterator() {
-			final Iterator keyIterator = keySet.iterator();
-			return new Iterator() {
+		public Iterator<Map.Entry<K, V>> iterator() {
+			final Iterator<K> keyIterator = keySet.iterator();
+			return new Iterator<Map.Entry<K, V>>() {
 
 				public boolean hasNext() {
 					return keyIterator.hasNext();
 				}
 
-				public Object next() {
-					final Object key = keyIterator.next();
-					return new Map.Entry() {
+				public Map.Entry<K, V> next() {
+					final K key = keyIterator.next();
+					return new Map.Entry<K, V>() {
 
-						public Object getKey() {
+						public K getKey() {
 							getterCalled();
 							return key;
 						}
 
-						public Object getValue() {
+						public V getValue() {
 							return get(getKey());
 						}
 
-						public Object setValue(Object value) {
+						public V setValue(V value) {
 							return put(getKey(), value);
 						}
 					};
@@ -128,7 +135,7 @@ public abstract class ComputedObservableMap extends AbstractObservableMap {
 	/**
 	 * @param keySet
 	 */
-	public ComputedObservableMap(IObservableSet keySet) {
+	public ComputedObservableMap(IObservableSet<K> keySet) {
 		this(keySet, null);
 	}
 
@@ -137,13 +144,13 @@ public abstract class ComputedObservableMap extends AbstractObservableMap {
 	 * @param valueType
 	 * @since 1.2
 	 */
-	public ComputedObservableMap(IObservableSet keySet, Object valueType) {
+	public ComputedObservableMap(IObservableSet<K> keySet, Object valueType) {
 		super(keySet.getRealm());
 		this.keySet = keySet;
 		this.valueType = valueType;
 
 		keySet.addDisposeListener(new IDisposeListener() {
-			public void handleDispose(DisposeEvent staleEvent) {
+			public void handleDispose(DisposeEvent disposeEvent) {
 				ComputedObservableMap.this.dispose();
 			}
 		});
@@ -169,11 +176,11 @@ public abstract class ComputedObservableMap extends AbstractObservableMap {
 
 	private void hookListeners() {
 		if (keySet != null) {
-			knownKeys = new IdentitySet();
+			knownKeys = new IdentitySet<K>();
 			keySet.addSetChangeListener(setChangeListener);
 			keySet.addStaleListener(staleListener);
-			for (Iterator it = this.keySet.iterator(); it.hasNext();) {
-				Object key = it.next();
+			for (Iterator<K> it = this.keySet.iterator(); it.hasNext();) {
+				K key = it.next();
 				hookListener(key);
 				knownKeys.add(key);
 			}
@@ -186,17 +193,16 @@ public abstract class ComputedObservableMap extends AbstractObservableMap {
 			keySet.removeStaleListener(staleListener);
 		}
 		if (knownKeys != null) {
-			Object[] keys = knownKeys.toArray();
-			for (int i = 0; i < keys.length; i++) {
-				unhookListener(keys[i]);
+			Set<K> immutableKnownKeys = Collections.unmodifiableSet(knownKeys);
+			for (K key : immutableKnownKeys) {
+				unhookListener(key);
 			}
 			knownKeys.clear();
 			knownKeys = null;
 		}
 	}
 
-	protected final void fireSingleChange(Object key, Object oldValue,
-			Object newValue) {
+	protected final void fireSingleChange(K key, V oldValue, V newValue) {
 		fireMapChange(Diffs.createMapDiffSingleChange(key, oldValue, newValue));
 	}
 
@@ -217,10 +223,10 @@ public abstract class ComputedObservableMap extends AbstractObservableMap {
 	/**
 	 * @since 1.3
 	 */
-	public Object remove(Object key) {
+	public V remove(Object key) {
 		checkRealm();
 
-		Object oldValue = get(key);
+		V oldValue = get(key);
 		keySet().remove(key);
 
 		return oldValue;
@@ -234,26 +240,26 @@ public abstract class ComputedObservableMap extends AbstractObservableMap {
 		return keySet().contains(key);
 	}
 
-	public Set entrySet() {
+	public Set<Map.Entry<K, V>> entrySet() {
 		return entrySet;
 	}
 
-	public Set keySet() {
+	public Set<K> keySet() {
 		return keySet;
 	}
 
-	final public Object get(Object key) {
+	final public V get(Object key) {
 		getterCalled();
 		if (!keySet.contains(key))
 			return null;
-		return doGet(key);
+		return doGet((K) key);
 	}
 
 	private void getterCalled() {
 		ObservableTracker.getterCalled(this);
 	}
 
-	final public Object put(Object key, Object value) {
+	final public V put(K key, V value) {
 		checkRealm();
 		if (!keySet.contains(key))
 			return null;
@@ -263,25 +269,25 @@ public abstract class ComputedObservableMap extends AbstractObservableMap {
 	/**
 	 * @param removedKey
 	 */
-	protected abstract void unhookListener(Object removedKey);
+	protected abstract void unhookListener(K removedKey);
 
 	/**
 	 * @param addedKey
 	 */
-	protected abstract void hookListener(Object addedKey);
+	protected abstract void hookListener(K addedKey);
 
 	/**
 	 * @param key
 	 * @return the value for the given key
 	 */
-	protected abstract Object doGet(Object key);
+	protected abstract V doGet(K key);
 
 	/**
 	 * @param key
 	 * @param value
 	 * @return the old value for the given key
 	 */
-	protected abstract Object doPut(Object key, Object value);
+	protected abstract V doPut(K key, V value);
 
 	public boolean isStale() {
 		return super.isStale() || keySet.isStale();

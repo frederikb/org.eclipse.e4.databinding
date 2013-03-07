@@ -24,28 +24,31 @@ import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.core.databinding.observable.set.AbstractObservableSet;
 import org.eclipse.core.databinding.observable.set.SetDiff;
 import org.eclipse.core.databinding.property.INativePropertyListener;
-import org.eclipse.core.databinding.property.IProperty;
 import org.eclipse.core.databinding.property.IPropertyObservable;
 import org.eclipse.core.databinding.property.ISimplePropertyListener;
 import org.eclipse.core.databinding.property.SimplePropertyEvent;
 import org.eclipse.core.databinding.property.set.SimpleSetProperty;
 
 /**
+ * @param <S>
+ *            type of the source object
+ * @param <E>
+ *            type of the elements in the set
  * @since 1.2
  * 
  */
-public class SimplePropertyObservableSet extends AbstractObservableSet
-		implements IPropertyObservable {
-	private Object source;
-	private SimpleSetProperty property;
+public class SimplePropertyObservableSet<S, E> extends AbstractObservableSet<E>
+		implements IPropertyObservable<SimpleSetProperty<S, E>> {
+	private S source;
+	private SimpleSetProperty<S, E> property;
 
 	private volatile boolean updating = false;
 
 	private volatile int modCount = 0;
 
-	private INativePropertyListener listener;
+	private INativePropertyListener<S> listener;
 
-	private Set cachedSet;
+	private Set<E> cachedSet;
 	private boolean stale;
 
 	/**
@@ -53,8 +56,8 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 	 * @param source
 	 * @param property
 	 */
-	public SimplePropertyObservableSet(Realm realm, Object source,
-			SimpleSetProperty property) {
+	public SimplePropertyObservableSet(Realm realm, S source,
+			SimpleSetProperty<S, E> property) {
 		super(realm);
 		this.source = source;
 		this.property = property;
@@ -64,15 +67,15 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 		if (!isDisposed()) {
 			if (listener == null) {
 				listener = property
-						.adaptListener(new ISimplePropertyListener() {
+						.adaptListener(new ISimplePropertyListener<SetDiff<E>>() {
 							public void handleEvent(
-									final SimplePropertyEvent event) {
+									final SimplePropertyEvent<SetDiff<E>> event) {
 								if (!isDisposed() && !updating) {
 									getRealm().exec(new Runnable() {
 										public void run() {
 											if (event.type == SimplePropertyEvent.CHANGE) {
 												modCount++;
-												notifyIfChanged((SetDiff) event.diff);
+												notifyIfChanged(event.diff);
 											} else if (event.type == SimplePropertyEvent.STALE
 													&& !stale) {
 												stale = true;
@@ -87,7 +90,7 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 
 			getRealm().exec(new Runnable() {
 				public void run() {
-					cachedSet = new HashSet(getSet());
+					cachedSet = new HashSet<E>(getSet());
 					stale = false;
 
 					if (listener != null)
@@ -106,7 +109,7 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 		stale = false;
 	}
 
-	protected Set getWrappedSet() {
+	protected Set<E> getWrappedSet() {
 		return getSet();
 	}
 
@@ -116,7 +119,7 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 
 	// Queries
 
-	private Set getSet() {
+	private Set<E> getSet() {
 		return property.getSet(source);
 	}
 
@@ -125,7 +128,7 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 		return getSet().contains(o);
 	}
 
-	public boolean containsAll(Collection c) {
+	public boolean containsAll(Collection<?> c) {
 		getterCalled();
 		return getSet().containsAll(c);
 	}
@@ -140,14 +143,14 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 		return getSet().toArray();
 	}
 
-	public Object[] toArray(Object[] a) {
+	public <T> T[] toArray(T[] a) {
 		getterCalled();
 		return getSet().toArray(a);
 	}
 
 	// Single change operations
 
-	private void updateSet(Set set, SetDiff diff) {
+	private void updateSet(Set<E> set, SetDiff<E> diff) {
 		if (!diff.isEmpty()) {
 			boolean wasUpdating = updating;
 			updating = true;
@@ -162,27 +165,27 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 		}
 	}
 
-	public boolean add(Object o) {
+	public boolean add(E o) {
 		checkRealm();
 
-		Set set = getSet();
+		Set<E> set = getSet();
 		if (set.contains(o))
 			return false;
 
-		SetDiff diff = Diffs.createSetDiff(Collections.singleton(o),
-				Collections.EMPTY_SET);
+		SetDiff<E> diff = Diffs.createSetDiff(Collections.singleton(o),
+				Collections.<E> emptySet());
 		updateSet(set, diff);
 
 		return true;
 	}
 
-	public Iterator iterator() {
+	public Iterator<E> iterator() {
 		getterCalled();
-		return new Iterator() {
+		return new Iterator<E>() {
 			int expectedModCount = modCount;
-			Set set = new HashSet(getSet());
-			Iterator iterator = set.iterator();
-			Object last = null;
+			Set<E> set = new HashSet<E>(getSet());
+			Iterator<E> iterator = set.iterator();
+			E last = null;
 
 			public boolean hasNext() {
 				getterCalled();
@@ -190,7 +193,7 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 				return iterator.hasNext();
 			}
 
-			public Object next() {
+			public E next() {
 				getterCalled();
 				checkForComodification();
 				last = iterator.next();
@@ -201,8 +204,9 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 				checkRealm();
 				checkForComodification();
 
-				SetDiff diff = Diffs.createSetDiff(Collections.EMPTY_SET,
-						Collections.singleton(last));
+				SetDiff<E> diff = Diffs
+						.createSetDiff(Collections.<E> emptySet(),
+								Collections.singleton(last));
 				updateSet(set, diff);
 
 				iterator.remove(); // stay in sync
@@ -221,12 +225,14 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 	public boolean remove(Object o) {
 		getterCalled();
 
-		Set set = getSet();
+		Set<E> set = getSet();
 		if (!set.contains(o))
 			return false;
 
-		SetDiff diff = Diffs.createSetDiff(Collections.EMPTY_SET, Collections
-				.singleton(o));
+		@SuppressWarnings("unchecked")
+		// if o is contained, it is an E
+		SetDiff<E> diff = Diffs.createSetDiff(Collections.<E> emptySet(),
+				Collections.singleton((E) o));
 		updateSet(set, diff);
 
 		return true;
@@ -234,54 +240,60 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 
 	// Bulk change operations
 
-	public boolean addAll(Collection c) {
+	public boolean addAll(Collection<? extends E> c) {
 		getterCalled();
 
 		if (c.isEmpty())
 			return false;
 
-		Set set = getSet();
+		Set<E> set = getSet();
 		if (set.containsAll(c))
 			return false;
 
-		Set additions = new HashSet(c);
+		Set<E> additions = new HashSet<E>(c);
 		additions.removeAll(set);
 
 		if (additions.isEmpty())
 			return false;
 
-		SetDiff diff = Diffs.createSetDiff(additions, Collections.EMPTY_SET);
+		SetDiff<E> diff = Diffs.createSetDiff(additions,
+				Collections.<E> emptySet());
 		updateSet(set, diff);
 
 		return true;
 	}
 
-	public boolean removeAll(Collection c) {
+	public boolean removeAll(Collection<?> c) {
 		getterCalled();
 
 		if (c.isEmpty())
 			return false;
 
-		Set set = getSet();
+		Set<E> set = getSet();
 		if (set.isEmpty())
 			return false;
 
-		Set removals = new HashSet(c);
+		Set<Object> removals = new HashSet<Object>(c);
 		removals.retainAll(set);
+		@SuppressWarnings("unchecked")
+		// because we have removed everything that
+		// is not an E
+		Set<E> typedRemovals = (Set<E>) removals;
 
 		if (removals.isEmpty())
 			return false;
 
-		SetDiff diff = Diffs.createSetDiff(Collections.EMPTY_SET, removals);
+		SetDiff<E> diff = Diffs.createSetDiff(Collections.<E> emptySet(),
+				typedRemovals);
 		updateSet(set, diff);
 
 		return true;
 	}
 
-	public boolean retainAll(Collection c) {
+	public boolean retainAll(Collection<?> c) {
 		getterCalled();
 
-		Set set = getSet();
+		Set<E> set = getSet();
 		if (set.isEmpty())
 			return false;
 
@@ -290,13 +302,14 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 			return true;
 		}
 
-		Set removals = new HashSet(set);
+		Set<E> removals = new HashSet<E>(set);
 		removals.removeAll(c);
 
 		if (removals.isEmpty())
 			return false;
 
-		SetDiff diff = Diffs.createSetDiff(Collections.EMPTY_SET, removals);
+		SetDiff<E> diff = Diffs.createSetDiff(Collections.<E> emptySet(),
+				removals);
 		updateSet(set, diff);
 
 		return true;
@@ -305,18 +318,18 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 	public void clear() {
 		getterCalled();
 
-		Set set = getSet();
+		Set<E> set = getSet();
 		if (set.isEmpty())
 			return;
 
-		SetDiff diff = Diffs.createSetDiff(Collections.EMPTY_SET, set);
+		SetDiff<E> diff = Diffs.createSetDiff(Collections.<E> emptySet(), set);
 		updateSet(set, diff);
 	}
 
-	private void notifyIfChanged(SetDiff diff) {
+	private void notifyIfChanged(SetDiff<E> diff) {
 		if (hasListeners()) {
-			Set oldSet = cachedSet;
-			Set newSet = cachedSet = new HashSet(getSet());
+			Set<E> oldSet = cachedSet;
+			Set<E> newSet = cachedSet = new HashSet<E>(getSet());
 			if (diff == null)
 				diff = Diffs.computeSetDiff(oldSet, newSet);
 			if (!diff.isEmpty() || stale) {
@@ -345,7 +358,7 @@ public class SimplePropertyObservableSet extends AbstractObservableSet
 		return source;
 	}
 
-	public IProperty getProperty() {
+	public SimpleSetProperty<S, E> getProperty() {
 		return property;
 	}
 

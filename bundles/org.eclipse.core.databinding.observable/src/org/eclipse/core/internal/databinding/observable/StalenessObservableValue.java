@@ -24,9 +24,9 @@ import org.eclipse.core.databinding.observable.value.AbstractObservableValue;
  * 
  * @since 1.1
  */
-public class StalenessObservableValue extends AbstractObservableValue {
+public class StalenessObservableValue extends AbstractObservableValue<Boolean> {
 
-	private class MyListener implements IChangeListener, IStaleListener {
+	private class MyChangeListener implements IChangeListener {
 		public void handleChange(ChangeEvent event) {
 			if (stale && !event.getObservable().isStale()) {
 				stale = false;
@@ -34,7 +34,9 @@ public class StalenessObservableValue extends AbstractObservableValue {
 						Boolean.FALSE));
 			}
 		}
+	}
 
+	private class MyStaleListener implements IStaleListener {
 		public void handleStale(StaleEvent staleEvent) {
 			if (!stale) {
 				stale = true;
@@ -46,7 +48,8 @@ public class StalenessObservableValue extends AbstractObservableValue {
 
 	private IObservable tracked;
 	private boolean stale;
-	private MyListener listener = new MyListener();
+	private MyChangeListener changeListener = new MyChangeListener();
+	private MyStaleListener staleListener = new MyStaleListener();
 
 	/**
 	 * Constructs a StalenessObservableValue that tracks the staleness of the
@@ -59,11 +62,11 @@ public class StalenessObservableValue extends AbstractObservableValue {
 		super(observable.getRealm());
 		this.tracked = observable;
 		this.stale = observable.isStale();
-		tracked.addChangeListener(listener);
-		tracked.addStaleListener(listener);
+		tracked.addChangeListener(changeListener);
+		tracked.addStaleListener(staleListener);
 	}
 
-	protected Object doGetValue() {
+	protected Boolean doGetValue() {
 		return tracked.isStale() ? Boolean.TRUE : Boolean.FALSE;
 	}
 
@@ -73,10 +76,11 @@ public class StalenessObservableValue extends AbstractObservableValue {
 
 	public synchronized void dispose() {
 		if (tracked != null) {
-			tracked.removeChangeListener(listener);
-			tracked.removeStaleListener(listener);
+			tracked.removeChangeListener(changeListener);
+			tracked.removeStaleListener(staleListener);
 			tracked = null;
-			listener = null;
+			changeListener = null;
+			staleListener = null;
 		}
 		super.dispose();
 	}

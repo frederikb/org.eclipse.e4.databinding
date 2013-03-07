@@ -21,14 +21,16 @@ import org.eclipse.core.databinding.observable.DecoratingObservableCollection;
 /**
  * An observable list which decorates another observable list.
  * 
+ * @param <E>
+ * 
  * @since 1.2
  */
-public class DecoratingObservableList extends DecoratingObservableCollection
-		implements IObservableList {
+public class DecoratingObservableList<E> extends
+		DecoratingObservableCollection<E> implements IObservableList<E> {
 
-	private IObservableList decorated;
+	private IObservableList<E> decorated;
 
-	private IListChangeListener listChangeListener;
+	private IListChangeListener<E> listChangeListener;
 
 	/**
 	 * Constructs a DecoratingObservableList which decorates the given
@@ -38,25 +40,26 @@ public class DecoratingObservableList extends DecoratingObservableCollection
 	 *            the observable list being decorated
 	 * @param disposeDecoratedOnDispose
 	 */
-	public DecoratingObservableList(IObservableList decorated,
+	public DecoratingObservableList(IObservableList<E> decorated,
 			boolean disposeDecoratedOnDispose) {
 		super(decorated, disposeDecoratedOnDispose);
 		this.decorated = decorated;
 	}
 
-	public synchronized void addListChangeListener(IListChangeListener listener) {
+	public synchronized void addListChangeListener(
+			IListChangeListener<E> listener) {
 		addListener(ListChangeEvent.TYPE, listener);
 	}
 
 	public synchronized void removeListChangeListener(
-			IListChangeListener listener) {
+			IListChangeListener<E> listener) {
 		removeListener(ListChangeEvent.TYPE, listener);
 	}
 
-	protected void fireListChange(ListDiff diff) {
+	protected void fireListChange(ListDiff<E> diff) {
 		// fire general change event first
 		super.fireChange();
-		fireEvent(new ListChangeEvent(this, diff));
+		fireEvent(new ListChangeEvent<E>(this, diff));
 	}
 
 	protected void fireChange() {
@@ -66,8 +69,8 @@ public class DecoratingObservableList extends DecoratingObservableCollection
 
 	protected void firstListenerAdded() {
 		if (listChangeListener == null) {
-			listChangeListener = new IListChangeListener() {
-				public void handleListChange(ListChangeEvent event) {
+			listChangeListener = new IListChangeListener<E>() {
+				public void handleListChange(ListChangeEvent<E> event) {
 					DecoratingObservableList.this.handleListChange(event);
 				}
 			};
@@ -93,21 +96,21 @@ public class DecoratingObservableList extends DecoratingObservableCollection
 	 * @param event
 	 *            the change event received from the decorated observable
 	 */
-	protected void handleListChange(final ListChangeEvent event) {
+	protected void handleListChange(final ListChangeEvent<E> event) {
 		fireListChange(event.diff);
 	}
 
-	public void add(int index, Object o) {
+	public void add(int index, E o) {
 		checkRealm();
 		decorated.add(index, o);
 	}
 
-	public boolean addAll(int index, Collection c) {
+	public boolean addAll(int index, Collection<? extends E> c) {
 		checkRealm();
 		return decorated.addAll(index, c);
 	}
 
-	public Object get(int index) {
+	public E get(int index) {
 		getterCalled();
 		return decorated.get(index);
 	}
@@ -122,16 +125,16 @@ public class DecoratingObservableList extends DecoratingObservableCollection
 		return decorated.lastIndexOf(o);
 	}
 
-	public ListIterator listIterator() {
+	public ListIterator<E> listIterator() {
 		return listIterator(0);
 	}
 
-	public ListIterator listIterator(int index) {
+	public ListIterator<E> listIterator(int index) {
 		getterCalled();
-		final ListIterator iterator = decorated.listIterator(index);
-		return new ListIterator() {
+		final ListIterator<E> iterator = decorated.listIterator(index);
+		return new ListIterator<E>() {
 
-			public void add(Object o) {
+			public void add(E o) {
 				iterator.add(o);
 			}
 
@@ -145,7 +148,7 @@ public class DecoratingObservableList extends DecoratingObservableCollection
 				return iterator.hasPrevious();
 			}
 
-			public Object next() {
+			public E next() {
 				getterCalled();
 				return iterator.next();
 			}
@@ -155,7 +158,7 @@ public class DecoratingObservableList extends DecoratingObservableCollection
 				return iterator.nextIndex();
 			}
 
-			public Object previous() {
+			public E previous() {
 				getterCalled();
 				return iterator.previous();
 			}
@@ -170,29 +173,29 @@ public class DecoratingObservableList extends DecoratingObservableCollection
 				iterator.remove();
 			}
 
-			public void set(Object o) {
+			public void set(E o) {
 				checkRealm();
 				iterator.set(o);
 			}
 		};
 	}
 
-	public Object move(int oldIndex, int newIndex) {
+	public E move(int oldIndex, int newIndex) {
 		checkRealm();
 		return decorated.move(oldIndex, newIndex);
 	}
 
-	public Object remove(int index) {
+	public E remove(int index) {
 		checkRealm();
 		return decorated.remove(index);
 	}
 
-	public Object set(int index, Object element) {
+	public E set(int index, E element) {
 		checkRealm();
 		return decorated.set(index, element);
 	}
 
-	public List subList(int fromIndex, int toIndex) {
+	public List<E> subList(int fromIndex, int toIndex) {
 		getterCalled();
 		return decorated.subList(fromIndex, toIndex);
 	}

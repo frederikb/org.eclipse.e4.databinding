@@ -17,28 +17,30 @@ import java.util.Iterator;
 /**
  * An observable collection which decorates another observable collection
  * 
+ * @param <E>
+ * 
  * @since 1.2
  */
-public class DecoratingObservableCollection extends DecoratingObservable
-		implements IObservableCollection {
-	private IObservableCollection decorated;
+public class DecoratingObservableCollection<E> extends DecoratingObservable
+		implements IObservableCollection<E> {
+	private IObservableCollection<E> decorated;
 
 	/**
 	 * @param decorated
 	 * @param disposeDecoratedOnDispose
 	 */
-	public DecoratingObservableCollection(IObservableCollection decorated,
+	public DecoratingObservableCollection(IObservableCollection<E> decorated,
 			boolean disposeDecoratedOnDispose) {
 		super(decorated, disposeDecoratedOnDispose);
 		this.decorated = decorated;
 	}
 
-	public boolean add(Object o) {
+	public boolean add(E o) {
 		getterCalled();
 		return decorated.add(o);
 	}
 
-	public boolean addAll(Collection c) {
+	public boolean addAll(Collection<? extends E> c) {
 		getterCalled();
 		return decorated.addAll(c);
 	}
@@ -53,7 +55,7 @@ public class DecoratingObservableCollection extends DecoratingObservable
 		return decorated.contains(o);
 	}
 
-	public boolean containsAll(Collection c) {
+	public boolean containsAll(Collection<?> c) {
 		getterCalled();
 		return decorated.containsAll(c);
 	}
@@ -63,10 +65,10 @@ public class DecoratingObservableCollection extends DecoratingObservable
 		return decorated.isEmpty();
 	}
 
-	public Iterator iterator() {
+	public Iterator<E> iterator() {
 		getterCalled();
-		final Iterator decoratedIterator = decorated.iterator();
-		return new Iterator() {
+		final Iterator<E> decoratedIterator = decorated.iterator();
+		return new Iterator<E>() {
 			public void remove() {
 				decoratedIterator.remove();
 			}
@@ -76,7 +78,7 @@ public class DecoratingObservableCollection extends DecoratingObservable
 				return decoratedIterator.hasNext();
 			}
 
-			public Object next() {
+			public E next() {
 				getterCalled();
 				return decoratedIterator.next();
 			}
@@ -88,12 +90,12 @@ public class DecoratingObservableCollection extends DecoratingObservable
 		return decorated.remove(o);
 	}
 
-	public boolean removeAll(Collection c) {
+	public boolean removeAll(Collection<?> c) {
 		getterCalled();
 		return decorated.removeAll(c);
 	}
 
-	public boolean retainAll(Collection c) {
+	public boolean retainAll(Collection<?> c) {
 		getterCalled();
 		return decorated.retainAll(c);
 	}
@@ -108,7 +110,7 @@ public class DecoratingObservableCollection extends DecoratingObservable
 		return decorated.toArray();
 	}
 
-	public Object[] toArray(Object[] a) {
+	public <T> T[] toArray(T[] a) {
 		getterCalled();
 		return decorated.toArray(a);
 	}

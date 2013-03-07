@@ -66,10 +66,12 @@ import org.eclipse.core.databinding.observable.value.IObservableValue;
  * System.out.println(primes); // =&gt; &quot;[2, 3, 5, 7, 11, 13, 17, 19]&quot;
  * </pre>
  * 
+ * @param <E>
+ * 
  * @since 1.2
  */
-public abstract class ComputedSet extends AbstractObservableSet {
-	private Set cachedSet = new HashSet();
+public abstract class ComputedSet<E> extends AbstractObservableSet<E> {
+	private Set<E> cachedSet = new HashSet<E>();
 
 	private boolean dirty = true;
 	private boolean stale = false;
@@ -144,25 +146,30 @@ public abstract class ComputedSet extends AbstractObservableSet {
 	 * </p>
 	 * 
 	 */
-	private class PrivateInterface implements Runnable, IChangeListener,
-			IStaleListener {
-		public void run() {
-			cachedSet = calculate();
-			if (cachedSet == null)
-				cachedSet = Collections.EMPTY_SET;
-		}
-
-		public void handleStale(StaleEvent event) {
-			if (!dirty)
-				makeStale();
-		}
-
+	private class PrivateChangeInterface implements IChangeListener {
 		public void handleChange(ChangeEvent event) {
 			makeDirty();
 		}
 	}
 
-	private PrivateInterface privateInterface = new PrivateInterface();
+	private class PrivateStaleInterface implements IStaleListener {
+		public void handleStale(StaleEvent event) {
+			if (!dirty)
+				makeStale();
+		}
+	}
+
+	private class PrivateRunnableInterface implements Runnable {
+		public void run() {
+			cachedSet = calculate();
+			if (cachedSet == null)
+				cachedSet = Collections.emptySet();
+		}
+	}
+
+	private IChangeListener privateChangeInterface = new PrivateChangeInterface();
+	private IStaleListener privateStaleInterface = new PrivateStaleInterface();
+	private Runnable privateRunnableInterface = new PrivateRunnableInterface();
 
 	private Object elementType;
 
@@ -170,23 +177,23 @@ public abstract class ComputedSet extends AbstractObservableSet {
 		return doGetSet().size();
 	}
 
-	private final Set getSet() {
+	private final Set<E> getSet() {
 		getterCalled();
 		return doGetSet();
 	}
 
-	protected Set getWrappedSet() {
+	protected Set<E> getWrappedSet() {
 		return doGetSet();
 	}
 
-	final Set doGetSet() {
+	final Set<E> doGetSet() {
 		if (dirty) {
 			// This line will do the following:
 			// - Run the calculate method
 			// - While doing so, add any observable that is touched to the
 			// dependencies list
 			IObservable[] newDependencies = ObservableTracker.runAndMonitor(
-					privateInterface, privateInterface, null);
+					privateRunnableInterface, privateChangeInterface, null);
 
 			// If any dependencies are stale, a stale event will be fired here
 			// even if we were already stale before recomputing. This is in case
@@ -201,7 +208,7 @@ public abstract class ComputedSet extends AbstractObservableSet {
 
 			if (!stale) {
 				for (int i = 0; i < newDependencies.length; i++) {
-					newDependencies[i].addStaleListener(privateInterface);
+					newDependencies[i].addStaleListener(privateStaleInterface);
 				}
 			}
 
@@ -221,7 +228,7 @@ public abstract class ComputedSet extends AbstractObservableSet {
 	 * 
 	 * @return the object's set.
 	 */
-	protected abstract Set calculate();
+	protected abstract Set<E> calculate();
 
 	private void makeDirty() {
 		if (!dirty) {
@@ -232,23 +239,23 @@ public abstract class ComputedSet extends AbstractObservableSet {
 			stopListening();
 
 			// copy the old set
-			final Set oldSet = new HashSet(cachedSet);
+			final Set<E> oldSet = new HashSet<E>(cachedSet);
 			// Fire the "dirty" event. This implementation recomputes the new
 			// set lazily.
-			fireSetChange(new SetDiff() {
-				SetDiff delegate;
+			fireSetChange(new SetDiff<E>() {
+				SetDiff<E> delegate;
 
-				private SetDiff getDelegate() {
+				private SetDiff<E> getDelegate() {
 					if (delegate == null)
 						delegate = Diffs.computeSetDiff(oldSet, getSet());
 					return delegate;
 				}
 
-				public Set getAdditions() {
+				public Set<E> getAdditions() {
 					return getDelegate().getAdditions();
 				}
 
-				public Set getRemovals() {
+				public Set<E> getRemovals() {
 					return getDelegate().getRemovals();
 				}
 			});
@@ -260,8 +267,8 @@ public abstract class ComputedSet extends AbstractObservableSet {
 			for (int i = 0; i < dependencies.length; i++) {
 				IObservable observable = dependencies[i];
 
-				observable.removeChangeListener(privateInterface);
-				observable.removeStaleListener(privateInterface);
+				observable.removeChangeListener(privateChangeInterface);
+				observable.removeStaleListener(privateStaleInterface);
 			}
 			dependencies = null;
 		}
@@ -291,7 +298,8 @@ public abstract class ComputedSet extends AbstractObservableSet {
 		computeSetForListeners();
 	}
 
-	public synchronized void addSetChangeListener(ISetChangeListener listener) {
+	public synchronized void addSetChangeListener(
+			ISetChangeListener<? super E> listener) {
 		super.addSetChangeListener(listener);
 		// If somebody is listening, we need to make sure we attach our own
 		// listeners

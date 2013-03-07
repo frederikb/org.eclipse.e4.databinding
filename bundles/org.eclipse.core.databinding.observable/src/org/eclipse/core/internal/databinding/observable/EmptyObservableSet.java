@@ -28,10 +28,12 @@ import org.eclipse.core.runtime.Assert;
 
 /**
  * Singleton empty set
+ * 
+ * @param <E>
  */
-public class EmptyObservableSet implements IObservableSet {
+public class EmptyObservableSet<E> implements IObservableSet<E> {
 
-	private static final Set emptySet = Collections.EMPTY_SET;
+	private final Set<E> emptySet = Collections.emptySet();
 
 	private final Realm realm;
 	private Object elementType;
@@ -63,10 +65,10 @@ public class EmptyObservableSet implements IObservableSet {
 		ObservableTracker.observableCreated(this);
 	}
 
-	public void addSetChangeListener(ISetChangeListener listener) {
+	public void addSetChangeListener(ISetChangeListener<? super E> listener) {
 	}
 
-	public void removeSetChangeListener(ISetChangeListener listener) {
+	public void removeSetChangeListener(ISetChangeListener<? super E> listener) {
 	}
 
 	public Object getElementType() {
@@ -93,7 +95,7 @@ public class EmptyObservableSet implements IObservableSet {
 		return false;
 	}
 
-	public Iterator iterator() {
+	public Iterator<E> iterator() {
 		checkRealm();
 		return emptySet.iterator();
 	}
@@ -103,11 +105,11 @@ public class EmptyObservableSet implements IObservableSet {
 		return emptySet.toArray();
 	}
 
-	public Object[] toArray(Object[] a) {
+	public <T> T[] toArray(T[] a) {
 		return emptySet.toArray(a);
 	}
 
-	public boolean add(Object o) {
+	public boolean add(E o) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -115,20 +117,20 @@ public class EmptyObservableSet implements IObservableSet {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean containsAll(Collection c) {
+	public boolean containsAll(Collection<?> c) {
 		checkRealm();
 		return c.isEmpty();
 	}
 
-	public boolean addAll(Collection c) {
+	public boolean addAll(Collection<? extends E> c) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean retainAll(Collection c) {
+	public boolean retainAll(Collection<?> c) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean removeAll(Collection c) {
+	public boolean removeAll(Collection<?> c) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -179,7 +181,7 @@ public class EmptyObservableSet implements IObservableSet {
 		if (!(obj instanceof Set))
 			return false;
 
-		return ((Set) obj).isEmpty();
+		return ((Set<?>) obj).isEmpty();
 	}
 
 	public int hashCode() {

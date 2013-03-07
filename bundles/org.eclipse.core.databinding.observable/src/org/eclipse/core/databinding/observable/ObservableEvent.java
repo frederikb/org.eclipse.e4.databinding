@@ -18,10 +18,13 @@ import java.util.EventObject;
  * events fired by observables must be derived from this class so that the way
  * of dispatching events can be improved in later versions of the framework.
  * 
+ * @param <EV>
+ * 
  * @since 1.0
  * 
  */
-public abstract class ObservableEvent extends EventObject {
+public abstract class ObservableEvent<EV extends ObservableEvent<EV>> extends
+		EventObject {
 
 	/**
 	 * Creates a new observable event.

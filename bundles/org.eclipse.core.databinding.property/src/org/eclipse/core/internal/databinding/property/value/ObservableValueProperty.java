@@ -18,6 +18,7 @@ import org.eclipse.core.databinding.observable.StaleEvent;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.core.databinding.observable.value.IValueChangeListener;
 import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
+import org.eclipse.core.databinding.observable.value.ValueDiff;
 import org.eclipse.core.databinding.property.INativePropertyListener;
 import org.eclipse.core.databinding.property.IProperty;
 import org.eclipse.core.databinding.property.ISimplePropertyListener;
@@ -25,6 +26,8 @@ import org.eclipse.core.databinding.property.NativePropertyListener;
 import org.eclipse.core.databinding.property.value.SimpleValueProperty;
 
 /**
+ * @param <T>
+ *            type of the value of the property
  * @since 3.3
  * 
  */
@@ -35,7 +38,8 @@ import org.eclipse.core.databinding.property.value.SimpleValueProperty;
  * observeDetail(IObservableValue) we just cast the source object to
  * IObservableValue and return it.
  */
-public class ObservableValueProperty extends SimpleValueProperty {
+public class ObservableValueProperty<T> extends
+		SimpleValueProperty<IObservableValue<T>, T> {
 	private final Object valueType;
 
 	/**
@@ -49,49 +53,51 @@ public class ObservableValueProperty extends SimpleValueProperty {
 		return valueType;
 	}
 
-	protected Object doGetValue(Object source) {
-		return ((IObservableValue) source).getValue();
+	protected T doGetValue(IObservableValue<T> source) {
+		return source.getValue();
 	}
 
-	protected void doSetValue(Object source, Object value) {
-		((IObservableValue) source).setValue(value);
+	protected void doSetValue(IObservableValue<T> source, T value) {
+		source.setValue(value);
 	}
 
-	public INativePropertyListener adaptListener(
-			ISimplePropertyListener listener) {
+	public INativePropertyListener<IObservableValue<T>> adaptListener(
+			ISimplePropertyListener<ValueDiff<T>> listener) {
 		return new Listener(this, listener);
 	}
 
-	private class Listener extends NativePropertyListener implements
-			IValueChangeListener, IStaleListener {
-		Listener(IProperty property, ISimplePropertyListener listener) {
+	private class Listener extends
+			NativePropertyListener<IObservableValue<T>, ValueDiff<T>> implements
+			IValueChangeListener<T>, IStaleListener {
+		Listener(IProperty property,
+				ISimplePropertyListener<ValueDiff<T>> listener) {
 			super(property, listener);
 		}
 
-		public void handleValueChange(ValueChangeEvent event) {
-			fireChange(event.getObservable(), event.diff);
+		public void handleValueChange(ValueChangeEvent<T> event) {
+			fireChange(event.getObservableValue(), event.diff);
 		}
 
 		public void handleStale(StaleEvent event) {
 			fireStale(event.getObservable());
 		}
 
-		protected void doAddTo(Object source) {
-			IObservableValue observable = (IObservableValue) source;
+		protected void doAddTo(IObservableValue<T> source) {
+			IObservableValue<T> observable = source;
 			observable.addValueChangeListener(this);
 			observable.addStaleListener(this);
 		}
 
-		protected void doRemoveFrom(Object source) {
-			IObservableValue observable = (IObservableValue) source;
+		protected void doRemoveFrom(IObservableValue<T> source) {
+			IObservableValue<T> observable = source;
 			observable.removeValueChangeListener(this);
 			observable.removeStaleListener(this);
 		}
 	}
 
-	public IObservableValue observe(Realm realm, Object source) {
+	public IObservableValue<T> observe(Realm realm, IObservableValue<T> source) {
 		// Ignore realm if different
-		return (IObservableValue) source;
+		return source;
 	}
 
 	public String toString() {

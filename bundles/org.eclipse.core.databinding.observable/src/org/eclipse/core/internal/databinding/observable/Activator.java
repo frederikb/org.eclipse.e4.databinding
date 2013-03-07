@@ -33,7 +33,7 @@ public class Activator implements BundleActivator {
 	 */
 	public static final String PLUGIN_ID = "org.eclipse.core.databinding"; //$NON-NLS-1$
 
-	private volatile static ServiceTracker _frameworkLogTracker;
+	private volatile static ServiceTracker<FrameworkLog, FrameworkLog> _frameworkLogTracker;
 
 	/**
 	 * The constructor
@@ -42,20 +42,23 @@ public class Activator implements BundleActivator {
 	}
 
 	public void start(BundleContext context) throws Exception {
-		_frameworkLogTracker = new ServiceTracker(context, FrameworkLog.class.getName(), null);
+		_frameworkLogTracker = new ServiceTracker<FrameworkLog, FrameworkLog>(
+				context, FrameworkLog.class, null);
 		_frameworkLogTracker.open();
 
 		Policy.setLog(new ILogger() {
 
 			public void log(IStatus status) {
-				ServiceTracker frameworkLogTracker = _frameworkLogTracker;
-				FrameworkLog log = frameworkLogTracker == null ? null : (FrameworkLog) frameworkLogTracker.getService();
+				ServiceTracker<FrameworkLog, FrameworkLog> frameworkLogTracker = _frameworkLogTracker;
+				FrameworkLog log = frameworkLogTracker == null ? null
+						: frameworkLogTracker.getService();
 				if (log != null) {
 					log.log(createLogEntry(status));
 				} else {
 					// fall back to System.err
-					System.err.println(status.getPlugin() + " - " + status.getCode() + " - " + status.getMessage());  //$NON-NLS-1$//$NON-NLS-2$
-					if( status.getException() != null ) {
+					System.err.println(status.getPlugin()
+							+ " - " + status.getCode() + " - " + status.getMessage()); //$NON-NLS-1$//$NON-NLS-2$
+					if (status.getException() != null) {
 						status.getException().printStackTrace(System.err);
 					}
 				}
@@ -63,15 +66,15 @@ public class Activator implements BundleActivator {
 
 		});
 	}
-	
+
 	// Code copied from PlatformLogWriter.getLog(). Why is logging an IStatus so
 	// hard?
 	FrameworkLogEntry createLogEntry(IStatus status) {
 		Throwable t = status.getException();
-		ArrayList childlist = new ArrayList();
+		ArrayList<FrameworkLogEntry> childlist = new ArrayList<FrameworkLogEntry>();
 
 		int stackCode = t instanceof CoreException ? 1 : 0;
-		// ensure a substatus inside a CoreException is properly logged 
+		// ensure a substatus inside a CoreException is properly logged
 		if (stackCode == 1) {
 			IStatus coreStatus = ((CoreException) t).getStatus();
 			if (coreStatus != null) {
@@ -86,12 +89,13 @@ public class Activator implements BundleActivator {
 			}
 		}
 
-		FrameworkLogEntry[] children = (FrameworkLogEntry[]) (childlist.size() == 0 ? null : childlist.toArray(new FrameworkLogEntry[childlist.size()]));
+		FrameworkLogEntry[] children = (childlist.size() == 0 ? null
+				: childlist.toArray(new FrameworkLogEntry[childlist.size()]));
 
-		return new FrameworkLogEntry(status.getPlugin(), status.getSeverity(), status.getCode(), status.getMessage(), stackCode, t, children);
+		return new FrameworkLogEntry(status.getPlugin(), status.getSeverity(),
+				status.getCode(), status.getMessage(), stackCode, t, children);
 	}
 
-	
 	public void stop(BundleContext context) throws Exception {
 		if (_frameworkLogTracker != null) {
 			_frameworkLogTracker.close();

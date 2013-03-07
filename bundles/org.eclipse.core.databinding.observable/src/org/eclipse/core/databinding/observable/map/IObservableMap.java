@@ -22,19 +22,22 @@ import org.eclipse.core.databinding.observable.IObservable;
 /**
  * Observable Map.
  * 
+ * @param <K>
+ * @param <V>
+ * 
  * @noimplement This interface is not intended to be implemented by clients.
  *              Clients should instead subclass one of the classes that
  *              implement this interface. Note that direct implementers of this
  *              interface outside of the framework will be broken in future
  *              releases when methods are added to this interface.
- *              
+ * 
  * @see AbstractObservableMap
  * @see ObservableMap
  * 
  * @since 1.1
  */
-public interface IObservableMap extends Map, IObservable {
-	
+public interface IObservableMap<K, V> extends Map<K, V>, IObservable {
+
 	/**
 	 * Returns the element type for the {@link #keySet() keyset} of this
 	 * observable map, or <code>null</code> if the keyset is untyped.
@@ -59,13 +62,13 @@ public interface IObservableMap extends Map, IObservable {
 	/**
 	 * @param listener
 	 */
-	public void addMapChangeListener(IMapChangeListener listener);
+	public void addMapChangeListener(IMapChangeListener<K, V> listener);
 
 	/**
 	 * @param listener
 	 */
-	public void removeMapChangeListener(IMapChangeListener listener);
-	
+	public void removeMapChangeListener(IMapChangeListener<K, V> listener);
+
 	/**
 	 * @TrackedGetter
 	 */
@@ -89,32 +92,32 @@ public interface IObservableMap extends Map, IObservable {
 	/**
 	 * @TrackedGetter
 	 */
-	public Object get(Object key);
+	public V get(Object key);
 
 	/**
 	 * 
 	 */
-	public Object put(Object key, Object value);
+	public V put(K key, V value);
 
 	/**
 	 * 
 	 */
-	public Object remove(Object key);
+	public V remove(Object key);
 
 	/**
 	 * @TrackedGetter
 	 */
-	public Set keySet();
+	public Set<K> keySet();
 
 	/**
 	 * @TrackedGetter
 	 */
-	public Collection values();
+	public Collection<V> values();
 
 	/**
 	 * @TrackedGetter
 	 */
-	public Set entrySet();
+	public Set<Map.Entry<K, V>> entrySet();
 
 	/**
 	 * @TrackedGetter

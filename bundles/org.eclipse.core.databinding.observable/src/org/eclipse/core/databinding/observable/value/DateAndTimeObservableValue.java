@@ -84,33 +84,38 @@ import org.eclipse.core.runtime.Assert;
  * 
  * @since 1.2
  */
-public class DateAndTimeObservableValue extends AbstractObservableValue {
-	private IObservableValue dateObservable;
-	private IObservableValue timeObservable;
-	private PrivateInterface privateInterface;
-	private Object cachedValue;
+public class DateAndTimeObservableValue extends AbstractObservableValue<Date> {
+	private IObservableValue<Date> dateObservable;
+	private IObservableValue<Date> timeObservable;
+	private PrivateChangeInterface privateChangeInterface;
+	private PrivateStaleInterface privateStaleInterface;
+	private PrivateDisposeInterface privateDisposeInterface;
+	private Date cachedValue;
 	private boolean updating;
 
-	private class PrivateInterface implements IChangeListener, IStaleListener,
-			IDisposeListener {
-		public void handleDispose(DisposeEvent staleEvent) {
-			dispose();
-		}
-
+	private class PrivateChangeInterface implements IChangeListener {
 		public void handleChange(ChangeEvent event) {
 			if (!isDisposed() && !updating)
 				notifyIfChanged();
 		}
+	}
 
+	private class PrivateStaleInterface implements IStaleListener {
 		public void handleStale(StaleEvent staleEvent) {
 			if (!isDisposed())
 				fireStale();
 		}
 	}
 
+	private class PrivateDisposeInterface implements IDisposeListener {
+		public void handleDispose(DisposeEvent staleEvent) {
+			dispose();
+		}
+	}
+
 	// One calendar per thread to preserve thread-safety
-	private static final ThreadLocal calendar = new ThreadLocal() {
-		protected Object initialValue() {
+	private static final ThreadLocal<Calendar> calendar = new ThreadLocal<Calendar>() {
+		protected Calendar initialValue() {
 			return Calendar.getInstance();
 		}
 	};
@@ -126,8 +131,8 @@ public class DateAndTimeObservableValue extends AbstractObservableValue {
 	 *            the observable used for the time component (hour, minute,
 	 *            second and millisecond) of the constructed observable.
 	 */
-	public DateAndTimeObservableValue(IObservableValue dateObservable,
-			IObservableValue timeObservable) {
+	public DateAndTimeObservableValue(IObservableValue<Date> dateObservable,
+			IObservableValue<Date> timeObservable) {
 		super(dateObservable.getRealm());
 		this.dateObservable = dateObservable;
 		this.timeObservable = timeObservable;
@@ -135,9 +140,12 @@ public class DateAndTimeObservableValue extends AbstractObservableValue {
 		Assert.isTrue(dateObservable.getRealm().equals(
 				timeObservable.getRealm()));
 
-		privateInterface = new PrivateInterface();
-		dateObservable.addDisposeListener(privateInterface);
-		timeObservable.addDisposeListener(privateInterface);
+		privateChangeInterface = new PrivateChangeInterface();
+		privateStaleInterface = new PrivateStaleInterface();
+		privateDisposeInterface = new PrivateDisposeInterface();
+
+		dateObservable.addDisposeListener(privateDisposeInterface);
+		timeObservable.addDisposeListener(privateDisposeInterface);
 	}
 
 	public Object getValueType() {
@@ -147,22 +155,22 @@ public class DateAndTimeObservableValue extends AbstractObservableValue {
 	protected void firstListenerAdded() {
 		cachedValue = doGetValue();
 
-		dateObservable.addChangeListener(privateInterface);
-		dateObservable.addStaleListener(privateInterface);
+		dateObservable.addChangeListener(privateChangeInterface);
+		dateObservable.addStaleListener(privateStaleInterface);
 
-		timeObservable.addChangeListener(privateInterface);
-		timeObservable.addStaleListener(privateInterface);
+		timeObservable.addChangeListener(privateChangeInterface);
+		timeObservable.addStaleListener(privateStaleInterface);
 	}
 
 	protected void lastListenerRemoved() {
 		if (dateObservable != null && !dateObservable.isDisposed()) {
-			dateObservable.removeChangeListener(privateInterface);
-			dateObservable.removeStaleListener(privateInterface);
+			dateObservable.removeChangeListener(privateChangeInterface);
+			dateObservable.removeStaleListener(privateStaleInterface);
 		}
 
 		if (timeObservable != null && !timeObservable.isDisposed()) {
-			timeObservable.removeChangeListener(privateInterface);
-			timeObservable.removeStaleListener(privateInterface);
+			timeObservable.removeChangeListener(privateChangeInterface);
+			timeObservable.removeStaleListener(privateStaleInterface);
 		}
 
 		cachedValue = null;
@@ -170,21 +178,24 @@ public class DateAndTimeObservableValue extends AbstractObservableValue {
 
 	private void notifyIfChanged() {
 		if (hasListeners()) {
-			Object oldValue = cachedValue;
-			Object newValue = cachedValue = doGetValue();
+			Date oldValue = cachedValue;
+			Date newValue = cachedValue = doGetValue();
 			if (!Util.equals(oldValue, newValue))
 				fireValueChange(Diffs.createValueDiff(oldValue, newValue));
 		}
 	}
 
-	protected Object doGetValue() {
-		Date dateValue = (Date) dateObservable.getValue();
+	/**
+	 * @since 1.5
+	 */
+	protected Date doGetValue() {
+		Date dateValue = dateObservable.getValue();
 		if (dateValue == null)
 			return null;
 
-		Date timeValue = (Date) timeObservable.getValue();
+		Date timeValue = timeObservable.getValue();
 
-		Calendar cal = (Calendar) calendar.get();
+		Calendar cal = calendar.get();
 
 		cal.setTime(dateValue);
 		int year = cal.get(Calendar.YEAR);
@@ -206,17 +217,18 @@ public class DateAndTimeObservableValue extends AbstractObservableValue {
 		return cal.getTime();
 	}
 
-	protected void doSetValue(Object value) {
-		Date date = (Date) value;
-
+	/**
+	 * @since 1.5
+	 */
+	protected void doSetValue(Date combinedDate) {
 		Date dateValue;
 		Date timeValue;
 
-		Calendar cal = (Calendar) calendar.get();
-		if (date == null)
+		Calendar cal = calendar.get();
+		if (combinedDate == null)
 			cal.clear();
 		else
-			cal.setTime(date);
+			cal.setTime(combinedDate);
 
 		int year = cal.get(Calendar.YEAR);
 		int month = cal.get(Calendar.MONTH);
@@ -226,10 +238,10 @@ public class DateAndTimeObservableValue extends AbstractObservableValue {
 		int second = cal.get(Calendar.SECOND);
 		int millis = cal.get(Calendar.MILLISECOND);
 
-		if (date == null) {
+		if (combinedDate == null) {
 			dateValue = null;
 		} else {
-			dateValue = (Date) dateObservable.getValue();
+			dateValue = dateObservable.getValue();
 			if (dateValue == null)
 				cal.clear();
 			else
@@ -240,7 +252,7 @@ public class DateAndTimeObservableValue extends AbstractObservableValue {
 			dateValue = cal.getTime();
 		}
 
-		timeValue = (Date) timeObservable.getValue();
+		timeValue = timeObservable.getValue();
 		if (timeValue == null)
 			cal.clear();
 		else
@@ -271,18 +283,20 @@ public class DateAndTimeObservableValue extends AbstractObservableValue {
 		checkRealm();
 		if (!isDisposed()) {
 			if (!dateObservable.isDisposed()) {
-				dateObservable.removeDisposeListener(privateInterface);
-				dateObservable.removeChangeListener(privateInterface);
-				dateObservable.removeStaleListener(privateInterface);
+				dateObservable.removeDisposeListener(privateDisposeInterface);
+				dateObservable.removeChangeListener(privateChangeInterface);
+				dateObservable.removeStaleListener(privateStaleInterface);
 			}
 			if (!timeObservable.isDisposed()) {
-				timeObservable.removeDisposeListener(privateInterface);
-				timeObservable.removeChangeListener(privateInterface);
-				timeObservable.removeStaleListener(privateInterface);
+				timeObservable.removeDisposeListener(privateDisposeInterface);
+				timeObservable.removeChangeListener(privateChangeInterface);
+				timeObservable.removeStaleListener(privateStaleInterface);
 			}
 			dateObservable = null;
 			timeObservable = null;
-			privateInterface = null;
+			privateChangeInterface = null;
+			privateStaleInterface = null;
+			privateDisposeInterface = null;
 			cachedValue = null;
 		}
 		super.dispose();

@@ -22,13 +22,16 @@ import org.eclipse.core.databinding.observable.DecoratingObservable;
 /**
  * An observable map which decorates another observable map.
  * 
+ * @param <K>
+ * @param <V>
+ * 
  * @since 1.2
  */
-public class DecoratingObservableMap extends DecoratingObservable implements
-		IObservableMap {
-	private IObservableMap decorated;
+public class DecoratingObservableMap<K, V> extends DecoratingObservable
+		implements IObservableMap<K, V> {
+	private IObservableMap<K, V> decorated;
 
-	private IMapChangeListener mapChangeListener;
+	private IMapChangeListener<K, V> mapChangeListener;
 
 	/**
 	 * Constructs a DecoratingObservableMap which decorates the given
@@ -38,17 +41,19 @@ public class DecoratingObservableMap extends DecoratingObservable implements
 	 *            the observable map being decorated
 	 * @param disposeDecoratedOnDispose
 	 */
-	public DecoratingObservableMap(IObservableMap decorated,
+	public DecoratingObservableMap(IObservableMap<K, V> decorated,
 			boolean disposeDecoratedOnDispose) {
 		super(decorated, disposeDecoratedOnDispose);
 		this.decorated = decorated;
 	}
 
-	public synchronized void addMapChangeListener(IMapChangeListener listener) {
+	public synchronized void addMapChangeListener(
+			IMapChangeListener<K, V> listener) {
 		addListener(MapChangeEvent.TYPE, listener);
 	}
 
-	public synchronized void removeMapChangeListener(IMapChangeListener listener) {
+	public synchronized void removeMapChangeListener(
+			IMapChangeListener<K, V> listener) {
 		removeListener(MapChangeEvent.TYPE, listener);
 	}
 
@@ -60,10 +65,10 @@ public class DecoratingObservableMap extends DecoratingObservable implements
 		return decorated.getValueType();
 	}
 
-	protected void fireMapChange(MapDiff diff) {
+	protected void fireMapChange(MapDiff<K, V> diff) {
 		// fire general change event first
 		super.fireChange();
-		fireEvent(new MapChangeEvent(this, diff));
+		fireEvent(new MapChangeEvent<K, V>(this, diff));
 	}
 
 	protected void fireChange() {
@@ -73,8 +78,8 @@ public class DecoratingObservableMap extends DecoratingObservable implements
 
 	protected void firstListenerAdded() {
 		if (mapChangeListener == null) {
-			mapChangeListener = new IMapChangeListener() {
-				public void handleMapChange(MapChangeEvent event) {
+			mapChangeListener = new IMapChangeListener<K, V>() {
+				public void handleMapChange(MapChangeEvent<K, V> event) {
 					DecoratingObservableMap.this.handleMapChange(event);
 				}
 			};
@@ -100,7 +105,7 @@ public class DecoratingObservableMap extends DecoratingObservable implements
 	 * @param event
 	 *            the change event received from the decorated observable
 	 */
-	protected void handleMapChange(final MapChangeEvent event) {
+	protected void handleMapChange(final MapChangeEvent<K, V> event) {
 		fireMapChange(event.diff);
 	}
 
@@ -119,18 +124,18 @@ public class DecoratingObservableMap extends DecoratingObservable implements
 		return decorated.containsValue(value);
 	}
 
-	private class BackedCollection implements Collection {
-		private Collection collection;
+	private class BackedCollection<E> implements Collection<E> {
+		private Collection<E> collection;
 
-		BackedCollection(Collection set) {
+		BackedCollection(Collection<E> set) {
 			this.collection = set;
 		}
 
-		public boolean add(Object o) {
+		public boolean add(E o) {
 			throw new UnsupportedOperationException();
 		}
 
-		public boolean addAll(Collection arg0) {
+		public boolean addAll(Collection<? extends E> arg0) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -144,7 +149,7 @@ public class DecoratingObservableMap extends DecoratingObservable implements
 			return collection.contains(o);
 		}
 
-		public boolean containsAll(Collection c) {
+		public boolean containsAll(Collection<?> c) {
 			getterCalled();
 			return collection.containsAll(c);
 		}
@@ -154,15 +159,15 @@ public class DecoratingObservableMap extends DecoratingObservable implements
 			return collection.isEmpty();
 		}
 
-		public Iterator iterator() {
-			final Iterator iterator = collection.iterator();
-			return new Iterator() {
+		public Iterator<E> iterator() {
+			final Iterator<E> iterator = collection.iterator();
+			return new Iterator<E>() {
 				public boolean hasNext() {
 					getterCalled();
 					return iterator.hasNext();
 				}
 
-				public Object next() {
+				public E next() {
 					getterCalled();
 					return iterator.next();
 				}
@@ -179,12 +184,12 @@ public class DecoratingObservableMap extends DecoratingObservable implements
 			return collection.remove(o);
 		}
 
-		public boolean removeAll(Collection c) {
+		public boolean removeAll(Collection<?> c) {
 			getterCalled();
 			return collection.removeAll(c);
 		}
 
-		public boolean retainAll(Collection c) {
+		public boolean retainAll(Collection<?> c) {
 			getterCalled();
 			return collection.retainAll(c);
 		}
@@ -199,7 +204,7 @@ public class DecoratingObservableMap extends DecoratingObservable implements
 			return collection.toArray();
 		}
 
-		public Object[] toArray(Object[] array) {
+		public <T> T[] toArray(T[] array) {
 			getterCalled();
 			return collection.toArray(array);
 		}
@@ -220,23 +225,23 @@ public class DecoratingObservableMap extends DecoratingObservable implements
 		}
 	}
 
-	private class BackedSet extends BackedCollection implements Set {
-		BackedSet(Set set) {
+	private class BackedSet<E> extends BackedCollection<E> implements Set<E> {
+		BackedSet(Set<E> set) {
 			super(set);
 		}
 	}
 
-	Set entrySet = null;
+	Set<Entry<K, V>> entrySet = null;
 
-	public Set entrySet() {
+	public Set<Entry<K, V>> entrySet() {
 		getterCalled();
 		if (entrySet == null) {
-			entrySet = new BackedSet(decorated.entrySet());
+			entrySet = new BackedSet<Entry<K, V>>(decorated.entrySet());
 		}
 		return entrySet;
 	}
 
-	public Object get(Object key) {
+	public V get(Object key) {
 		getterCalled();
 		return decorated.get(key);
 	}
@@ -246,27 +251,27 @@ public class DecoratingObservableMap extends DecoratingObservable implements
 		return decorated.isEmpty();
 	}
 
-	Set keySet = null;
+	Set<K> keySet = null;
 
-	public Set keySet() {
+	public Set<K> keySet() {
 		getterCalled();
 		if (keySet == null) {
-			keySet = new BackedSet(decorated.keySet());
+			keySet = new BackedSet<K>(decorated.keySet());
 		}
 		return keySet;
 	}
 
-	public Object put(Object key, Object value) {
+	public V put(K key, V value) {
 		checkRealm();
 		return decorated.put(key, value);
 	}
 
-	public void putAll(Map m) {
+	public void putAll(Map<? extends K, ? extends V> m) {
 		checkRealm();
 		decorated.putAll(m);
 	}
 
-	public Object remove(Object key) {
+	public V remove(Object key) {
 		checkRealm();
 		return decorated.remove(key);
 	}
@@ -276,12 +281,12 @@ public class DecoratingObservableMap extends DecoratingObservable implements
 		return decorated.size();
 	}
 
-	Collection values;
+	Collection<V> values;
 
-	public Collection values() {
+	public Collection<V> values() {
 		getterCalled();
 		if (values == null) {
-			values = new BackedCollection(decorated.values());
+			values = new BackedCollection<V>(decorated.values());
 		}
 		return values;
 	}

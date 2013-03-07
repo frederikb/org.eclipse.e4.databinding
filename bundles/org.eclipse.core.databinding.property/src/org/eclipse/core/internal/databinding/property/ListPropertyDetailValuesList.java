@@ -27,19 +27,25 @@ import org.eclipse.core.databinding.property.list.ListProperty;
 import org.eclipse.core.databinding.property.value.IValueProperty;
 
 /**
+ * @param <S>
+ *            type of the source object
+ * @param <T>
+ *            type of the value of the property
+ * @param <E>
+ *            type of the elements in the list
  * @since 3.3
  * 
  */
-public class ListPropertyDetailValuesList extends ListProperty {
-	private final IListProperty masterProperty;
-	private final IValueProperty detailProperty;
+public class ListPropertyDetailValuesList<S, T, E> extends ListProperty<S, E> {
+	private final IListProperty<S, T> masterProperty;
+	private final IValueProperty<? super T, E> detailProperty;
 
 	/**
 	 * @param masterProperty
 	 * @param detailProperty
 	 */
-	public ListPropertyDetailValuesList(IListProperty masterProperty,
-			IValueProperty detailProperty) {
+	public ListPropertyDetailValuesList(IListProperty<S, T> masterProperty,
+			IValueProperty<? super T, E> detailProperty) {
 		this.masterProperty = masterProperty;
 		this.detailProperty = detailProperty;
 	}
@@ -48,38 +54,37 @@ public class ListPropertyDetailValuesList extends ListProperty {
 		return detailProperty.getValueType();
 	}
 
-	protected List doGetList(Object source) {
-		List masterList = masterProperty.getList(source);
-		List detailList = new ArrayList(masterList.size());
-		for (Iterator it = masterList.iterator(); it.hasNext();)
+	protected List<E> doGetList(S source) {
+		List<T> masterList = masterProperty.getList(source);
+		List<E> detailList = new ArrayList<E>(masterList.size());
+		for (Iterator<T> it = masterList.iterator(); it.hasNext();)
 			detailList.add(detailProperty.getValue(it.next()));
 		return detailList;
 	}
 
-	protected void doUpdateList(Object source, ListDiff diff) {
-		final List masterList = masterProperty.getList(source);
-		diff.accept(new ListDiffVisitor() {
-			public void handleAdd(int index, Object element) {
+	protected void doUpdateList(S source, ListDiff<E> diff) {
+		final List<T> masterList = masterProperty.getList(source);
+		diff.accept(new ListDiffVisitor<E>() {
+			public void handleAdd(int index, E element) {
 				throw new UnsupportedOperationException();
 			}
 
-			public void handleRemove(int index, Object element) {
+			public void handleRemove(int index, E element) {
 				throw new UnsupportedOperationException();
 			}
 
-			public void handleMove(int oldIndex, int newIndex, Object element) {
+			public void handleMove(int oldIndex, int newIndex, E element) {
 				throw new UnsupportedOperationException();
 			}
 
-			public void handleReplace(int index, Object oldElement,
-					Object newElement) {
+			public void handleReplace(int index, E oldElement, E newElement) {
 				detailProperty.setValue(masterList.get(index), newElement);
 			}
 		});
 	}
 
-	public IObservableList observe(Realm realm, Object source) {
-		IObservableList masterList;
+	public IObservableList<E> observe(Realm realm, S source) {
+		IObservableList<T> masterList;
 
 		ObservableTracker.setIgnore(true);
 		try {
@@ -88,13 +93,15 @@ public class ListPropertyDetailValuesList extends ListProperty {
 			ObservableTracker.setIgnore(false);
 		}
 
-		IObservableList detailList = detailProperty.observeDetail(masterList);
+		IObservableList<E> detailList = detailProperty
+				.observeDetail(masterList);
 		PropertyObservableUtil.cascadeDispose(detailList, masterList);
 		return detailList;
 	}
 
-	public IObservableList observeDetail(IObservableValue master) {
-		IObservableList masterList;
+	public <U extends S> IObservableList<E> observeDetail(
+			IObservableValue<U> master) {
+		IObservableList<T> masterList;
 
 		ObservableTracker.setIgnore(true);
 		try {
@@ -103,7 +110,8 @@ public class ListPropertyDetailValuesList extends ListProperty {
 			ObservableTracker.setIgnore(false);
 		}
 
-		IObservableList detailList = detailProperty.observeDetail(masterList);
+		IObservableList<E> detailList = detailProperty
+				.observeDetail(masterList);
 		PropertyObservableUtil.cascadeDispose(detailList, masterList);
 		return detailList;
 	}

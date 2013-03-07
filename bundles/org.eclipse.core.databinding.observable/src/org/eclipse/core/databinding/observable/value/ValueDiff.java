@@ -16,10 +16,11 @@ import org.eclipse.core.databinding.observable.Diffs;
 import org.eclipse.core.databinding.observable.IDiff;
 
 /**
+ * @param <T>
  * @since 1.0
  * 
  */
-public abstract class ValueDiff implements IDiff {
+public abstract class ValueDiff<T> implements IDiff {
 	/**
 	 * Creates a value diff.
 	 */
@@ -29,16 +30,16 @@ public abstract class ValueDiff implements IDiff {
 	/**
 	 * @return the old value
 	 */
-	public abstract Object getOldValue();
+	public abstract T getOldValue();
 
 	/**
 	 * @return the new value
 	 */
-	public abstract Object getNewValue();
+	public abstract T getNewValue();
 
 	public boolean equals(Object obj) {
 		if (obj instanceof ValueDiff) {
-			ValueDiff val = (ValueDiff) obj;
+			ValueDiff<?> val = (ValueDiff<?>) obj;
 
 			return Diffs.equals(val.getNewValue(), getNewValue())
 					&& Diffs.equals(val.getOldValue(), getOldValue());
@@ -46,7 +47,7 @@ public abstract class ValueDiff implements IDiff {
 		}
 		return false;
 	}
-		
+
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
@@ -62,14 +63,15 @@ public abstract class ValueDiff implements IDiff {
 	 */
 	public String toString() {
 		StringBuffer buffer = new StringBuffer();
-		buffer
-			.append(getClass().getName())
-			.append("{oldValue [") //$NON-NLS-1$
-			.append(getOldValue() != null ? getOldValue().toString() : "null") //$NON-NLS-1$
-			.append("], newValue [") //$NON-NLS-1$
-			.append(getNewValue() != null ? getNewValue().toString() : "null") //$NON-NLS-1$
-			.append("]}"); //$NON-NLS-1$
-		
+		buffer.append(getClass().getName())
+				.append("{oldValue [") //$NON-NLS-1$
+				.append(getOldValue() != null ? getOldValue().toString()
+						: "null") //$NON-NLS-1$
+				.append("], newValue [") //$NON-NLS-1$
+				.append(getNewValue() != null ? getNewValue().toString()
+						: "null") //$NON-NLS-1$
+				.append("]}"); //$NON-NLS-1$
+
 		return buffer.toString();
 	}
 }

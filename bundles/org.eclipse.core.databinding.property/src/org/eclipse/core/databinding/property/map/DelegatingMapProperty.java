@@ -22,13 +22,20 @@ import org.eclipse.core.databinding.property.INativePropertyListener;
 import org.eclipse.core.databinding.property.ISimplePropertyListener;
 
 /**
+ * @param <S>
+ *            type of the source object
+ * @param <K>
+ *            type of the keys to the map
+ * @param <V>
+ *            type of the values in the map
  * @since 1.2
  * 
  */
-public abstract class DelegatingMapProperty extends MapProperty {
+public abstract class DelegatingMapProperty<S, K, V> extends
+		MapProperty<S, K, V> {
 	private final Object keyType;
 	private final Object valueType;
-	private final IMapProperty nullProperty = new NullMapProperty();
+	private final IMapProperty<S, K, V> nullProperty = new NullMapProperty();
 
 	protected DelegatingMapProperty() {
 		this(null, null);
@@ -48,10 +55,10 @@ public abstract class DelegatingMapProperty extends MapProperty {
 	 *            the property source (may be null)
 	 * @return the property to delegate to for the specified source object.
 	 */
-	public final IMapProperty getDelegate(Object source) {
+	public final IMapProperty<S, K, V> getDelegate(S source) {
 		if (source == null)
 			return nullProperty;
-		IMapProperty delegate = doGetDelegate(source);
+		IMapProperty<S, K, V> delegate = doGetDelegate(source);
 		if (delegate == null)
 			delegate = nullProperty;
 		return delegate;
@@ -66,7 +73,7 @@ public abstract class DelegatingMapProperty extends MapProperty {
 	 *            the property source
 	 * @return the property to delegate to for the specified source object.
 	 */
-	protected abstract IMapProperty doGetDelegate(Object source);
+	protected abstract IMapProperty<S, K, V> doGetDelegate(Object source);
 
 	public Object getKeyType() {
 		return keyType;
@@ -76,42 +83,42 @@ public abstract class DelegatingMapProperty extends MapProperty {
 		return valueType;
 	}
 
-	protected Map doGetMap(Object source) {
+	protected Map<K, V> doGetMap(S source) {
 		return getDelegate(source).getMap(source);
 	}
 
-	protected void doSetMap(Object source, Map map) {
+	protected void doSetMap(S source, Map<K, V> map) {
 		getDelegate(source).setMap(source, map);
 	}
 
-	protected void doUpdateMap(Object source, MapDiff diff) {
+	protected void doUpdateMap(S source, MapDiff<K, V> diff) {
 		getDelegate(source).updateMap(source, diff);
 	}
 
-	public IObservableMap observe(Object source) {
+	public IObservableMap<K, V> observe(S source) {
 		return getDelegate(source).observe(source);
 	}
 
-	public IObservableMap observe(Realm realm, Object source) {
+	public IObservableMap<K, V> observe(Realm realm, S source) {
 		return getDelegate(source).observe(realm, source);
 	}
 
-	private class NullMapProperty extends SimpleMapProperty {
-		protected Map doGetMap(Object source) {
-			return Collections.EMPTY_MAP;
+	private class NullMapProperty extends SimpleMapProperty<S, K, V> {
+		protected Map<K, V> doGetMap(Object source) {
+			return Collections.emptyMap();
 		}
 
-		protected void doSetMap(Object source, Map map, MapDiff diff) {
+		protected void doSetMap(S source, Map<K, V> map, MapDiff<K, V> diff) {
 		}
 
-		protected void doSetMap(Object source, Map map) {
+		protected void doSetMap(S source, Map<K, V> map) {
 		}
 
-		protected void doUpdateMap(Object source, MapDiff diff) {
+		protected void doUpdateMap(S source, MapDiff<K, V> diff) {
 		}
 
-		public INativePropertyListener adaptListener(
-				ISimplePropertyListener listener) {
+		public INativePropertyListener<S> adaptListener(
+				ISimplePropertyListener<MapDiff<K, V>> listener) {
 			return null;
 		}
 

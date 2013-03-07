@@ -27,27 +27,30 @@ import org.eclipse.core.internal.databinding.identity.IdentityMap;
  */
 public class StalenessTracker {
 
-	private Map staleMap = new IdentityMap();
+	private Map<IObservable, Boolean> staleMap = new IdentityMap<IObservable, Boolean>();
 
 	private int staleCount = 0;
 
 	private final IStalenessConsumer stalenessConsumer;
 
-	private class ChildListener implements IStaleListener, IChangeListener {
-		public void handleStale(StaleEvent event) {
-			processStalenessChange((IObservable) event.getSource(), true);
-		}
-
+	private class ChildChangeListener implements IChangeListener {
 		public void handleChange(ChangeEvent event) {
 			processStalenessChange((IObservable) event.getSource(), true);
 		}
 	}
 
-	private ChildListener childListener = new ChildListener();
+	private class ChildStaleListener implements IStaleListener {
+		public void handleStale(StaleEvent event) {
+			processStalenessChange((IObservable) event.getSource(), true);
+		}
+	}
+
+	private IChangeListener childChangeListener = new ChildChangeListener();
+	private IStaleListener childStaleListener = new ChildStaleListener();
 
 	/**
 	 * @param observables
-	 * @param stalenessConsumer 
+	 * @param stalenessConsumer
 	 */
 	public StalenessTracker(IObservable[] observables,
 			IStalenessConsumer stalenessConsumer) {
@@ -85,9 +88,9 @@ public class StalenessTracker {
 	 * @param child
 	 */
 	private boolean getOldChildStale(IObservable child) {
-		Object oldChildValue = staleMap.get(child);
-		boolean oldChildStale = oldChildValue == null ? false
-				: ((Boolean) oldChildValue).booleanValue();
+		Boolean oldChildValue = staleMap.get(child);
+		boolean oldChildStale = oldChildValue == null ? false : oldChildValue
+				.booleanValue();
 		return oldChildStale;
 	}
 
@@ -100,8 +103,8 @@ public class StalenessTracker {
 
 	private void doAddObservable(IObservable observable, boolean callback) {
 		processStalenessChange(observable, callback);
-		observable.addChangeListener(childListener);
-		observable.addStaleListener(childListener);
+		observable.addChangeListener(childChangeListener);
+		observable.addStaleListener(childStaleListener);
 	}
 
 	/**
@@ -114,8 +117,8 @@ public class StalenessTracker {
 			staleCount--;
 		}
 		staleMap.remove(observable);
-		observable.removeChangeListener(childListener);
-		observable.removeStaleListener(childListener);
+		observable.removeChangeListener(childChangeListener);
+		observable.removeStaleListener(childStaleListener);
 		boolean newStale = staleCount > 0;
 		if (newStale != oldStale) {
 			stalenessConsumer.setStale(newStale);

@@ -36,10 +36,14 @@ import org.eclipse.core.runtime.AssertionFailedException;
  * listeners may be invoked from any thread.
  * </p>
  * 
+ * @param <K>
+ *            type of the keys to the map
+ * @param <V>
+ *            type of the values in the map
  * @since 1.0
  */
-public abstract class AbstractObservableMap extends AbstractMap implements
-		IObservableMap {
+public abstract class AbstractObservableMap<K, V> extends AbstractMap<K, V>
+		implements IObservableMap<K, V> {
 
 	private final class PrivateChangeSupport extends ChangeSupport {
 		private PrivateChangeSupport(Realm realm) {
@@ -93,13 +97,15 @@ public abstract class AbstractObservableMap extends AbstractMap implements
 		changeSupport = new PrivateChangeSupport(realm);
 	}
 
-	public synchronized void addMapChangeListener(IMapChangeListener listener) {
+	public synchronized void addMapChangeListener(
+			IMapChangeListener<K, V> listener) {
 		if (!disposed) {
 			changeSupport.addListener(MapChangeEvent.TYPE, listener);
 		}
 	}
 
-	public synchronized void removeMapChangeListener(IMapChangeListener listener) {
+	public synchronized void removeMapChangeListener(
+			IMapChangeListener<K, V> listener) {
 		if (!disposed) {
 			changeSupport.removeListener(MapChangeEvent.TYPE, listener);
 		}
@@ -228,10 +234,10 @@ public abstract class AbstractObservableMap extends AbstractMap implements
 	 * 
 	 * @param diff
 	 */
-	protected void fireMapChange(MapDiff diff) {
+	protected void fireMapChange(MapDiff<K, V> diff) {
 		checkRealm();
 		fireChange();
-		changeSupport.fireEvent(new MapChangeEvent(this, diff));
+		changeSupport.fireEvent(new MapChangeEvent<K, V>(this, diff));
 	}
 
 	/**

@@ -30,17 +30,19 @@ import org.eclipse.core.databinding.observable.Realm;
  * listeners may be invoked from any thread.
  * </p>
  * 
+ * @param <E>
+ * 
  * @since 1.0
  */
-public abstract class AbstractObservableSet extends AbstractObservable implements
-		IObservableSet {
+public abstract class AbstractObservableSet<E> extends AbstractObservable
+		implements IObservableSet<E> {
 
 	private boolean stale = false;
 
 	protected AbstractObservableSet() {
 		this(Realm.getDefault());
 	}
-	
+
 	protected void firstListenerAdded() {
 		super.firstListenerAdded();
 	}
@@ -48,34 +50,36 @@ public abstract class AbstractObservableSet extends AbstractObservable implement
 	protected void lastListenerRemoved() {
 		super.lastListenerRemoved();
 	}
-	
+
 	protected AbstractObservableSet(Realm realm) {
 		super(realm);
 	}
-	
-	public synchronized void addSetChangeListener(ISetChangeListener listener) {
+
+	public synchronized void addSetChangeListener(
+			ISetChangeListener<? super E> listener) {
 		addListener(SetChangeEvent.TYPE, listener);
 	}
 
-	public synchronized void removeSetChangeListener(ISetChangeListener listener) {
+	public synchronized void removeSetChangeListener(
+			ISetChangeListener<? super E> listener) {
 		removeListener(SetChangeEvent.TYPE, listener);
 	}
 
-	protected abstract Set getWrappedSet();
-	
-	protected void fireSetChange(SetDiff diff) {
+	protected abstract Set<E> getWrappedSet();
+
+	protected void fireSetChange(SetDiff<E> diff) {
 		// fire general change event first
 		super.fireChange();
 
-		fireEvent(new SetChangeEvent(this, diff));
+		fireEvent(new SetChangeEvent<E>(this, diff));
 	}
-	
+
 	public boolean contains(Object o) {
 		getterCalled();
 		return getWrappedSet().contains(o);
 	}
 
-	public boolean containsAll(Collection c) {
+	public boolean containsAll(Collection<?> c) {
 		getterCalled();
 		return getWrappedSet().containsAll(c);
 	}
@@ -95,10 +99,10 @@ public abstract class AbstractObservableSet extends AbstractObservable implement
 		return getWrappedSet().isEmpty();
 	}
 
-	public Iterator iterator() {
+	public Iterator<E> iterator() {
 		getterCalled();
-		final Iterator wrappedIterator = getWrappedSet().iterator();
-		return new Iterator() {
+		final Iterator<E> wrappedIterator = getWrappedSet().iterator();
+		return new Iterator<E>() {
 
 			public void remove() {
 				throw new UnsupportedOperationException();
@@ -109,7 +113,7 @@ public abstract class AbstractObservableSet extends AbstractObservable implement
 				return wrappedIterator.hasNext();
 			}
 
-			public Object next() {
+			public E next() {
 				ObservableTracker.getterCalled(AbstractObservableSet.this);
 				return wrappedIterator.next();
 			}
@@ -126,7 +130,7 @@ public abstract class AbstractObservableSet extends AbstractObservable implement
 		return getWrappedSet().toArray();
 	}
 
-	public Object[] toArray(Object[] a) {
+	public <T> T[] toArray(T[] a) {
 		getterCalled();
 		return getWrappedSet().toArray(a);
 	}
@@ -140,11 +144,11 @@ public abstract class AbstractObservableSet extends AbstractObservable implement
 		ObservableTracker.getterCalled(this);
 	}
 
-	public boolean add(Object o) {
+	public boolean add(E o) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean addAll(Collection c) {
+	public boolean addAll(Collection<? extends E> c) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -152,11 +156,11 @@ public abstract class AbstractObservableSet extends AbstractObservable implement
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean removeAll(Collection c) {
+	public boolean removeAll(Collection<?> c) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean retainAll(Collection c) {
+	public boolean retainAll(Collection<?> c) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -187,8 +191,8 @@ public abstract class AbstractObservableSet extends AbstractObservable implement
 		}
 	}
 
-
 	protected void fireChange() {
-		throw new RuntimeException("fireChange should not be called, use fireSetChange() instead"); //$NON-NLS-1$
+		throw new RuntimeException(
+				"fireChange should not be called, use fireSetChange() instead"); //$NON-NLS-1$
 	}
 }

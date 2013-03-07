@@ -34,8 +34,8 @@ import org.eclipse.core.databinding.observable.list.ListDiffEntry;
 import org.eclipse.core.databinding.observable.set.IObservableSet;
 import org.eclipse.core.databinding.observable.set.ISetChangeListener;
 import org.eclipse.core.databinding.observable.set.SetChangeEvent;
+import org.eclipse.core.databinding.observable.value.ValueDiff;
 import org.eclipse.core.databinding.property.INativePropertyListener;
-import org.eclipse.core.databinding.property.IProperty;
 import org.eclipse.core.databinding.property.IPropertyObservable;
 import org.eclipse.core.databinding.property.ISimplePropertyListener;
 import org.eclipse.core.databinding.property.SimplePropertyEvent;
@@ -46,21 +46,29 @@ import org.eclipse.core.internal.databinding.identity.IdentitySet;
 import org.eclipse.core.internal.databinding.property.Util;
 
 /**
+ * @param <S>
+ *            type of the source object
+ * @param <M>
+ *            type of the elements in the master list
+ * @param <T>
+ *            type of the elements in the list, being the type of the value of
+ *            the detail property
  * @since 1.2
  */
-public class ListSimpleValueObservableList extends AbstractObservableList
-		implements IPropertyObservable {
-	private IObservableList masterList;
-	private SimpleValueProperty detailProperty;
+public class ListSimpleValueObservableList<S, M extends S, T> extends
+		AbstractObservableList<T> implements
+		IPropertyObservable<SimpleValueProperty<S, T>> {
+	private IObservableList<M> masterList;
+	private SimpleValueProperty<S, T> detailProperty;
 
-	private IObservableSet knownMasterElements;
-	private Map cachedValues;
-	private Set staleElements;
+	private IObservableSet<M> knownMasterElements;
+	private Map<M, T> cachedValues;
+	private Set<M> staleElements;
 
 	private boolean updating;
 
-	private IListChangeListener masterListener = new IListChangeListener() {
-		public void handleListChange(ListChangeEvent event) {
+	private IListChangeListener<M> masterListener = new IListChangeListener<M>() {
+		public void handleListChange(ListChangeEvent<M> event) {
 			if (!isDisposed()) {
 				updateKnownElements();
 				fireListChange(convertDiff(event.diff));
@@ -68,24 +76,23 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 		}
 
 		private void updateKnownElements() {
-			Set identityKnownElements = new IdentitySet(masterList);
+			Set<M> identityKnownElements = new IdentitySet<M>(masterList);
 			knownMasterElements.retainAll(identityKnownElements);
 			knownMasterElements.addAll(identityKnownElements);
 		}
 
-		private ListDiff convertDiff(ListDiff diff) {
+		private ListDiff<T> convertDiff(ListDiff<M> diff) {
 			// Convert diff to detail value
-			ListDiffEntry[] masterEntries = diff.getDifferences();
-			ListDiffEntry[] detailEntries = new ListDiffEntry[masterEntries.length];
-			for (int i = 0; i < masterEntries.length; i++) {
-				ListDiffEntry masterDifference = masterEntries[i];
+			List<ListDiffEntry<M>> masterEntries = diff.getDifferencesAsList();
+			List<ListDiffEntry<T>> detailEntries = new ArrayList<ListDiffEntry<T>>(
+					masterEntries.size());
+			for (ListDiffEntry<M> masterDifference : masterEntries) {
 				int index = masterDifference.getPosition();
 				boolean addition = masterDifference.isAddition();
-				Object masterElement = masterDifference.getElement();
-				Object elementDetailValue = detailProperty
-						.getValue(masterElement);
-				detailEntries[i] = Diffs.createListDiffEntry(index, addition,
-						elementDetailValue);
+				M masterElement = masterDifference.getElement();
+				T elementDetailValue = detailProperty.getValue(masterElement);
+				detailEntries.add(Diffs.createListDiffEntry(index, addition,
+						elementDetailValue));
 			}
 			return Diffs.createListDiff(detailEntries);
 		}
@@ -97,28 +104,31 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 		}
 	};
 
-	private INativePropertyListener detailListener;
+	private INativePropertyListener<S> detailListener;
 
 	/**
 	 * @param masterList
 	 * @param valueProperty
 	 */
-	public ListSimpleValueObservableList(IObservableList masterList,
-			SimpleValueProperty valueProperty) {
+	public ListSimpleValueObservableList(IObservableList<M> masterList,
+			SimpleValueProperty<S, T> valueProperty) {
 		super(masterList.getRealm());
 		this.masterList = masterList;
 		this.detailProperty = valueProperty;
 
-		ISimplePropertyListener listener = new ISimplePropertyListener() {
-			public void handleEvent(final SimplePropertyEvent event) {
+		ISimplePropertyListener<ValueDiff<T>> listener = new ISimplePropertyListener<ValueDiff<T>>() {
+			public void handleEvent(
+					final SimplePropertyEvent<ValueDiff<T>> event) {
 				if (!isDisposed() && !updating) {
 					getRealm().exec(new Runnable() {
 						public void run() {
+							@SuppressWarnings("unchecked")
+							M source = (M) event.getSource();
 							if (event.type == SimplePropertyEvent.CHANGE) {
-								notifyIfChanged(event.getSource());
+								notifyIfChanged(source);
 							} else if (event.type == SimplePropertyEvent.STALE) {
 								boolean wasStale = !staleElements.isEmpty();
-								staleElements.add(event.getSource());
+								staleElements.add(source);
 								if (!wasStale)
 									fireStale();
 							}
@@ -133,26 +143,26 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 	protected void firstListenerAdded() {
 		ObservableTracker.setIgnore(true);
 		try {
-			knownMasterElements = new IdentityObservableSet(getRealm(), null);
+			knownMasterElements = new IdentityObservableSet<M>(getRealm(), null);
 		} finally {
 			ObservableTracker.setIgnore(false);
 		}
 
-		cachedValues = new IdentityMap();
-		staleElements = new IdentitySet();
-		knownMasterElements.addSetChangeListener(new ISetChangeListener() {
-			public void handleSetChange(SetChangeEvent event) {
-				for (Iterator it = event.diff.getRemovals().iterator(); it
+		cachedValues = new IdentityMap<M, T>();
+		staleElements = new IdentitySet<M>();
+		knownMasterElements.addSetChangeListener(new ISetChangeListener<M>() {
+			public void handleSetChange(SetChangeEvent<M> event) {
+				for (Iterator<M> it = event.diff.getRemovals().iterator(); it
 						.hasNext();) {
-					Object key = it.next();
+					M key = it.next();
 					if (detailListener != null)
 						detailListener.removeFrom(key);
 					cachedValues.remove(key);
 					staleElements.remove(key);
 				}
-				for (Iterator it = event.diff.getAdditions().iterator(); it
+				for (Iterator<M> it = event.diff.getAdditions().iterator(); it
 						.hasNext();) {
-					Object key = it.next();
+					M key = it.next();
 					cachedValues.put(key, detailProperty.getValue(key));
 					if (detailListener != null)
 						detailListener.addTo(key);
@@ -201,9 +211,9 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 		return detailProperty.getValueType();
 	}
 
-	public Object get(int index) {
+	public T get(int index) {
 		getterCalled();
-		Object masterElement = masterList.get(index);
+		M masterElement = masterList.get(index);
 		return detailProperty.getValue(masterElement);
 	}
 
@@ -211,18 +221,18 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean addAll(Collection c) {
+	public boolean addAll(Collection<? extends T> c) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean addAll(int index, Collection c) {
+	public boolean addAll(int index, Collection<? extends T> c) {
 		throw new UnsupportedOperationException();
 	}
 
 	public boolean contains(Object o) {
 		getterCalled();
 
-		for (Iterator it = masterList.iterator(); it.hasNext();) {
+		for (Iterator<M> it = masterList.iterator(); it.hasNext();) {
 			if (Util.equals(detailProperty.getValue(it.next()), o))
 				return true;
 		}
@@ -240,19 +250,19 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 				&& !staleElements.isEmpty();
 	}
 
-	public Iterator iterator() {
+	public Iterator<T> iterator() {
 		getterCalled();
-		return new Iterator() {
-			Iterator it = masterList.iterator();
+		return new Iterator<T>() {
+			Iterator<M> it = masterList.iterator();
 
 			public boolean hasNext() {
 				getterCalled();
 				return it.hasNext();
 			}
 
-			public Object next() {
+			public T next() {
 				getterCalled();
-				Object masterElement = it.next();
+				M masterElement = it.next();
 				return detailProperty.getValue(masterElement);
 			}
 
@@ -262,7 +272,7 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 		};
 	}
 
-	public Object move(int oldIndex, int newIndex) {
+	public T move(int oldIndex, int newIndex) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -270,32 +280,35 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean removeAll(Collection c) {
+	public boolean removeAll(Collection<?> c) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean retainAll(Collection c) {
+	public boolean retainAll(Collection<?> c) {
 		throw new UnsupportedOperationException();
 	}
 
+	@SuppressWarnings("unchecked")
 	public Object[] toArray() {
 		getterCalled();
 		Object[] masterElements = masterList.toArray();
 		Object[] result = new Object[masterElements.length];
 		for (int i = 0; i < result.length; i++) {
-			result[i] = detailProperty.getValue(masterElements[i]);
+			// cast is always safe as we get the array from a list of Us
+			result[i] = detailProperty.getValue((M) masterElements[i]);
 		}
 		return result;
 	}
 
-	public Object[] toArray(Object[] a) {
+	@SuppressWarnings("unchecked")
+	public <V> V[] toArray(V[] a) {
 		getterCalled();
 		Object[] masterElements = masterList.toArray();
 		if (a.length < masterElements.length)
-			a = (Object[]) Array.newInstance(a.getClass().getComponentType(),
+			a = (V[]) Array.newInstance(a.getClass().getComponentType(),
 					masterElements.length);
 		for (int i = 0; i < masterElements.length; i++) {
-			a[i] = detailProperty.getValue(masterElements[i]);
+			a[i] = (V) detailProperty.getValue((M) masterElements[i]);
 		}
 		return a;
 	}
@@ -308,16 +321,16 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 		throw new UnsupportedOperationException();
 	}
 
-	public ListIterator listIterator() {
+	public ListIterator<T> listIterator() {
 		return listIterator(0);
 	}
 
-	public ListIterator listIterator(final int index) {
+	public ListIterator<T> listIterator(final int index) {
 		getterCalled();
-		return new ListIterator() {
-			ListIterator it = masterList.listIterator(index);
-			Object lastMasterElement;
-			Object lastElement;
+		return new ListIterator<T>() {
+			ListIterator<M> it = masterList.listIterator(index);
+			M lastMasterElement;
+			T lastElement;
 			boolean haveIterated = false;
 
 			public void add(Object arg0) {
@@ -334,7 +347,7 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 				return it.hasPrevious();
 			}
 
-			public Object next() {
+			public T next() {
 				getterCalled();
 				lastMasterElement = it.next();
 				lastElement = detailProperty.getValue(lastMasterElement);
@@ -347,7 +360,7 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 				return it.nextIndex();
 			}
 
-			public Object previous() {
+			public T previous() {
 				getterCalled();
 				lastMasterElement = it.previous();
 				lastElement = detailProperty.getValue(lastMasterElement);
@@ -364,7 +377,7 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 				throw new UnsupportedOperationException();
 			}
 
-			public void set(Object o) {
+			public void set(T o) {
 				checkRealm();
 				if (!haveIterated)
 					throw new IllegalStateException();
@@ -372,7 +385,8 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 				boolean wasUpdating = updating;
 				updating = true;
 				try {
-					detailProperty.setValue(lastElement, o);
+					// detailProperty.setValue(lastElement, o); // jpp: bug!
+					detailProperty.setValue(lastMasterElement, o);
 				} finally {
 					updating = wasUpdating;
 				}
@@ -384,10 +398,10 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 		};
 	}
 
-	private void notifyIfChanged(Object masterElement) {
+	private void notifyIfChanged(M masterElement) {
 		if (cachedValues != null) {
-			Object oldValue = cachedValues.get(masterElement);
-			Object newValue = detailProperty.getValue(masterElement);
+			T oldValue = cachedValues.get(masterElement);
+			T newValue = detailProperty.getValue(masterElement);
 			if (!Util.equals(oldValue, newValue)
 					|| staleElements.contains(masterElement)) {
 				cachedValues.put(masterElement, newValue);
@@ -398,9 +412,9 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 	}
 
 	private int[] indicesOf(Object masterElement) {
-		List indices = new ArrayList();
+		List<Integer> indices = new ArrayList<Integer>();
 
-		for (ListIterator it = ListSimpleValueObservableList.this.masterList
+		for (ListIterator<M> it = ListSimpleValueObservableList.this.masterList
 				.listIterator(); it.hasNext();) {
 			if (masterElement == it.next())
 				indices.add(new Integer(it.previousIndex()));
@@ -408,31 +422,29 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 
 		int[] result = new int[indices.size()];
 		for (int i = 0; i < result.length; i++) {
-			result[i] = ((Integer) indices.get(i)).intValue();
+			result[i] = indices.get(i).intValue();
 		}
 		return result;
 	}
 
-	private void fireListChange(int[] indices, Object oldValue, Object newValue) {
-		ListDiffEntry[] differences = new ListDiffEntry[indices.length * 2];
-		for (int i = 0; i < indices.length; i++) {
-			int index = indices[i];
-			differences[i * 2] = Diffs.createListDiffEntry(index, false,
-					oldValue);
-			differences[i * 2 + 1] = Diffs.createListDiffEntry(index, true,
-					newValue);
+	private void fireListChange(int[] indices, T oldValue, T newValue) {
+		List<ListDiffEntry<T>> differences = new ArrayList<ListDiffEntry<T>>(
+				indices.length * 2);
+		for (int index : indices) {
+			differences.add(Diffs.createListDiffEntry(index, false, oldValue));
+			differences.add(Diffs.createListDiffEntry(index, true, newValue));
 		}
 		fireListChange(Diffs.createListDiff(differences));
 	}
 
-	public Object remove(int index) {
+	public T remove(int index) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Object set(int index, Object o) {
+	public T set(int index, T o) {
 		checkRealm();
-		Object masterElement = masterList.get(index);
-		Object oldValue = detailProperty.getValue(masterElement);
+		M masterElement = masterList.get(index);
+		T oldValue = detailProperty.getValue(masterElement);
 
 		boolean wasUpdating = updating;
 		updating = true;
@@ -451,7 +463,7 @@ public class ListSimpleValueObservableList extends AbstractObservableList
 		return masterList;
 	}
 
-	public IProperty getProperty() {
+	public SimpleValueProperty<S, T> getProperty() {
 		return detailProperty;
 	}
 

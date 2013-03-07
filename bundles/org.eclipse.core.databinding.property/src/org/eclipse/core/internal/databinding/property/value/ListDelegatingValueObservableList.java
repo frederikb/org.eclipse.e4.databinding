@@ -29,47 +29,53 @@ import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.list.ListChangeEvent;
 import org.eclipse.core.databinding.observable.list.ListDiff;
 import org.eclipse.core.databinding.observable.list.ListDiffEntry;
-import org.eclipse.core.databinding.property.IProperty;
 import org.eclipse.core.databinding.property.IPropertyObservable;
 import org.eclipse.core.databinding.property.value.DelegatingValueProperty;
 
 /**
+ * @param <S>
+ *            type of the source object
+ * @param <T>
+ *            type of the value of the property
+ * @param <E>
+ *            type of the elements in the list
  * @since 1.2
  */
-public class ListDelegatingValueObservableList extends AbstractObservableList
-		implements IPropertyObservable {
-	private IObservableList masterList;
-	private DelegatingValueProperty detailProperty;
-	private DelegatingCache cache;
+public class ListDelegatingValueObservableList<S, T extends S, E> extends
+		AbstractObservableList<E> implements
+		IPropertyObservable<DelegatingValueProperty<S, E>> {
+	private IObservableList<T> masterList;
+	private DelegatingValueProperty<S, E> detailProperty;
+	private DelegatingCache<S, T, E> cache;
 
-	private IListChangeListener masterListener = new IListChangeListener() {
-		public void handleListChange(ListChangeEvent event) {
+	private IListChangeListener<T> masterListener = new IListChangeListener<T>() {
+		public void handleListChange(ListChangeEvent<T> event) {
 			if (isDisposed())
 				return;
 
 			cache.addAll(masterList);
 
 			// Need both obsolete and new elements to convert diff
-			ListDiff diff = convertDiff(event.diff);
+			ListDiff<E> diff = convertDiff(event.diff);
 
 			cache.retainAll(masterList);
 
 			fireListChange(diff);
 		}
 
-		private ListDiff convertDiff(ListDiff diff) {
+		private ListDiff<E> convertDiff(ListDiff<T> diff) {
 			// Convert diff to detail value
-			ListDiffEntry[] masterEntries = diff.getDifferences();
-			ListDiffEntry[] detailEntries = new ListDiffEntry[masterEntries.length];
-			for (int i = 0; i < masterEntries.length; i++) {
-				ListDiffEntry masterDifference = masterEntries[i];
+			List<ListDiffEntry<T>> masterEntries = diff.getDifferencesAsList();
+			List<ListDiffEntry<E>> detailEntries = new ArrayList<ListDiffEntry<E>>(
+					masterEntries.size());
+			for (ListDiffEntry<T> masterDifference : masterEntries) {
 				int index = masterDifference.getPosition();
 				boolean addition = masterDifference.isAddition();
-				Object masterElement = masterDifference.getElement();
-				Object detailValue = cache.get(masterElement);
+				T masterElement = masterDifference.getElement();
+				E detailValue = cache.get(masterElement);
 
-				detailEntries[i] = Diffs.createListDiffEntry(index, addition,
-						detailValue);
+				detailEntries.add(Diffs.createListDiffEntry(index, addition,
+						detailValue));
 			}
 			return Diffs.createListDiff(detailEntries);
 		}
@@ -85,14 +91,13 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 	 * @param masterList
 	 * @param valueProperty
 	 */
-	public ListDelegatingValueObservableList(IObservableList masterList,
-			DelegatingValueProperty valueProperty) {
+	public ListDelegatingValueObservableList(IObservableList<T> masterList,
+			DelegatingValueProperty<S, E> valueProperty) {
 		super(masterList.getRealm());
 		this.masterList = masterList;
 		this.detailProperty = valueProperty;
-		this.cache = new DelegatingCache(getRealm(), valueProperty) {
-			void handleValueChange(Object masterElement, Object oldValue,
-					Object newValue) {
+		this.cache = new DelegatingCache<S, T, E>(getRealm(), valueProperty) {
+			void handleValueChange(T masterElement, E oldValue, E newValue) {
 				fireListChange(indicesOf(masterElement), oldValue, newValue);
 			}
 		};
@@ -111,9 +116,9 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 		ObservableTracker.getterCalled(this);
 	}
 
-	public Object get(int index) {
+	public E get(int index) {
 		getterCalled();
-		Object masterElement = masterList.get(index);
+		T masterElement = masterList.get(index);
 		return cache.get(masterElement);
 	}
 
@@ -121,11 +126,11 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean addAll(Collection c) {
+	public boolean addAll(Collection<? extends E> c) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean addAll(int index, Collection c) {
+	public boolean addAll(int index, Collection<? extends E> c) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -144,19 +149,19 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 		return masterList.isStale();
 	}
 
-	public Iterator iterator() {
+	public Iterator<E> iterator() {
 		getterCalled();
-		return new Iterator() {
-			Iterator it = masterList.iterator();
+		return new Iterator<E>() {
+			Iterator<T> it = masterList.iterator();
 
 			public boolean hasNext() {
 				getterCalled();
 				return it.hasNext();
 			}
 
-			public Object next() {
+			public E next() {
 				getterCalled();
-				Object masterElement = it.next();
+				T masterElement = it.next();
 				return cache.get(masterElement);
 			}
 
@@ -166,7 +171,7 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 		};
 	}
 
-	public Object move(int oldIndex, int newIndex) {
+	public E move(int oldIndex, int newIndex) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -174,11 +179,11 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean removeAll(Collection c) {
+	public boolean removeAll(Collection<?> c) {
 		throw new UnsupportedOperationException();
 	}
 
-	public boolean retainAll(Collection c) {
+	public boolean retainAll(Collection<?> c) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -192,14 +197,15 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 		return result;
 	}
 
-	public Object[] toArray(Object[] a) {
+	@SuppressWarnings("unchecked")
+	public <U> U[] toArray(U[] a) {
 		getterCalled();
 		Object[] masterElements = masterList.toArray();
 		if (a.length < masterElements.length)
-			a = (Object[]) Array.newInstance(a.getClass().getComponentType(),
+			a = (U[]) Array.newInstance(a.getClass().getComponentType(),
 					masterElements.length);
 		for (int i = 0; i < masterElements.length; i++) {
-			a[i] = cache.get(masterElements[i]);
+			a[i] = (U) cache.get(masterElements[i]);
 		}
 		return a;
 	}
@@ -212,16 +218,16 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 		throw new UnsupportedOperationException();
 	}
 
-	public ListIterator listIterator() {
+	public ListIterator<E> listIterator() {
 		return listIterator(0);
 	}
 
-	public ListIterator listIterator(final int index) {
+	public ListIterator<E> listIterator(final int index) {
 		getterCalled();
-		return new ListIterator() {
-			ListIterator it = masterList.listIterator(index);
-			Object lastMasterElement;
-			Object lastElement;
+		return new ListIterator<E>() {
+			ListIterator<T> it = masterList.listIterator(index);
+			T lastMasterElement;
+			E lastElement;
 			boolean haveIterated = false;
 
 			public void add(Object arg0) {
@@ -238,7 +244,7 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 				return it.hasPrevious();
 			}
 
-			public Object next() {
+			public E next() {
 				getterCalled();
 				lastMasterElement = it.next();
 				lastElement = cache.get(lastMasterElement);
@@ -251,7 +257,7 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 				return it.nextIndex();
 			}
 
-			public Object previous() {
+			public E previous() {
 				getterCalled();
 				lastMasterElement = it.previous();
 				lastElement = cache.get(lastMasterElement);
@@ -268,7 +274,7 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 				throw new UnsupportedOperationException();
 			}
 
-			public void set(Object o) {
+			public void set(E o) {
 				checkRealm();
 				if (!haveIterated)
 					throw new IllegalStateException();
@@ -281,39 +287,38 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 	}
 
 	private int[] indicesOf(Object masterElement) {
-		List indices = new ArrayList();
+		List<Integer> indices = new ArrayList<Integer>();
 
-		for (ListIterator it = masterList.listIterator(); it.hasNext();) {
+		for (ListIterator<T> it = masterList.listIterator(); it.hasNext();) {
 			if (masterElement == it.next())
 				indices.add(new Integer(it.previousIndex()));
 		}
 
 		int[] result = new int[indices.size()];
 		for (int i = 0; i < result.length; i++) {
-			result[i] = ((Integer) indices.get(i)).intValue();
+			result[i] = indices.get(i).intValue();
 		}
 		return result;
 	}
 
-	private void fireListChange(int[] indices, Object oldValue, Object newValue) {
-		ListDiffEntry[] differences = new ListDiffEntry[indices.length * 2];
+	private void fireListChange(int[] indices, E oldValue, E newValue) {
+		List<ListDiffEntry<E>> differences = new ArrayList<ListDiffEntry<E>>(
+				indices.length * 2);
 		for (int i = 0; i < indices.length; i++) {
 			int index = indices[i];
-			differences[i * 2] = Diffs.createListDiffEntry(index, false,
-					oldValue);
-			differences[i * 2 + 1] = Diffs.createListDiffEntry(index, true,
-					newValue);
+			differences.add(Diffs.createListDiffEntry(index, false, oldValue));
+			differences.add(Diffs.createListDiffEntry(index, true, newValue));
 		}
 		fireListChange(Diffs.createListDiff(differences));
 	}
 
-	public Object remove(int index) {
+	public E remove(int index) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Object set(int index, Object o) {
+	public E set(int index, E o) {
 		checkRealm();
-		Object masterElement = masterList.get(index);
+		T masterElement = masterList.get(index);
 		return cache.put(masterElement, o);
 	}
 
@@ -321,7 +326,7 @@ public class ListDelegatingValueObservableList extends AbstractObservableList
 		return masterList;
 	}
 
-	public IProperty getProperty() {
+	public DelegatingValueProperty<S, E> getProperty() {
 		return detailProperty;
 	}
 

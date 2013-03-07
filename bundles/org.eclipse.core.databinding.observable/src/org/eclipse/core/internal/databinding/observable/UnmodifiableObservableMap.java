@@ -24,15 +24,19 @@ import org.eclipse.core.databinding.observable.map.IObservableMap;
  * in the originating wrapped map are propagated and thrown from this instance
  * when appropriate. All mutators throw an UnsupportedOperationException.
  * 
+ * @param <K>
+ * @param <V>
+ * 
  * @since 1.0
  */
-public class UnmodifiableObservableMap extends DecoratingObservableMap {
-	Map unmodifiableMap;
+public class UnmodifiableObservableMap<K, V> extends
+		DecoratingObservableMap<K, V> {
+	Map<K, V> unmodifiableMap;
 
 	/**
 	 * @param decorated
 	 */
-	public UnmodifiableObservableMap(IObservableMap decorated) {
+	public UnmodifiableObservableMap(IObservableMap<K, V> decorated) {
 		super(decorated, false);
 		this.unmodifiableMap = Collections.unmodifiableMap(decorated);
 	}
@@ -41,29 +45,29 @@ public class UnmodifiableObservableMap extends DecoratingObservableMap {
 		throw new UnsupportedOperationException();
 	}
 
-	public Set entrySet() {
+	public Set<Entry<K, V>> entrySet() {
 		getterCalled();
 		return unmodifiableMap.entrySet();
 	}
 
-	public Set keySet() {
+	public Set<K> keySet() {
 		getterCalled();
 		return unmodifiableMap.keySet();
 	}
 
-	public Object put(Object key, Object value) {
+	public V put(K key, V value) {
 		throw new UnsupportedOperationException();
 	}
 
-	public void putAll(Map m) {
+	public void putAll(Map<? extends K, ? extends V> m) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Object remove(Object key) {
+	public V remove(Object key) {
 		throw new UnsupportedOperationException();
 	}
 
-	public Collection values() {
+	public Collection<V> values() {
 		getterCalled();
 		return unmodifiableMap.values();
 	}

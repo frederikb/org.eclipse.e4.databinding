@@ -28,32 +28,38 @@ import org.eclipse.core.databinding.observable.set.IObservableSet;
 import org.eclipse.core.databinding.observable.set.ISetChangeListener;
 import org.eclipse.core.databinding.observable.set.SetChangeEvent;
 import org.eclipse.core.databinding.observable.set.SetDiff;
-import org.eclipse.core.databinding.property.IProperty;
 import org.eclipse.core.databinding.property.IPropertyObservable;
 import org.eclipse.core.databinding.property.value.DelegatingValueProperty;
 import org.eclipse.core.internal.databinding.property.Util;
 
 /**
+ * @param <S>
+ *            type of the source object
+ * @param <K>
+ *            type of the keys to the map
+ * @param <V>
+ *            type of the values in the map
  * @since 1.2
  */
-public class SetDelegatingValueObservableMap extends AbstractObservableMap
-		implements IPropertyObservable {
-	private IObservableSet masterSet;
-	private DelegatingValueProperty detailProperty;
-	private DelegatingCache cache;
+public class SetDelegatingValueObservableMap<S, K extends S, V> extends
+		AbstractObservableMap<K, V> implements
+		IPropertyObservable<DelegatingValueProperty<S, V>> {
+	private IObservableSet<K> masterSet;
+	private DelegatingValueProperty<S, V> detailProperty;
+	private DelegatingCache<S, K, V> cache;
 
-	private Set entrySet;
+	private Set<Map.Entry<K, V>> entrySet;
 
-	class EntrySet extends AbstractSet {
-		public Iterator iterator() {
-			return new Iterator() {
-				final Iterator it = masterSet.iterator();
+	class EntrySet extends AbstractSet<Map.Entry<K, V>> {
+		public Iterator<Map.Entry<K, V>> iterator() {
+			return new Iterator<Map.Entry<K, V>>() {
+				final Iterator<K> it = masterSet.iterator();
 
 				public boolean hasNext() {
 					return it.hasNext();
 				}
 
-				public Object next() {
+				public Map.Entry<K, V> next() {
 					return new MapEntry(it.next());
 				}
 
@@ -68,19 +74,19 @@ public class SetDelegatingValueObservableMap extends AbstractObservableMap
 		}
 	}
 
-	class MapEntry implements Map.Entry {
-		private final Object key;
+	class MapEntry implements Map.Entry<K, V> {
+		private final K key;
 
-		MapEntry(Object key) {
+		MapEntry(K key) {
 			this.key = key;
 		}
 
-		public Object getKey() {
+		public K getKey() {
 			getterCalled();
 			return key;
 		}
 
-		public Object getValue() {
+		public V getValue() {
 			getterCalled();
 
 			if (!masterSet.contains(key))
@@ -89,7 +95,7 @@ public class SetDelegatingValueObservableMap extends AbstractObservableMap
 			return cache.get(key);
 		}
 
-		public Object setValue(Object value) {
+		public V setValue(V value) {
 			checkRealm();
 
 			if (!masterSet.contains(key))
@@ -106,7 +112,7 @@ public class SetDelegatingValueObservableMap extends AbstractObservableMap
 				return false;
 			if (!(o instanceof Map.Entry))
 				return false;
-			Map.Entry that = (Map.Entry) o;
+			Map.Entry<?, ?> that = (Map.Entry<?, ?>) o;
 			return Util.equals(this.getKey(), that.getKey())
 					&& Util.equals(this.getValue(), that.getValue());
 		}
@@ -119,36 +125,36 @@ public class SetDelegatingValueObservableMap extends AbstractObservableMap
 		}
 	}
 
-	private ISetChangeListener masterListener = new ISetChangeListener() {
-		public void handleSetChange(SetChangeEvent event) {
+	private ISetChangeListener<K> masterListener = new ISetChangeListener<K>() {
+		public void handleSetChange(SetChangeEvent<K> event) {
 			if (isDisposed())
 				return;
 
 			cache.addAll(masterSet);
 
 			// Need both obsolete and new elements to convert diff
-			MapDiff diff = convertDiff(event.diff);
+			MapDiff<K, V> diff = convertDiff(event.diff);
 
 			cache.retainAll(masterSet);
 
 			fireMapChange(diff);
 		}
 
-		private MapDiff convertDiff(SetDiff diff) {
+		private MapDiff<K, V> convertDiff(SetDiff<K> diff) {
 			// Convert diff to detail value
-			Map oldValues = new HashMap();
-			Map newValues = new HashMap();
+			Map<K, V> oldValues = new HashMap<K, V>();
+			Map<K, V> newValues = new HashMap<K, V>();
 
-			for (Iterator it = diff.getRemovals().iterator(); it.hasNext();) {
-				Object masterElement = it.next();
+			for (Iterator<K> it = diff.getRemovals().iterator(); it.hasNext();) {
+				K masterElement = it.next();
 				oldValues.put(masterElement, cache.get(masterElement));
 			}
-			for (Iterator it = diff.getAdditions().iterator(); it.hasNext();) {
-				Object masterElement = it.next();
+			for (Iterator<K> it = diff.getAdditions().iterator(); it.hasNext();) {
+				K masterElement = it.next();
 				newValues.put(masterElement, cache.get(masterElement));
 			}
 			return Diffs.createMapDiff(diff.getAdditions(), diff.getRemovals(),
-					Collections.EMPTY_SET, oldValues, newValues);
+					Collections.<K> emptySet(), oldValues, newValues);
 		}
 	};
 
@@ -162,14 +168,13 @@ public class SetDelegatingValueObservableMap extends AbstractObservableMap
 	 * @param keySet
 	 * @param valueProperty
 	 */
-	public SetDelegatingValueObservableMap(IObservableSet keySet,
-			DelegatingValueProperty valueProperty) {
+	public SetDelegatingValueObservableMap(IObservableSet<K> keySet,
+			DelegatingValueProperty<S, V> valueProperty) {
 		super(keySet.getRealm());
 		this.masterSet = keySet;
 		this.detailProperty = valueProperty;
-		this.cache = new DelegatingCache(getRealm(), valueProperty) {
-			void handleValueChange(Object masterElement, Object oldValue,
-					Object newValue) {
+		this.cache = new DelegatingCache<S, K, V>(getRealm(), valueProperty) {
+			void handleValueChange(K masterElement, V oldValue, V newValue) {
 				fireMapChange(Diffs.createMapDiffSingleChange(masterElement,
 						oldValue, newValue));
 			}
@@ -180,7 +185,7 @@ public class SetDelegatingValueObservableMap extends AbstractObservableMap
 		masterSet.addStaleListener(staleListener);
 	}
 
-	public Set entrySet() {
+	public Set<Map.Entry<K, V>> entrySet() {
 		getterCalled();
 		if (entrySet == null)
 			entrySet = new EntrySet();
@@ -191,12 +196,12 @@ public class SetDelegatingValueObservableMap extends AbstractObservableMap
 		ObservableTracker.getterCalled(this);
 	}
 
-	public Object get(Object key) {
+	public V get(Object key) {
 		getterCalled();
 		return cache.get(key);
 	}
 
-	public Object put(Object key, Object value) {
+	public V put(K key, V value) {
 		checkRealm();
 		return cache.put(key, value);
 	}
@@ -209,7 +214,7 @@ public class SetDelegatingValueObservableMap extends AbstractObservableMap
 		return masterSet;
 	}
 
-	public IProperty getProperty() {
+	public DelegatingValueProperty<S, V> getProperty() {
 		return detailProperty;
 	}
 
