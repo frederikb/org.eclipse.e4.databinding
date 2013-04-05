@@ -18,36 +18,25 @@ package org.eclipse.core.internal.databinding;
  * and hashCode() when putting them in sets or hashmaps to ensure identity
  * comparison.
  * 
+ * @param <T>
  * @since 1.0
  * 
  */
-public class IdentityWrapper {
+public class IdentityWrapper<T> {
 
-	private static final IdentityWrapper NULL_WRAPPER = new IdentityWrapper(
-			null);
-
-	/**
-	 * @param obj
-	 *            the object to wrap
-	 * @return an IdentityWrapper wrapping the specified object
-	 */
-	public static IdentityWrapper wrap(Object obj) {
-		return obj == null ? NULL_WRAPPER : new IdentityWrapper(obj);
-	}
-
-	final Object o;
+	final T o;
 
 	/**
 	 * @param o
 	 */
-	private IdentityWrapper(Object o) {
+	IdentityWrapper(T o) {
 		this.o = o;
 	}
 
 	/**
 	 * @return the unwrapped object
 	 */
-	public Object unwrap() {
+	public T unwrap() {
 		return o;
 	}
 
@@ -55,7 +44,7 @@ public class IdentityWrapper {
 		if (obj == null || obj.getClass() != IdentityWrapper.class) {
 			return false;
 		}
-		return o == ((IdentityWrapper) obj).o;
+		return o == ((IdentityWrapper<?>) obj).o;
 	}
 
 	public int hashCode() {

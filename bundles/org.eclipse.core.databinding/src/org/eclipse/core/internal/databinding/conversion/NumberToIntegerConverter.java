@@ -20,10 +20,11 @@ import com.ibm.icu.text.NumberFormat;
  * <p>
  * Class is thread safe.
  * </p>
+ * 
  * @since 1.0
  */
 public class NumberToIntegerConverter extends NumberToNumberConverter implements
-		IConverter {
+		IConverter<Object, Object> {
 
 	/**
 	 * @param numberFormat
@@ -31,18 +32,23 @@ public class NumberToIntegerConverter extends NumberToNumberConverter implements
 	 * @param primitive
 	 */
 	public NumberToIntegerConverter(NumberFormat numberFormat,
-			Class fromType, boolean primitive) {
-		super(numberFormat, fromType, (primitive) ? Integer.TYPE : Integer.class);
+			Class<?> fromType, boolean primitive) {
+		super(numberFormat, fromType, (primitive) ? Integer.TYPE
+				: Integer.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter#doConvert(java.lang.Number)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter
+	 * #doConvert(java.lang.Number)
 	 */
 	protected Number doConvert(Number number) {
 		if (StringToNumberParser.inIntegerRange(number)) {
 			return new Integer(number.intValue());
 		}
-		
+
 		return null;
 	}
 }

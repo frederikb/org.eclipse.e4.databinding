@@ -28,19 +28,23 @@ public class NumberToDoubleConverter extends NumberToNumberConverter {
 	 * @param fromType
 	 * @param primitive
 	 */
-	public NumberToDoubleConverter(NumberFormat numberFormat, Class fromType,
-			boolean primitive) {
+	public NumberToDoubleConverter(NumberFormat numberFormat,
+			Class<?> fromType, boolean primitive) {
 		super(numberFormat, fromType, (primitive) ? Double.TYPE : Double.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter#doConvert(java.lang.Number)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter
+	 * #doConvert(java.lang.Number)
 	 */
 	protected Number doConvert(Number number) {
 		if (StringToNumberParser.inDoubleRange(number)) {
 			return new Double(number.doubleValue());
 		}
-		
+
 		return null;
 	}
 }

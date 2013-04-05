@@ -20,24 +20,25 @@ import com.ibm.icu.text.NumberFormat;
  * 
  * @since 1.0
  */
-public abstract class NumberFormatConverter extends Converter {
+public abstract class NumberFormatConverter extends Converter<Object, Object> {
 	private final NumberFormat numberFormat;
-	
+
 	/**
 	 * @param fromType
 	 * @param toType
-	 * @param numberFormat 
+	 * @param numberFormat
 	 */
-	public NumberFormatConverter(Object fromType, Object toType, NumberFormat numberFormat) {
+	public NumberFormatConverter(Object fromType, Object toType,
+			NumberFormat numberFormat) {
 		super(fromType, toType);
-		
+
 		this.numberFormat = numberFormat;
 	}
 
 	/**
 	 * @return number format
 	 */
-	/*package */ NumberFormat getNumberFormat() {
+	/* package */NumberFormat getNumberFormat() {
 		return numberFormat;
 	}
 }

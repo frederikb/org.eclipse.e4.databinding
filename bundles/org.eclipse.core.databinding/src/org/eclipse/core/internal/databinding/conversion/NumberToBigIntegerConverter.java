@@ -29,22 +29,27 @@ public class NumberToBigIntegerConverter extends NumberToNumberConverter {
 	 * @param numberFormat
 	 * @param fromType
 	 */
-	public NumberToBigIntegerConverter(NumberFormat numberFormat, Class fromType) {
+	public NumberToBigIntegerConverter(NumberFormat numberFormat,
+			Class<?> fromType) {
 		super(numberFormat, fromType, BigInteger.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter#doConvert(java.lang.Number)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter
+	 * #doConvert(java.lang.Number)
 	 */
-	protected Number doConvert(Number number) {	
+	protected Number doConvert(Number number) {
 		return toBigDecimal(number).toBigInteger();
 	}
-	
+
 	private static BigDecimal toBigDecimal(Number number) {
 		if (number instanceof BigDecimal) {
 			return (BigDecimal) number;
 		}
-		
+
 		return new BigDecimal(number.doubleValue());
 	}
 }

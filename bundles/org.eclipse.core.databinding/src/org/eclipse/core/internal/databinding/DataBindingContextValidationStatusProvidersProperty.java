@@ -25,25 +25,28 @@ import org.eclipse.core.databinding.property.list.ListProperty;
  * 
  */
 public final class DataBindingContextValidationStatusProvidersProperty extends
-		ListProperty {
+		ListProperty<DataBindingContext, ValidationStatusProvider> {
 	public Object getElementType() {
 		return ValidationStatusProvider.class;
 	}
 
-	protected List doGetList(Object source) {
-		return ((DataBindingContext) source).getValidationStatusProviders();
+	protected List<ValidationStatusProvider> doGetList(DataBindingContext source) {
+		return source.getValidationStatusProviders();
 	}
 
-	protected void doSetList(Object source, List list) {
+	protected void doSetList(DataBindingContext source,
+			List<ValidationStatusProvider> list) {
 		throw new UnsupportedOperationException(toString() + " is unmodifiable"); //$NON-NLS-1$
 	}
 
-	protected void doUpdateList(Object source, ListDiff diff) {
+	protected void doUpdateList(DataBindingContext source,
+			ListDiff<ValidationStatusProvider> diff) {
 		throw new UnsupportedOperationException(toString() + " is unmodifiable"); //$NON-NLS-1$
 	}
 
-	public IObservableList observe(Realm realm, Object source) {
-		return ((DataBindingContext) source).getValidationStatusProviders();
+	public IObservableList<ValidationStatusProvider> observe(Realm realm,
+			DataBindingContext source) {
+		return source.getValidationStatusProviders();
 	}
 
 	public String toString() {

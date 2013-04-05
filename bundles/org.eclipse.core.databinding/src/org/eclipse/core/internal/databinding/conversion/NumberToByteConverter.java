@@ -23,23 +23,27 @@ import com.ibm.icu.text.NumberFormat;
  */
 public class NumberToByteConverter extends NumberToNumberConverter {
 	/**
-	 * @param numberFormat 
+	 * @param numberFormat
 	 * @param fromType
 	 * @param primitive
 	 */
-	public NumberToByteConverter(NumberFormat numberFormat, Class fromType,
+	public NumberToByteConverter(NumberFormat numberFormat, Class<?> fromType,
 			boolean primitive) {
 		super(numberFormat, fromType, (primitive) ? Byte.TYPE : Byte.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter#doConvert(java.lang.Number)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter
+	 * #doConvert(java.lang.Number)
 	 */
 	protected Number doConvert(Number number) {
 		if (StringToNumberParser.inByteRange(number)) {
 			return new Byte(number.byteValue());
 		}
-		
+
 		return null;
 	}
 }

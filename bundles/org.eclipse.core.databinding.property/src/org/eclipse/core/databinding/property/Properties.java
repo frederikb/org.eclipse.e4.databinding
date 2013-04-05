@@ -207,9 +207,10 @@ public class Properties {
 	 *            the value type of the property
 	 * @return a value property which observes the value of an
 	 *         {@link IObservableValue}.
+	 * @since 1.5
 	 */
 	public static <T> IValueProperty<IObservableValue<T>, T> observableValue(
-			Object valueType) {
+			Class<T> valueType) {
 		return new ObservableValueProperty<T>(valueType);
 	}
 }

@@ -17,7 +17,7 @@ import org.eclipse.core.databinding.conversion.IConverter;
 /**
  * StringToCharacterConverter.
  */
-public class StringToCharacterConverter implements IConverter {
+public class StringToCharacterConverter implements IConverter<Object, Object> {
 
 	private final boolean primitiveTarget;
 
@@ -32,7 +32,8 @@ public class StringToCharacterConverter implements IConverter {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.eclipse.jface.binding.converter.IConverter#convert(java.lang.Object)
+	 * @see
+	 * org.eclipse.jface.binding.converter.IConverter#convert(java.lang.Object)
 	 */
 	public Object convert(Object source) {
 		if (source != null && !(source instanceof String))

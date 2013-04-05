@@ -18,6 +18,7 @@ import com.ibm.icu.text.NumberFormat;
  * <p>
  * Class is thread safe.
  * </p>
+ * 
  * @since 1.0
  */
 public class NumberToFloatConverter extends NumberToNumberConverter {
@@ -26,19 +27,23 @@ public class NumberToFloatConverter extends NumberToNumberConverter {
 	 * @param fromType
 	 * @param primitive
 	 */
-	public NumberToFloatConverter(NumberFormat numberFormat, Class fromType,
+	public NumberToFloatConverter(NumberFormat numberFormat, Class<?> fromType,
 			boolean primitive) {
 		super(numberFormat, fromType, (primitive) ? Float.TYPE : Float.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter#doConvert(java.lang.Number)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter
+	 * #doConvert(java.lang.Number)
 	 */
 	protected Number doConvert(Number number) {
 		if (StringToNumberParser.inFloatRange(number)) {
 			return new Float(number.floatValue());
 		}
-		
+
 		return null;
 	}
 }

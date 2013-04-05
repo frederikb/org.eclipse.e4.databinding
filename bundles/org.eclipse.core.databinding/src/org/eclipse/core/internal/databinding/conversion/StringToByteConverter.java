@@ -19,16 +19,16 @@ import com.ibm.icu.text.NumberFormat;
 /**
  * @since 1.0
  */
-public class StringToByteConverter extends NumberFormatConverter {	
+public class StringToByteConverter extends NumberFormatConverter {
 	private String outOfRangeMessage;
 	private NumberFormat numberFormat;
 	private boolean primitive;
-	
+
 	/**
 	 * @param numberFormat
 	 * @param toType
 	 */
-	private StringToByteConverter(NumberFormat numberFormat, Class toType) {
+	private StringToByteConverter(NumberFormat numberFormat, Class<?> toType) {
 		super(String.class, toType, numberFormat);
 		primitive = toType.isPrimitive();
 		this.numberFormat = numberFormat;
@@ -41,7 +41,8 @@ public class StringToByteConverter extends NumberFormatConverter {
 	 */
 	public static StringToByteConverter toByte(NumberFormat numberFormat,
 			boolean primitive) {
-		return new StringToByteConverter(numberFormat, (primitive) ? Byte.TYPE : Byte.class);
+		return new StringToByteConverter(numberFormat, (primitive) ? Byte.TYPE
+				: Byte.class);
 	}
 
 	/**
@@ -52,8 +53,12 @@ public class StringToByteConverter extends NumberFormatConverter {
 		return toByte(NumberFormat.getIntegerInstance(), primitive);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.databinding.conversion.IConverter#convert(java.lang.Object)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.core.databinding.conversion.IConverter#convert(java.lang.
+	 * Object)
 	 */
 	public Object convert(Object fromObject) {
 		ParseResult result = StringToNumberParser.parse(fromObject,
@@ -63,9 +68,9 @@ public class StringToByteConverter extends NumberFormatConverter {
 			// this shouldn't happen in the pipeline as validation should catch
 			// it but anyone can call convert so we should return a properly
 			// formatted message in an exception
-			throw new IllegalArgumentException(StringToNumberParser
-					.createParseErrorMessage((String) fromObject, result
-							.getPosition()));
+			throw new IllegalArgumentException(
+					StringToNumberParser.createParseErrorMessage(
+							(String) fromObject, result.getPosition()));
 		} else if (result.getNumber() == null) {
 			// if an error didn't occur and the number is null then it's a boxed
 			// type and null should be returned
@@ -75,13 +80,14 @@ public class StringToByteConverter extends NumberFormatConverter {
 		if (StringToNumberParser.inByteRange(result.getNumber())) {
 			return new Byte(result.getNumber().byteValue());
 		}
-		
+
 		synchronized (this) {
 			if (outOfRangeMessage == null) {
 				outOfRangeMessage = StringToNumberParser
-				.createOutOfRangeMessage(new Byte(Byte.MIN_VALUE), new Byte(Byte.MAX_VALUE), numberFormat);
+						.createOutOfRangeMessage(new Byte(Byte.MIN_VALUE),
+								new Byte(Byte.MAX_VALUE), numberFormat);
 			}
-						
+
 			throw new IllegalArgumentException(outOfRangeMessage);
 		}
 	}

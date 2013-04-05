@@ -22,7 +22,7 @@ import org.eclipse.core.runtime.Status;
 /**
  * Validates a String to Character conversion.
  */
-public class StringToCharacterValidator implements IValidator {
+public class StringToCharacterValidator implements IValidator<Object> {
 
 	private final StringToCharacterConverter converter;
 
@@ -35,8 +35,10 @@ public class StringToCharacterValidator implements IValidator {
 
 	/*
 	 * (non-Javadoc)
-	 *
-	 * @see org.eclipse.core.databinding.validation.IValidator#validate(java.lang.Object)
+	 * 
+	 * @see
+	 * org.eclipse.core.databinding.validation.IValidator#validate(java.lang
+	 * .Object)
 	 */
 	public IStatus validate(Object value) {
 		try {

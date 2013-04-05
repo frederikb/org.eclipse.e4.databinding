@@ -29,18 +29,23 @@ public class NumberToBigDecimalConverter extends NumberToNumberConverter {
 	 * @param numberFormat
 	 * @param fromType
 	 */
-	public NumberToBigDecimalConverter(NumberFormat numberFormat, Class fromType) {		
+	public NumberToBigDecimalConverter(NumberFormat numberFormat,
+			Class<?> fromType) {
 		super(numberFormat, fromType, BigDecimal.class);
 	}
 
-	/* (non-Javadoc)
-	 * @see org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter#doConvert(java.lang.Number)
+	/*
+	 * (non-Javadoc)
+	 * 
+	 * @see
+	 * org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter
+	 * #doConvert(java.lang.Number)
 	 */
 	protected Number doConvert(Number number) {
 		if (number instanceof BigInteger) {
 			return new BigDecimal((BigInteger) number);
 		}
-		
+
 		return new BigDecimal(number.doubleValue());
 	}
 }

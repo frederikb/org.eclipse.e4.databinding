@@ -13,39 +13,46 @@ package org.eclipse.core.internal.databinding;
 
 import org.eclipse.core.databinding.ValidationStatusProvider;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.core.databinding.observable.value.ValueDiff;
 import org.eclipse.core.databinding.property.INativePropertyListener;
 import org.eclipse.core.databinding.property.ISimplePropertyListener;
 import org.eclipse.core.databinding.property.value.SimpleValueProperty;
+import org.eclipse.core.runtime.IStatus;
 
 /**
  * @since 3.3
  * 
  */
-public final class ValidationStatusProviderValidationStatusProperty extends
-		SimpleValueProperty {
+public final class ValidationStatusProviderValidationStatusProperty
+		extends
+		SimpleValueProperty<ValidationStatusProvider, IObservableValue<IStatus>> {
 	public Object getValueType() {
 		return IObservableValue.class;
 	}
 
-	protected Object doGetValue(Object source) {
-		return ((ValidationStatusProvider) source).getValidationStatus();
+	protected IObservableValue<IStatus> doGetValue(
+			ValidationStatusProvider source) {
+		return source.getValidationStatus();
 	}
 
-	protected void doSetValue(Object source, Object value) {
+	protected void doSetValue(ValidationStatusProvider source,
+			IObservableValue<IStatus> value) {
 		// no setter API
 	}
 
-	public INativePropertyListener adaptListener(
-			ISimplePropertyListener listener) {
+	@Override
+	public INativePropertyListener<ValidationStatusProvider> adaptListener(
+			ISimplePropertyListener<ValueDiff<IObservableValue<IStatus>>> listener) {
 		// no listener API
 		return null;
 	}
 
-	protected void doAddListener(Object source, INativePropertyListener listener) {
+	protected void doAddListener(ValidationStatusProvider source,
+			INativePropertyListener<ValidationStatusProvider> listener) {
 	}
 
-	protected void doRemoveListener(Object source,
-			INativePropertyListener listener) {
+	protected void doRemoveListener(ValidationStatusProvider source,
+			INativePropertyListener<ValidationStatusProvider> listener) {
 	}
 
 	public String toString() {

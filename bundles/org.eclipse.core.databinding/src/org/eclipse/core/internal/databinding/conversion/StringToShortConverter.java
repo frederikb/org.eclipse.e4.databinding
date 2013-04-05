@@ -22,13 +22,13 @@ import com.ibm.icu.text.NumberFormat;
 public class StringToShortConverter extends NumberFormatConverter {
 	private final NumberFormat numberFormat;
 	private final boolean primitive;
-	
+
 	private String outOfRangeMessage;
 
 	/**
 	 * Constructs a new instance.
 	 */
-	private StringToShortConverter(NumberFormat numberFormat, Class toType) {
+	private StringToShortConverter(NumberFormat numberFormat, Class<?> toType) {
 		super(String.class, toType, numberFormat);
 		this.numberFormat = numberFormat;
 		primitive = toType.isPrimitive();
@@ -37,7 +37,9 @@ public class StringToShortConverter extends NumberFormatConverter {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.eclipse.core.databinding.conversion.IConverter#convert(java.lang.Object)
+	 * @see
+	 * org.eclipse.core.databinding.conversion.IConverter#convert(java.lang.
+	 * Object)
 	 */
 	public Object convert(Object fromObject) {
 		ParseResult result = StringToNumberParser.parse(fromObject,
@@ -47,9 +49,9 @@ public class StringToShortConverter extends NumberFormatConverter {
 			// this shouldn't happen in the pipeline as validation should catch
 			// it but anyone can call convert so we should return a properly
 			// formatted message in an exception
-			throw new IllegalArgumentException(StringToNumberParser
-					.createParseErrorMessage((String) fromObject, result
-							.getPosition()));
+			throw new IllegalArgumentException(
+					StringToNumberParser.createParseErrorMessage(
+							(String) fromObject, result.getPosition()));
 		} else if (result.getNumber() == null) {
 			// if an error didn't occur and the number is null then it's a boxed
 			// type and null should be returned
@@ -59,13 +61,14 @@ public class StringToShortConverter extends NumberFormatConverter {
 		if (StringToNumberParser.inShortRange(result.getNumber())) {
 			return new Short(result.getNumber().shortValue());
 		}
-		
+
 		synchronized (this) {
 			if (outOfRangeMessage == null) {
 				outOfRangeMessage = StringToNumberParser
-				.createOutOfRangeMessage(new Short(Short.MIN_VALUE), new Short(Short.MAX_VALUE), numberFormat);
+						.createOutOfRangeMessage(new Short(Short.MIN_VALUE),
+								new Short(Short.MAX_VALUE), numberFormat);
 			}
-						
+
 			throw new IllegalArgumentException(outOfRangeMessage);
 		}
 	}

@@ -25,7 +25,7 @@ import org.eclipse.core.runtime.Status;
 /**
  * @since 1.0
  */
-public class StringToDateValidator implements IValidator {
+public class StringToDateValidator implements IValidator<String> {
 	private final StringToDateConverter converter;
 
 	/**
@@ -37,15 +37,17 @@ public class StringToDateValidator implements IValidator {
 
 	/*
 	 * (non-Javadoc)
-	 *
-	 * @see org.eclipse.core.databinding.validation.IValidator#validate(java.lang.Object)
+	 * 
+	 * @see
+	 * org.eclipse.core.databinding.validation.IValidator#validate(java.lang
+	 * .Object)
 	 */
-	public IStatus validate(Object value) {
-		if (value instanceof String && ((String)value).trim().length()==0) {
+	public IStatus validate(String value) {
+		if (value.trim().length() == 0) {
 			return Status.OK_STATUS;
 		}
-		Object convertedValue = converter.convert(value);
-		//The StringToDateConverter returns null if it can't parse the date.
+		Date convertedValue = converter.convert(value);
+		// The StringToDateConverter returns null if it can't parse the date.
 		if (convertedValue == null) {
 			return ValidationStatus.error(getErrorMessage());
 		}
@@ -55,8 +57,10 @@ public class StringToDateValidator implements IValidator {
 
 	/*
 	 * (non-Javadoc)
-	 *
-	 * @see org.eclipse.core.internal.databinding.validation.WrappedConverterValidator#getErrorMessage()
+	 * 
+	 * @see
+	 * org.eclipse.core.internal.databinding.validation.WrappedConverterValidator
+	 * #getErrorMessage()
 	 */
 	protected String getErrorMessage() {
 		Date sampleDate = new Date();
@@ -73,14 +77,17 @@ public class StringToDateValidator implements IValidator {
 		samples.append('\'');
 		samples.append(util.format(sampleDate, 0));
 		samples.append('\'');
-		return BindingMessages.getString(BindingMessages.EXAMPLES) + ": " + samples + ",..."; //$NON-NLS-1$//$NON-NLS-2$
+		return BindingMessages.getString(BindingMessages.EXAMPLES)
+				+ ": " + samples + ",..."; //$NON-NLS-1$//$NON-NLS-2$
 	}
 
 	private static class FormatUtil extends DateConversionSupport {
 		/*
 		 * (non-Javadoc)
-		 *
-		 * @see org.eclipse.core.internal.databinding.conversion.DateConversionSupport#numFormatters()
+		 * 
+		 * @see
+		 * org.eclipse.core.internal.databinding.conversion.DateConversionSupport
+		 * #numFormatters()
 		 */
 		protected int numFormatters() {
 			return super.numFormatters();
@@ -88,8 +95,10 @@ public class StringToDateValidator implements IValidator {
 
 		/*
 		 * (non-Javadoc)
-		 *
-		 * @see org.eclipse.core.internal.databinding.conversion.DateConversionSupport#format(java.util.Date)
+		 * 
+		 * @see
+		 * org.eclipse.core.internal.databinding.conversion.DateConversionSupport
+		 * #format(java.util.Date)
 		 */
 		protected String format(Date date) {
 			return super.format(date);
@@ -97,9 +106,10 @@ public class StringToDateValidator implements IValidator {
 
 		/*
 		 * (non-Javadoc)
-		 *
-		 * @see org.eclipse.core.internal.databinding.conversion.DateConversionSupport#format(java.util.Date,
-		 *      int)
+		 * 
+		 * @see
+		 * org.eclipse.core.internal.databinding.conversion.DateConversionSupport
+		 * #format(java.util.Date, int)
 		 */
 		protected String format(Date date, int formatterIdx) {
 			return super.format(date, formatterIdx);

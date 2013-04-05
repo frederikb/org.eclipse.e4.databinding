@@ -18,6 +18,7 @@ import com.ibm.icu.text.NumberFormat;
  * <p>
  * Class is thread safe.
  * </p>
+ * 
  * @since 1.0
  */
 public class NumberToShortConverter extends NumberToNumberConverter {
@@ -26,7 +27,7 @@ public class NumberToShortConverter extends NumberToNumberConverter {
 	 * @param fromType
 	 * @param primitive
 	 */
-	public NumberToShortConverter(NumberFormat numberFormat, Class fromType,
+	public NumberToShortConverter(NumberFormat numberFormat, Class<?> fromType,
 			boolean primitive) {
 
 		super(numberFormat, fromType, (primitive) ? Short.TYPE : Short.class);
@@ -35,7 +36,9 @@ public class NumberToShortConverter extends NumberToNumberConverter {
 	/*
 	 * (non-Javadoc)
 	 * 
-	 * @see org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter#doConvert(java.lang.Number)
+	 * @see
+	 * org.eclipse.core.internal.databinding.conversion.NumberToNumberConverter
+	 * #doConvert(java.lang.Number)
 	 */
 	protected Number doConvert(Number number) {
 		if (StringToNumberParser.inShortRange(number)) {
