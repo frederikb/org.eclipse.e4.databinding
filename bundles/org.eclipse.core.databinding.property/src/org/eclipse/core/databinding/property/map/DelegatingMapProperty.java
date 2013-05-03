@@ -33,17 +33,45 @@ import org.eclipse.core.databinding.property.ISimplePropertyListener;
  */
 public abstract class DelegatingMapProperty<S, K, V> extends
 		MapProperty<S, K, V> {
-	private final Object keyType;
-	private final Object valueType;
+	private final Object keyTypeAsObject;
+	private final Object valueTypeAsObject;
+	private final Class<K> keyType;
+	private final Class<V> valueType;
 	private final IMapProperty<S, K, V> nullProperty = new NullMapProperty();
 
 	protected DelegatingMapProperty() {
-		this(null, null);
+		this.keyType = null;
+		this.valueType = null;
+		this.keyTypeAsObject = null;
+		this.valueTypeAsObject = null;
 	}
 
+	/**
+	 * 
+	 * @param keyType
+	 * @param valueType
+	 * @deprecated use the constructor which takes Class as parameters. This is
+	 *             safer because code in this plug-in fails anyway if a Class is
+	 *             not passed.
+	 */
 	protected DelegatingMapProperty(Object keyType, Object valueType) {
+		this.keyType = null;
+		this.valueType = null;
+		this.keyTypeAsObject = keyType;
+		this.valueTypeAsObject = valueType;
+	}
+
+	/**
+	 * 
+	 * @param keyType
+	 * @param valueType
+	 * @since 1.5
+	 */
+	protected DelegatingMapProperty(Class<K> keyType, Class<V> valueType) {
 		this.keyType = keyType;
 		this.valueType = valueType;
+		this.keyTypeAsObject = keyType;
+		this.valueTypeAsObject = valueType;
 	}
 
 	/**
@@ -73,13 +101,33 @@ public abstract class DelegatingMapProperty<S, K, V> extends
 	 *            the property source
 	 * @return the property to delegate to for the specified source object.
 	 */
-	protected abstract IMapProperty<S, K, V> doGetDelegate(Object source);
+	protected abstract IMapProperty<S, K, V> doGetDelegate(S source);
 
+	/**
+	 * @deprecated use getKeyClass instead
+	 */
 	public Object getKeyType() {
+		return keyTypeAsObject;
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public Class<K> getKeyClass() {
 		return keyType;
 	}
 
+	/**
+	 * @deprecated use getValueClass instead
+	 */
 	public Object getValueType() {
+		return valueTypeAsObject;
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public Class<V> getValueClass() {
 		return valueType;
 	}
 
@@ -123,10 +171,18 @@ public abstract class DelegatingMapProperty<S, K, V> extends
 		}
 
 		public Object getKeyType() {
-			return keyType;
+			return keyTypeAsObject;
 		}
 
 		public Object getValueType() {
+			return valueTypeAsObject;
+		}
+
+		public Class<K> getKeyClass() {
+			return keyType;
+		}
+
+		public Class<V> getValueClass() {
 			return valueType;
 		}
 	}

@@ -37,7 +37,16 @@ public class EmptyObservableList<E> implements IObservableList<E> {
 	private final List<E> emptyList = Collections.emptyList();
 
 	private final Realm realm;
+
+	/**
+	 * @deprecated use getElementClass() instead
+	 */
 	private Object elementType;
+
+	/**
+	 * @since 1.5
+	 */
+	private Class<E> elementClass;
 
 	/**
 	 * Creates an empty list. This list may be disposed multiple times without
@@ -59,23 +68,59 @@ public class EmptyObservableList<E> implements IObservableList<E> {
 	 * @param elementType
 	 *            the element type of the constructed list
 	 * @since 1.1
+	 * @deprecated use instead the form of the constructor that takes Class as
+	 *             the parameter type for the element type
 	 */
 	public EmptyObservableList(Realm realm, Object elementType) {
 		this.realm = realm;
 		this.elementType = elementType;
+		if (elementType instanceof Class) {
+			this.elementClass = (Class<E>) elementType;
+		} else {
+			this.elementClass = null;
+		}
 		ObservableTracker.observableCreated(this);
 	}
 
-	public void addListChangeListener(IListChangeListener<E> listener) {
+	/**
+	 * Creates an empty list. This list may be disposed multiple times without
+	 * any side-effects.
+	 * 
+	 * @param realm
+	 *            the realm of the constructed list
+	 * @param elementType
+	 *            the element type of the constructed list
+	 * @since 1.1
+	 */
+	// We must set deprecated fields in case any one uses them
+	@SuppressWarnings("deprecation")
+	public EmptyObservableList(Realm realm, Class<E> elementType) {
+		this.realm = realm;
+		this.elementType = elementType;
+		this.elementClass = elementType;
+		ObservableTracker.observableCreated(this);
+	}
+
+	public void addListChangeListener(IListChangeListener<? super E> listener) {
 		// ignore
 	}
 
-	public void removeListChangeListener(IListChangeListener<E> listener) {
+	public void removeListChangeListener(IListChangeListener<? super E> listener) {
 		// ignore
 	}
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
 		return elementType;
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
+		return elementClass;
 	}
 
 	public int size() {

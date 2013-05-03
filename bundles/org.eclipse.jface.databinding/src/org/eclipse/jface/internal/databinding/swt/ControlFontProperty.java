@@ -20,17 +20,17 @@ import org.eclipse.swt.widgets.Control;
  * @since 3.3
  * 
  */
-public class ControlFontProperty extends WidgetValueProperty {
+public class ControlFontProperty extends WidgetValueProperty<Control, Font> {
 	public Object getValueType() {
 		return Font.class;
 	}
 
-	protected Object doGetValue(Object source) {
-		return ((Control) source).getFont();
+	protected Font doGetValue(Control source) {
+		return source.getFont();
 	}
 
-	protected void doSetValue(Object source, Object value) {
-		((Control) source).setFont((Font) value);
+	protected void doSetValue(Control source, Font value) {
+		source.setFont(value);
 	}
 
 	public String toString() {

@@ -48,8 +48,15 @@ public class ValuePropertyDetailList<S, M, T> extends ListProperty<S, T> {
 		this.detailProperty = detailProperty;
 	}
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
 		return detailProperty.getElementType();
+	}
+
+	public Class<T> getElementClass() {
+		return detailProperty.getElementClass();
 	}
 
 	protected List<T> doGetList(S source) {

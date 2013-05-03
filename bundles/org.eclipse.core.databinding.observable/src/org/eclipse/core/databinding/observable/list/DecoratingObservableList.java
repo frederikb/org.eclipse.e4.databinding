@@ -47,12 +47,12 @@ public class DecoratingObservableList<E> extends
 	}
 
 	public synchronized void addListChangeListener(
-			IListChangeListener<E> listener) {
+			IListChangeListener<? super E> listener) {
 		addListener(ListChangeEvent.TYPE, listener);
 	}
 
 	public synchronized void removeListChangeListener(
-			IListChangeListener<E> listener) {
+			IListChangeListener<? super E> listener) {
 		removeListener(ListChangeEvent.TYPE, listener);
 	}
 

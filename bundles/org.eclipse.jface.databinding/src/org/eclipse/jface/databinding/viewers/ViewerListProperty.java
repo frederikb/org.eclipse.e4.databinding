@@ -30,27 +30,23 @@ import org.eclipse.jface.viewers.Viewer;
  * {@link IViewerObservableList}
  * </ul>
  * 
+ * @param <S>
+ * 
  * @since 1.3
  */
-public abstract class ViewerListProperty extends SimpleListProperty implements
-		IViewerListProperty {
-	public IObservableList observe(Object source) {
-		if (source instanceof Viewer) {
-			return observe((Viewer) source);
-		}
-		return super.observe(source);
+public abstract class ViewerListProperty<S extends Viewer> extends
+		SimpleListProperty<S, Object> implements IViewerListProperty<S> {
+	/**
+	 * @since 1.7
+	 */
+	public IViewerObservableList<S> observe(Realm realm, S source) {
+		IObservableList<Object> observable = super.observe(realm, source);
+		return new ViewerObservableListDecorator<S>(observable, source);
 	}
 
-	public IObservableList observe(Realm realm, Object source) {
-		IObservableList observable = super.observe(realm, source);
-		if (source instanceof Viewer)
-			observable = new ViewerObservableListDecorator(observable,
-					(Viewer) source);
-		return observable;
-	}
-
-	public IViewerObservableList observe(Viewer viewer) {
-		return (IViewerObservableList) observe(SWTObservables.getRealm(viewer
-				.getControl().getDisplay()), viewer);
+	public IViewerObservableList<S> observe(S viewer) {
+		return observe(
+				SWTObservables.getRealm(viewer.getControl().getDisplay()),
+				viewer);
 	}
 }

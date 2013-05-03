@@ -42,16 +42,70 @@ public abstract class ObservableSet<E> extends AbstractObservable implements
 
 	private boolean stale = false;
 
+	/**
+	 * @deprecated use getElementClass() instead
+	 */
 	protected Object elementType;
 
+	/**
+	 * @since 1.5
+	 */
+	private Class<E> elementClass;
+
+	/**
+	 * 
+	 * @param wrappedSet
+	 * @param elementType
+	 * @deprecated use instead the form of the constructor that takes Class as
+	 *             the parameter type for the element type
+	 */
 	protected ObservableSet(Set<E> wrappedSet, Object elementType) {
 		this(Realm.getDefault(), wrappedSet, elementType);
 	}
 
+	/**
+	 * 
+	 * @param wrappedSet
+	 * @param elementType
+	 * @since 1.5
+	 */
+	protected ObservableSet(Set<E> wrappedSet, Class<E> elementType) {
+		this(Realm.getDefault(), wrappedSet, elementType);
+	}
+
+	/**
+	 * 
+	 * @param realm
+	 * @param wrappedSet
+	 * @param elementType
+	 * @deprecated use instead the form of the constructor that takes Class as
+	 *             the parameter type for the element type
+	 */
 	protected ObservableSet(Realm realm, Set<E> wrappedSet, Object elementType) {
 		super(realm);
 		this.wrappedSet = wrappedSet;
 		this.elementType = elementType;
+		if (elementType instanceof Class) {
+			this.elementClass = (Class<E>) elementType;
+		} else {
+			this.elementClass = null;
+		}
+	}
+
+	/**
+	 * 
+	 * @param realm
+	 * @param wrappedSet
+	 * @param elementType
+	 * @since 1.5
+	 */
+	// We must set deprecated fields in case any one uses them
+	@SuppressWarnings("deprecation")
+	protected ObservableSet(Realm realm, Set<E> wrappedSet, Class<E> elementType) {
+		super(realm);
+		this.wrappedSet = wrappedSet;
+		this.elementType = elementType;
+		this.elementClass = elementType;
 	}
 
 	public synchronized void addSetChangeListener(
@@ -205,7 +259,17 @@ public abstract class ObservableSet<E> extends AbstractObservable implements
 		super.dispose();
 	}
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
 		return elementType;
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
+		return elementClass;
 	}
 }

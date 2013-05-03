@@ -49,8 +49,15 @@ public class ValuePropertyDetailSet<S, M, T> extends SetProperty<S, T> {
 		this.detailProperty = detailProperty;
 	}
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
 		return detailProperty.getElementType();
+	}
+
+	public Class<T> getElementClass() {
+		return detailProperty.getElementClass();
 	}
 
 	protected Set<T> doGetSet(S source) {

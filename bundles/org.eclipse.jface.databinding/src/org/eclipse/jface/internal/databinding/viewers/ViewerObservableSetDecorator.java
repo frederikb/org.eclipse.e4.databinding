@@ -17,23 +17,25 @@ import org.eclipse.jface.databinding.viewers.IViewerObservableSet;
 import org.eclipse.jface.viewers.Viewer;
 
 /**
+ * @param <S>
+ * @param <E>
  * @since 3.3
  * 
  */
-public class ViewerObservableSetDecorator extends DecoratingObservableSet
-		implements IViewerObservableSet {
-	private final Viewer viewer;
+public class ViewerObservableSetDecorator<S extends Viewer, E> extends
+		DecoratingObservableSet<E> implements IViewerObservableSet<S, E> {
+	private final S viewer;
 
 	/**
 	 * @param decorated
 	 * @param viewer
 	 */
-	public ViewerObservableSetDecorator(IObservableSet decorated, Viewer viewer) {
+	public ViewerObservableSetDecorator(IObservableSet<E> decorated, S viewer) {
 		super(decorated, true);
 		this.viewer = viewer;
 	}
 
-	public Viewer getViewer() {
+	public S getViewer() {
 		return viewer;
 	}
 

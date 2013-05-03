@@ -31,7 +31,7 @@ import org.eclipse.core.internal.databinding.property.set.SimplePropertyObservab
  * <p>
  * Subclasses must implement these methods:
  * <ul>
- * <li> {@link #getElementType()}
+ * <li> {@link #getElementClass()}
  * <li> {@link #doGetSet(Object)}
  * <li> {@link #doSetSet(Object, Set, SetDiff)}
  * <li> {@link #adaptListener(ISimplePropertyListener)}

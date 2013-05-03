@@ -27,11 +27,11 @@ public class WorkQueue {
 
 	private boolean updateScheduled = false;
 
-	private LinkedList pendingWork = new LinkedList();
+	private LinkedList<Runnable> pendingWork = new LinkedList<Runnable>();
 
 	private Display d;
 
-	private Set pendingWorkSet = new HashSet();
+	private Set<Runnable> pendingWorkSet = new HashSet<Runnable>();
 
 	private Runnable updateJob = new Runnable() {
 		public void run() {
@@ -54,7 +54,7 @@ public class WorkQueue {
 				if (pendingWork.isEmpty()) {
 					break;
 				}
-				next = (Runnable) pendingWork.removeFirst();
+				next = pendingWork.removeFirst();
 				pendingWorkSet.remove(next);
 			}
 

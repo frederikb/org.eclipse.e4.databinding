@@ -22,7 +22,8 @@ import org.eclipse.core.databinding.observable.set.IObservableSet;
  * changes have to be added using more concrete subtypes such as
  * {@link IObservableList} or {@link IObservableSet}.
  * 
- * @param <T>
+ * @param <E>
+ *            type of the elements in the collection
  * 
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
@@ -33,7 +34,7 @@ import org.eclipse.core.databinding.observable.set.IObservableSet;
  * 
  * @since 1.0
  */
-public interface IObservableCollection<T> extends IObservable, Collection<T> {
+public interface IObservableCollection<E> extends IObservable, Collection<E> {
 
 	/**
 	 * Returns the element type of this observable collection, or
@@ -41,7 +42,18 @@ public interface IObservableCollection<T> extends IObservable, Collection<T> {
 	 * 
 	 * @return the element type of this observable collection, or
 	 *         <code>null</code> if this observable collection is untyped.
+	 * @deprecated use getElementClass instead
 	 */
 	Object getElementType();
+
+	/**
+	 * Returns the element type of this observable collection, or
+	 * <code>null</code> if this observable collection is untyped.
+	 * 
+	 * @return the element type of this observable collection, or
+	 *         <code>null</code> if this observable collection is untyped.
+	 * @since 1.5
+	 */
+	Class<E> getElementClass();
 
 }

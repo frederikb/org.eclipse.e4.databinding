@@ -16,13 +16,13 @@ import org.eclipse.swt.widgets.Menu;
 /**
  * 
  */
-public class MenuEnabledProperty extends WidgetBooleanValueProperty {
-	public boolean doGetBooleanValue(Object source) {
-		return ((Menu) source).getEnabled();
+public class MenuEnabledProperty extends WidgetBooleanValueProperty<Menu> {
+	public boolean doGetBooleanValue(Menu source) {
+		return source.getEnabled();
 	}
 
-	void doSetBooleanValue(Object source, boolean value) {
-		((Menu) source).setEnabled(value);
+	void doSetBooleanValue(Menu source, boolean value) {
+		source.setEnabled(value);
 	}
 
 	public String toString() {

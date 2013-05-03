@@ -105,8 +105,23 @@ public class MultiList<E> extends AbstractObservableList<E> {
 	 *            the observable's realm
 	 * @param lists
 	 *            the array of observable lists backing this MultiList
+	 * @deprecated use MultiList(realm, List<IObservableList<E>>) instead
 	 */
 	public MultiList(Realm realm, IObservableList<E>[] lists) {
+		this(realm, lists, null);
+	}
+
+	/**
+	 * Constructs a MultiList belonging to the given realm, and backed by the
+	 * given observable lists.
+	 * 
+	 * @param realm
+	 *            the observable's realm
+	 * @param lists
+	 *            the array of observable lists backing this MultiList
+	 * @since 1.5
+	 */
+	public MultiList(Realm realm, List<IObservableList<E>> lists) {
 		this(realm, lists, null);
 	}
 
@@ -224,7 +239,7 @@ public class MultiList<E> extends AbstractObservableList<E> {
 	}
 
 	private void listChanged(ListChangeEvent<E> event) {
-		IObservableList<E> source = event.getObservableList();
+		IObservableList<? extends E> source = event.getObservableList();
 		int offset = 0;
 		for (IObservableList<E> list : lists) {
 			if (source == list) {

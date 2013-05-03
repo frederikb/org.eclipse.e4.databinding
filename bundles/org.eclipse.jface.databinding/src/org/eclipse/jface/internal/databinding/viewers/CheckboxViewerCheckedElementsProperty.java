@@ -27,13 +27,15 @@ import org.eclipse.jface.viewers.CheckStateChangedEvent;
 import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ICheckable;
 import org.eclipse.jface.viewers.StructuredViewer;
+import org.eclipse.jface.viewers.Viewer;
 
 /**
+ * @param <S>
  * @since 3.3
  * 
  */
-public abstract class CheckboxViewerCheckedElementsProperty extends
-		ViewerSetProperty {
+public abstract class CheckboxViewerCheckedElementsProperty<S extends Viewer>
+		extends ViewerSetProperty<S, Object> {
 	private final Object elementType;
 
 	/**
@@ -47,47 +49,54 @@ public abstract class CheckboxViewerCheckedElementsProperty extends
 		return elementType;
 	}
 
-	protected final Set createElementSet(StructuredViewer viewer) {
+	public Class<Object> getElementClass() {
+		return Object.class;
+	}
+
+	protected final Set<Object> createElementSet(StructuredViewer viewer) {
 		return ViewerElementSet.withComparer(viewer.getComparer());
 	}
 
-	protected void doUpdateSet(Object source, SetDiff diff) {
+	protected void doUpdateSet(S source, SetDiff<Object> diff) {
 		ICheckable checkable = (ICheckable) source;
-		for (Iterator it = diff.getAdditions().iterator(); it.hasNext();)
+		for (Iterator<Object> it = diff.getAdditions().iterator(); it.hasNext();)
 			checkable.setChecked(it.next(), true);
-		for (Iterator it = diff.getRemovals().iterator(); it.hasNext();)
+		for (Iterator<Object> it = diff.getRemovals().iterator(); it.hasNext();)
 			checkable.setChecked(it.next(), false);
 	}
 
-	public INativePropertyListener adaptListener(
-			ISimplePropertyListener listener) {
+	public INativePropertyListener<S> adaptListener(
+			ISimplePropertyListener<SetDiff<Object>> listener) {
 		return new CheckStateListener(this, listener);
 	}
 
-	private class CheckStateListener extends NativePropertyListener implements
+	private class CheckStateListener extends
+			NativePropertyListener<S, SetDiff<Object>> implements
 			ICheckStateListener {
 		private CheckStateListener(IProperty property,
-				ISimplePropertyListener listener) {
+				ISimplePropertyListener<SetDiff<Object>> listener) {
 			super(property, listener);
 		}
 
 		public void checkStateChanged(CheckStateChangedEvent event) {
 			Object element = event.getElement();
 			boolean checked = event.getChecked();
-			Set elementSet = createElementSet((StructuredViewer) event
+			Set<Object> elementSet = createElementSet((StructuredViewer) event
 					.getCheckable());
 			elementSet.add(element);
-			Set additions = checked ? elementSet : Collections.EMPTY_SET;
-			Set removals = checked ? Collections.EMPTY_SET : elementSet;
-			SetDiff diff = Diffs.createSetDiff(additions, removals);
+			Set<Object> additions = checked ? elementSet : Collections
+					.emptySet();
+			Set<Object> removals = checked ? Collections.emptySet()
+					: elementSet;
+			SetDiff<Object> diff = Diffs.createSetDiff(additions, removals);
 			fireChange(event.getSource(), diff);
 		}
 
-		public void doAddTo(Object source) {
+		public void doAddTo(S source) {
 			((ICheckable) source).addCheckStateListener(this);
 		}
 
-		public void doRemoveFrom(Object source) {
+		public void doRemoveFrom(S source) {
 			((ICheckable) source).removeCheckStateListener(this);
 		}
 	}

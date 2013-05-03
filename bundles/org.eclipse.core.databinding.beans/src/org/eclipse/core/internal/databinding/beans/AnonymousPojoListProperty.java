@@ -20,33 +20,36 @@ import org.eclipse.core.databinding.property.list.DelegatingListProperty;
 import org.eclipse.core.databinding.property.list.IListProperty;
 
 /**
+ * @param <S>
+ * @param <E>
  * @since 3.3
  * 
  */
-public class AnonymousPojoListProperty extends DelegatingListProperty {
+public class AnonymousPojoListProperty<S, E> extends
+		DelegatingListProperty<S, E> {
 	private final String propertyName;
 
-	private Map delegates;
+	private Map<Class<? extends S>, IListProperty<S, E>> delegates;
 
 	/**
 	 * @param propertyName
 	 * @param elementType
 	 */
-	public AnonymousPojoListProperty(String propertyName, Class elementType) {
+	public AnonymousPojoListProperty(String propertyName, Class<E> elementType) {
 		super(elementType);
 		this.propertyName = propertyName;
-		this.delegates = new HashMap();
+		this.delegates = new HashMap<Class<? extends S>, IListProperty<S, E>>();
 	}
 
-	protected IListProperty doGetDelegate(Object source) {
-		Class beanClass = source.getClass();
+	protected IListProperty<S, E> doGetDelegate(S source) {
+		Class<? extends S> beanClass = Util.getClass(source);
 		if (delegates.containsKey(beanClass))
-			return (IListProperty) delegates.get(beanClass);
+			return delegates.get(beanClass);
 
-		IListProperty delegate;
+		IListProperty<S, E> delegate;
 		try {
-			delegate = PojoProperties.list(beanClass, propertyName,
-					(Class) getElementType());
+			delegate = PojoProperties.<S, E> list(beanClass, propertyName,
+					getElementClass());
 		} catch (IllegalArgumentException noSuchProperty) {
 			delegate = null;
 		}
@@ -56,7 +59,7 @@ public class AnonymousPojoListProperty extends DelegatingListProperty {
 
 	public String toString() {
 		String s = "?." + propertyName + "{}"; //$NON-NLS-1$ //$NON-NLS-2$
-		Class elementType = (Class) getElementType();
+		Class<E> elementType = getElementClass();
 		if (elementType != null)
 			s += "<" + BeanPropertyHelper.shortClassName(elementType) + ">"; //$NON-NLS-1$//$NON-NLS-2$
 		return s;

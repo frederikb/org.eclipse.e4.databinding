@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Control;
  * @since 3.3
  * 
  */
-public class ControlSizeProperty extends WidgetValueProperty {
+public class ControlSizeProperty extends WidgetValueProperty<Control, Point> {
 	/**
 	 * 
 	 */
@@ -34,12 +34,12 @@ public class ControlSizeProperty extends WidgetValueProperty {
 		return Point.class;
 	}
 
-	protected Object doGetValue(Object source) {
-		return ((Control) source).getSize();
+	protected Point doGetValue(Control source) {
+		return source.getSize();
 	}
 
-	protected void doSetValue(Object source, Object value) {
-		((Control) source).setSize((Point) value);
+	protected void doSetValue(Control source, Point value) {
+		source.setSize(value);
 	}
 
 	public String toString() {

@@ -31,7 +31,22 @@ import org.eclipse.core.runtime.Assert;
 public class ConstantObservableValue<T> implements IObservableValue<T> {
 	final Realm realm;
 	final T value;
-	final Object type;
+	final Object typeAsObject;
+	final Class<T> type;
+
+	/**
+	 * Construct a constant value of the given type, in the default realm.
+	 * 
+	 * @param value
+	 *            immutable value
+	 * @param type
+	 *            type
+	 * @deprecated use the form of the constructor that takes a Class parameter
+	 *             for the type
+	 */
+	public ConstantObservableValue(T value, Object type) {
+		this(Realm.getDefault(), value, type);
+	}
 
 	/**
 	 * Construct a constant value of the given type, in the default realm.
@@ -41,7 +56,7 @@ public class ConstantObservableValue<T> implements IObservableValue<T> {
 	 * @param type
 	 *            type
 	 */
-	public ConstantObservableValue(T value, Object type) {
+	public ConstantObservableValue(T value, Class<T> type) {
 		this(Realm.getDefault(), value, type);
 	}
 
@@ -54,16 +69,42 @@ public class ConstantObservableValue<T> implements IObservableValue<T> {
 	 *            immutable value
 	 * @param type
 	 *            type
+	 * @deprecated use the form of the constructor that takes a Class parameter
+	 *             for the type
 	 */
 	public ConstantObservableValue(Realm realm, T value, Object type) {
 		Assert.isNotNull(realm, "Realm cannot be null"); //$NON-NLS-1$
 		this.realm = realm;
 		this.value = value;
+		this.typeAsObject = type;
+		this.type = null;
+		ObservableTracker.observableCreated(this);
+	}
+
+	/**
+	 * Construct a constant value of the given type, in the given realm.
+	 * 
+	 * @param realm
+	 *            Realm
+	 * @param value
+	 *            immutable value
+	 * @param type
+	 *            type
+	 */
+	public ConstantObservableValue(Realm realm, T value, Class<T> type) {
+		Assert.isNotNull(realm, "Realm cannot be null"); //$NON-NLS-1$
+		this.realm = realm;
+		this.value = value;
+		this.typeAsObject = type;
 		this.type = type;
 		ObservableTracker.observableCreated(this);
 	}
 
 	public Object getValueType() {
+		return typeAsObject;
+	}
+
+	public Class<T> getValueClass() {
 		return type;
 	}
 
@@ -76,11 +117,12 @@ public class ConstantObservableValue<T> implements IObservableValue<T> {
 		throw new UnsupportedOperationException();
 	}
 
-	public void addValueChangeListener(IValueChangeListener<T> listener) {
+	public void addValueChangeListener(IValueChangeListener<? super T> listener) {
 		// ignore
 	}
 
-	public void removeValueChangeListener(IValueChangeListener<T> listener) {
+	public void removeValueChangeListener(
+			IValueChangeListener<? super T> listener) {
 		// ignore
 	}
 

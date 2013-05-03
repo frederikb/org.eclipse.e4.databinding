@@ -17,10 +17,13 @@ import org.eclipse.jface.viewers.Viewer;
 /**
  * {@link IValueProperty} for observing a JFace viewer
  * 
+ * @param <S>
+ * 
  * @since 1.3
  * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface IViewerValueProperty extends IValueProperty {
+public interface IViewerValueProperty<S extends Viewer> extends
+		IValueProperty<S, Object> {
 	/**
 	 * Returns an {@link IViewerObservableValue} observing this value property
 	 * on the given viewer
@@ -30,7 +33,7 @@ public interface IViewerValueProperty extends IValueProperty {
 	 * @return an observable value observing this value property on the given
 	 *         viewer
 	 */
-	public IViewerObservableValue observe(Viewer viewer);
+	public IViewerObservableValue<S> observe(S viewer);
 
 	/**
 	 * Returns an {@link IViewerObservableValue} observing this value property
@@ -50,5 +53,5 @@ public interface IViewerValueProperty extends IValueProperty {
 	 *         viewer, and which delays change notifications for
 	 *         <code>delay</code> milliseconds.
 	 */
-	public IViewerObservableValue observeDelayed(int delay, Viewer viewer);
+	public IViewerObservableValue<S> observeDelayed(int delay, S viewer);
 }

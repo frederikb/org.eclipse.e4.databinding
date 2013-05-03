@@ -26,51 +26,61 @@ import org.eclipse.core.databinding.property.list.IListProperty;
 import org.eclipse.core.databinding.property.list.ListProperty;
 
 /**
+ * @param <S>
+ * @param <E>
  * @since 3.3
  * 
  */
-public class BeanListPropertyDecorator extends ListProperty implements
-		IBeanListProperty {
-	private final IListProperty delegate;
+public class BeanListPropertyDecorator<S, E> extends ListProperty<S, E>
+		implements IBeanListProperty<S, E> {
+	private final IListProperty<S, E> delegate;
 	private final PropertyDescriptor propertyDescriptor;
 
 	/**
 	 * @param delegate
 	 * @param propertyDescriptor
 	 */
-	public BeanListPropertyDecorator(IListProperty delegate,
+	public BeanListPropertyDecorator(IListProperty<S, E> delegate,
 			PropertyDescriptor propertyDescriptor) {
 		this.delegate = delegate;
 		this.propertyDescriptor = propertyDescriptor;
 	}
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
 		return delegate.getElementType();
 	}
 
-	protected List doGetList(Object source) {
+	public Class<E> getElementClass() {
+		return delegate.getElementClass();
+	}
+
+	protected List<E> doGetList(S source) {
 		return delegate.getList(source);
 	}
 
-	protected void doSetList(Object source, List list) {
+	protected void doSetList(S source, List<E> list) {
 		delegate.setList(source, list);
 	}
 
-	protected void doUpdateList(Object source, ListDiff diff) {
+	protected void doUpdateList(S source, ListDiff<E> diff) {
 		delegate.updateList(source, diff);
 	}
 
-	public IBeanListProperty values(String propertyName) {
+	public <V> IBeanListProperty<S, V> values(String propertyName) {
 		return values(propertyName, null);
 	}
 
-	public IBeanListProperty values(String propertyName, Class valueType) {
-		Class beanClass = (Class) delegate.getElementType();
+	public <V> IBeanListProperty<S, V> values(String propertyName,
+			Class<V> valueType) {
+		Class<E> beanClass = delegate.getElementClass();
 		return values(BeanProperties.value(beanClass, propertyName, valueType));
 	}
 
-	public IBeanListProperty values(IBeanValueProperty property) {
-		return new BeanListPropertyDecorator(super.values(property),
+	public <V> IBeanListProperty<S, V> values(IBeanValueProperty<E, V> property) {
+		return new BeanListPropertyDecorator<S, V>(super.values(property),
 				property.getPropertyDescriptor());
 	}
 
@@ -78,19 +88,20 @@ public class BeanListPropertyDecorator extends ListProperty implements
 		return propertyDescriptor;
 	}
 
-	public IObservableList observe(Object source) {
-		return new BeanObservableListDecorator(delegate.observe(source),
+	public IObservableList<E> observe(S source) {
+		return new BeanObservableListDecorator<E>(delegate.observe(source),
 				propertyDescriptor);
 	}
 
-	public IObservableList observe(Realm realm, Object source) {
-		return new BeanObservableListDecorator(delegate.observe(realm, source),
-				propertyDescriptor);
+	public IObservableList<E> observe(Realm realm, S source) {
+		return new BeanObservableListDecorator<E>(delegate.observe(realm,
+				source), propertyDescriptor);
 	}
 
-	public IObservableList observeDetail(IObservableValue master) {
-		return new BeanObservableListDecorator(delegate.observeDetail(master),
-				propertyDescriptor);
+	public <M extends S> IObservableList<E> observeDetail(
+			IObservableValue<M> master) {
+		return new BeanObservableListDecorator<E>(
+				delegate.observeDetail(master), propertyDescriptor);
 	}
 
 	public String toString() {

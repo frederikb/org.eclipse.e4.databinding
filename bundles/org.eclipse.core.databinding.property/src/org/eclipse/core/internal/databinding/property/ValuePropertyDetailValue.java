@@ -52,6 +52,10 @@ public class ValuePropertyDetailValue<S, M, T> extends ValueProperty<S, T>
 		return detailProperty.getValueType();
 	}
 
+	public Class<T> getValueClass() {
+		return detailProperty.getValueClass();
+	}
+
 	protected T doGetValue(S source) {
 		M masterValue = masterProperty.getValue(source);
 		return detailProperty.getValue(masterValue);

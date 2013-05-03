@@ -54,6 +54,10 @@ public class ListPropertyDetailValuesList<S, T, E> extends ListProperty<S, E> {
 		return detailProperty.getValueType();
 	}
 
+	public Class<E> getElementClass() {
+		return detailProperty.getValueClass();
+	}
+
 	protected List<E> doGetList(S source) {
 		List<T> masterList = masterProperty.getList(source);
 		List<E> detailList = new ArrayList<E>(masterList.size());

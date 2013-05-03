@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.Table;
  * 
  */
 public class TableSingleSelectionIndexProperty extends
-		SingleSelectionIndexProperty {
+		WidgetIntValueProperty<Table> {
 	/**
 	 * 
 	 */
@@ -27,15 +27,18 @@ public class TableSingleSelectionIndexProperty extends
 		super(new int[] { SWT.Selection, SWT.DefaultSelection });
 	}
 
-	int doGetIntValue(Object source) {
-		return ((Table) source).getSelectionIndex();
+	protected Integer doGetValue(Table source) {
+		// Ideally we would return null when no selection but
+		// that might break existing users so we stick with -1
+		return source.getSelectionIndex();
 	}
 
-	void doSetIntValue(Object source, int value) {
-		if (value == -1)
-			((Table) source).deselectAll();
-		else
-			((Table) source).setSelection(value);
+	protected void doSetValue(Table source, Integer value) {
+		if (value == null || value.intValue() == -1) {
+			source.deselectAll();
+		} else {
+			source.setSelection(value);
+		}
 	}
 
 	public String toString() {

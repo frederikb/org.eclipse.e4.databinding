@@ -30,15 +30,34 @@ import org.eclipse.core.databinding.property.ISimplePropertyListener;
  * 
  */
 public abstract class DelegatingSetProperty<S, E> extends SetProperty<S, E> {
-	private final Object elementType;
+	private final Class<E> elementType;
+	private final Object elementTypeAsObject;
 	private final ISetProperty<S, E> nullProperty = new NullSetProperty();
 
 	protected DelegatingSetProperty() {
 		this(null);
 	}
 
+	/**
+	 * 
+	 * @param elementType
+	 * @deprecated use the constructor which takes Class as a parameter. This is
+	 *             safer because code in this plug-in fails anyway if a Class is
+	 *             not passed.
+	 * 
+	 */
 	protected DelegatingSetProperty(Object elementType) {
+		this.elementType = null;
+		this.elementTypeAsObject = elementType;
+	}
+
+	/**
+	 * @param elementType
+	 * @since 1.5
+	 */
+	protected DelegatingSetProperty(Class<E> elementType) {
 		this.elementType = elementType;
+		this.elementTypeAsObject = elementType;
 	}
 
 	/**
@@ -50,7 +69,7 @@ public abstract class DelegatingSetProperty<S, E> extends SetProperty<S, E> {
 	 *            the property source (may be null)
 	 * @return the property to delegate to for the specified source object.
 	 */
-	protected final ISetProperty<S, E> getDelegate(Object source) {
+	protected final ISetProperty<S, E> getDelegate(S source) {
 		if (source == null)
 			return nullProperty;
 		ISetProperty<S, E> delegate = doGetDelegate(source);
@@ -68,9 +87,20 @@ public abstract class DelegatingSetProperty<S, E> extends SetProperty<S, E> {
 	 *            the property source
 	 * @return the property to delegate to for the specified source object.
 	 */
-	protected abstract ISetProperty<S, E> doGetDelegate(Object source);
+	protected abstract ISetProperty<S, E> doGetDelegate(S source);
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
+		return elementTypeAsObject;
+	}
+
+	/**
+	 * @return the class of the elements in the set
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
 		return elementType;
 	}
 
@@ -96,6 +126,10 @@ public abstract class DelegatingSetProperty<S, E> extends SetProperty<S, E> {
 
 	private class NullSetProperty extends SimpleSetProperty<S, E> {
 		public Object getElementType() {
+			return elementTypeAsObject;
+		}
+
+		public Class<E> getElementClass() {
 			return elementType;
 		}
 

@@ -17,11 +17,15 @@ import org.eclipse.core.databinding.property.value.IValueProperty;
  * An {@link IValueProperty} extension interface with convenience methods for
  * creating nested bean properties.
  * 
+ * @param <S>
+ * @param <T>
+ * 
  * @since 1.2
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
+public interface IBeanValueProperty<S, T> extends IBeanProperty,
+		IValueProperty<S, T> {
 	/**
 	 * Returns a master-detail combination of this property and the specified
 	 * value property.
@@ -33,7 +37,7 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 *         value property.
 	 * @see #value(IBeanValueProperty)
 	 */
-	public IBeanValueProperty value(String propertyName);
+	public <V> IBeanValueProperty<S, V> value(String propertyName);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -48,7 +52,8 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 *         value property.
 	 * @see #value(IBeanValueProperty)
 	 */
-	public IBeanValueProperty value(String propertyName, Class valueType);
+	public <V> IBeanValueProperty<S, V> value(String propertyName,
+			Class<V> valueType);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -71,7 +76,7 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 * @return a master-detail combination of this property and the specified
 	 *         value property.
 	 */
-	public IBeanValueProperty value(IBeanValueProperty property);
+	public <V> IBeanValueProperty<S, V> value(IBeanValueProperty<T, V> property);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -83,7 +88,7 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 *         list property.
 	 * @see #list(IBeanListProperty)
 	 */
-	public IBeanListProperty list(String propertyName);
+	public <E> IBeanListProperty<S, E> list(String propertyName);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -97,7 +102,8 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 *         list property.
 	 * @see #list(IBeanListProperty)
 	 */
-	public IBeanListProperty list(String propertyName, Class elementType);
+	public <E> IBeanListProperty<S, E> list(String propertyName,
+			Class<E> elementType);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -122,7 +128,7 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 * @return a master-detail combination of this property and the specified
 	 *         list property.
 	 */
-	public IBeanListProperty list(IBeanListProperty property);
+	public <E> IBeanListProperty<S, E> list(IBeanListProperty<T, E> property);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -134,7 +140,7 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 *         set property.
 	 * @see #set(IBeanSetProperty)
 	 */
-	public IBeanSetProperty set(String propertyName);
+	public <E> IBeanSetProperty<S, E> set(String propertyName);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -148,7 +154,8 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 *         set property.
 	 * @see #set(IBeanSetProperty)
 	 */
-	public IBeanSetProperty set(String propertyName, Class elementType);
+	public <E> IBeanSetProperty<S, E> set(String propertyName,
+			Class<E> elementType);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -173,7 +180,7 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 * @return a master-detail combination of this property and the specified
 	 *         set property.
 	 */
-	public IBeanSetProperty set(IBeanSetProperty property);
+	public <E> IBeanSetProperty<S, E> set(IBeanSetProperty<T, E> property);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -185,7 +192,7 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 *         map property.
 	 * @see #map(IBeanMapProperty)
 	 */
-	public IBeanMapProperty map(String propertyName);
+	public <K, V> IBeanMapProperty<S, K, V> map(String propertyName);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -201,8 +208,8 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 *         map property.
 	 * @see #map(IBeanMapProperty)
 	 */
-	public IBeanMapProperty map(String propertyName, Class keyType,
-			Class valueType);
+	public <K, V> IBeanMapProperty<S, K, V> map(String propertyName,
+			Class<K> keyType, Class<V> valueType);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -213,7 +220,7 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 * 
 	 * <pre>
 	 * // Observes the Contact-typed &quot;supervisor&quot; property of a
-	 * // Contact class 
+	 * // Contact class
 	 * IBeanValueProperty supervisor = BeanProperties.value(Contact.class,
 	 * 		&quot;supervisor&quot;);
 	 * // Observes the property &quot;phoneNumbers&quot; of a Contact object--a property mapping
@@ -229,5 +236,6 @@ public interface IBeanValueProperty extends IBeanProperty, IValueProperty {
 	 * @return a master-detail combination of this property and the specified
 	 *         map property.
 	 */
-	public IBeanMapProperty map(IBeanMapProperty property);
+	public <K, V> IBeanMapProperty<S, K, V> map(
+			IBeanMapProperty<? super T, K, V> property);
 }

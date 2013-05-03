@@ -29,23 +29,47 @@ import org.eclipse.core.databinding.property.map.SimpleMapProperty;
  */
 public final class SelfMapProperty<K, V> extends
 		SimpleMapProperty<Map<K, V>, K, V> {
-	private final Object keyType;
-	private final Object valueType;
+	private final Object keyTypeAsObject;
+	private final Object valueTypeAsObject;
+	private final Class<K> keyType;
+	private final Class<V> valueType;
+
+	/**
+	 * @param keyType
+	 * @param valueType
+	 * @deprecated use the constructor that takes Class parameters instead
+	 */
+	public SelfMapProperty(Object keyType, Object valueType) {
+		this.keyTypeAsObject = keyType;
+		this.valueTypeAsObject = valueType;
+		this.keyType = null;
+		this.valueType = null;
+	}
 
 	/**
 	 * @param keyType
 	 * @param valueType
 	 */
-	public SelfMapProperty(Object keyType, Object valueType) {
+	public SelfMapProperty(Class<K> keyType, Class<V> valueType) {
+		this.keyTypeAsObject = keyType;
+		this.valueTypeAsObject = valueType;
 		this.keyType = keyType;
 		this.valueType = valueType;
 	}
 
 	public Object getKeyType() {
-		return keyType;
+		return keyTypeAsObject;
 	}
 
 	public Object getValueType() {
+		return valueTypeAsObject;
+	}
+
+	public Class<K> getKeyClass() {
+		return keyType;
+	}
+
+	public Class<V> getValueClass() {
 		return valueType;
 	}
 

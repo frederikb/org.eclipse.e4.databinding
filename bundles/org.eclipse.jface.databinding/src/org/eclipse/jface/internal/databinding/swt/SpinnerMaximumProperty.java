@@ -17,13 +17,13 @@ import org.eclipse.swt.widgets.Spinner;
  * @since 3.3
  * 
  */
-public class SpinnerMaximumProperty extends WidgetIntValueProperty {
-	int doGetIntValue(Object source) {
-		return ((Spinner) source).getMaximum();
+public class SpinnerMaximumProperty extends WidgetIntValueProperty<Spinner> {
+	protected Integer doGetValue(Spinner source) {
+		return source.getMaximum();
 	}
 
-	void doSetIntValue(Object source, int value) {
-		((Spinner) source).setMaximum(value);
+	protected void doSetValue(Spinner source, Integer value) {
+		source.setMaximum(value);
 	}
 
 	public String toString() {

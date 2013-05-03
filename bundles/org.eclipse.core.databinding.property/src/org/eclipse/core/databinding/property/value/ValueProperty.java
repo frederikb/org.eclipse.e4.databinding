@@ -178,4 +178,23 @@ public abstract class ValueProperty<S, T> implements IValueProperty<S, T> {
 			IMapProperty<? super T, K, V> detailMap) {
 		return new ValuePropertyDetailMap<S, T, K, V>(this, detailMap);
 	}
+
+	/**
+	 * This is a default implementation that should ideally be overridden to use
+	 * a properly typed Class field. This implementation checks to see if the
+	 * value type is of type Class and, if it is, it assumes it is the class of
+	 * the values and makes an unchecked cast.
+	 * <P>
+	 * This method should always be overridden to provide an implementation that
+	 * never returns null.
+	 * 
+	 * @since 1.5
+	 */
+	public Class<T> getValueClass() {
+		Object valueType = getValueType();
+		if (valueType instanceof Class) {
+			return (Class<T>) valueType;
+		}
+		return null;
+	}
 }

@@ -26,16 +26,31 @@ import org.eclipse.core.databinding.property.list.SimpleListProperty;
  * 
  */
 public class SelfListProperty<E> extends SimpleListProperty<List<E>, E> {
-	private final Object elementType;
+	private final Object elementTypeAsObject;
+	private final Class<E> elementType;
+
+	/**
+	 * @param elementType
+	 * @deprecated use the constructor that takes a Class instead
+	 */
+	public SelfListProperty(Object elementType) {
+		this.elementTypeAsObject = elementType;
+		this.elementType = null;
+	}
 
 	/**
 	 * @param elementType
 	 */
-	public SelfListProperty(Object elementType) {
+	public SelfListProperty(Class<E> elementType) {
+		this.elementTypeAsObject = elementType;
 		this.elementType = elementType;
 	}
 
 	public Object getElementType() {
+		return elementTypeAsObject;
+	}
+
+	public Class<E> getElementClass() {
 		return elementType;
 	}
 

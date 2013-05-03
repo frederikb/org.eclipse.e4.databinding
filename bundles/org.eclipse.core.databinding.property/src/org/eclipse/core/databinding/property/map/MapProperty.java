@@ -155,11 +155,22 @@ public abstract class MapProperty<S, K, V> implements IMapProperty<S, K, V> {
 	public <U extends S> IObservableMap<K, V> observeDetail(
 			IObservableValue<U> master) {
 		return MasterDetailObservables.detailMap(master,
-				mapFactory(master.getRealm()), getKeyType(), getValueType());
+				mapFactory(master.getRealm()), getKeyClass(), getValueClass());
 	}
 
 	public final <T> IMapProperty<S, K, T> values(
 			IValueProperty<? super V, T> detailValues) {
 		return new MapPropertyDetailValuesMap<S, K, V, T>(this, detailValues);
 	}
+
+	// public Class<K> getKeyClass() {
+	// if (getKeyType() instanceof Class) {
+	// return (Class)getKeyType();
+	// }
+	// return null;
+	// }
+	//
+	// public Class<V> getValueClass() {
+	// return null;
+	// }
 }

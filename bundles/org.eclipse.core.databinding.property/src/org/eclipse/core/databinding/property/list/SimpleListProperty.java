@@ -31,7 +31,7 @@ import org.eclipse.core.internal.databinding.property.list.SimplePropertyObserva
  * <p>
  * Subclasses must implement these methods:
  * <ul>
- * <li> {@link #getElementType()}
+ * <li> {@link #getElementClass()}
  * <li> {@link #doGetList(Object)}
  * <li> {@link #doSetList(Object, List, ListDiff)}
  * <li> {@link #adaptListener(ISimplePropertyListener)}

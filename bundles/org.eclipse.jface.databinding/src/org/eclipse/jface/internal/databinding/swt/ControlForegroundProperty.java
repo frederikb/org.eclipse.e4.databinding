@@ -20,17 +20,18 @@ import org.eclipse.swt.widgets.Control;
  * @since 3.3
  * 
  */
-public class ControlForegroundProperty extends WidgetValueProperty {
+public class ControlForegroundProperty extends
+		WidgetValueProperty<Control, Color> {
 	public Object getValueType() {
 		return Color.class;
 	}
 
-	protected Object doGetValue(Object source) {
-		return ((Control) source).getForeground();
+	protected Color doGetValue(Control source) {
+		return source.getForeground();
 	}
 
-	protected void doSetValue(Object source, Object value) {
-		((Control) source).setForeground((Color) value);
+	protected void doSetValue(Control source, Color value) {
+		source.setForeground(value);
 	}
 
 	public String toString() {

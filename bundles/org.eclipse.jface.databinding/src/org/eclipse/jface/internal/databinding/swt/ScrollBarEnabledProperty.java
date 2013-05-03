@@ -16,13 +16,14 @@ import org.eclipse.swt.widgets.ScrollBar;
 /**
  * 
  */
-public class ScrollBarEnabledProperty extends WidgetBooleanValueProperty {
-	public boolean doGetBooleanValue(Object source) {
-		return ((ScrollBar) source).getEnabled();
+public class ScrollBarEnabledProperty extends
+		WidgetBooleanValueProperty<ScrollBar> {
+	public boolean doGetBooleanValue(ScrollBar source) {
+		return source.getEnabled();
 	}
 
-	void doSetBooleanValue(Object source, boolean value) {
-		((ScrollBar) source).setEnabled(value);
+	void doSetBooleanValue(ScrollBar source, boolean value) {
+		source.setEnabled(value);
 	}
 
 	public String toString() {

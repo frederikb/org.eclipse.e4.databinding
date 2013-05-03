@@ -18,13 +18,14 @@ import org.eclipse.swt.widgets.TrayItem;
  * @since 3.3
  * 
  */
-public class TrayItemTooltipTextProperty extends WidgetStringValueProperty {
-	String doGetStringValue(Object source) {
-		return ((TrayItem) source).getToolTipText();
+public class TrayItemTooltipTextProperty extends
+		WidgetStringValueProperty<TrayItem> {
+	protected String doGetValue(TrayItem source) {
+		return source.getToolTipText();
 	}
 
-	void doSetStringValue(Object source, String value) {
-		((TrayItem) source).setToolTipText(value);
+	protected void doSetValue(TrayItem source, String value) {
+		source.setToolTipText(value);
 	}
 
 	public String toString() {

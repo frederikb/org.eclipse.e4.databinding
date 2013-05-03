@@ -23,16 +23,31 @@ import org.eclipse.core.databinding.property.value.SimpleValueProperty;
  * 
  */
 public final class SelfValueProperty<T> extends SimpleValueProperty<T, T> {
-	private final Object valueType;
+	private final Object valueTypeAsObject;
+	private final Class<T> valueType;
+
+	/**
+	 * @param valueType
+	 * @deprecated use the constructor that takes a Class instead
+	 */
+	public SelfValueProperty(Object valueType) {
+		this.valueTypeAsObject = valueType;
+		this.valueType = null;
+	}
 
 	/**
 	 * @param valueType
 	 */
-	public SelfValueProperty(Object valueType) {
+	public SelfValueProperty(Class<T> valueType) {
+		this.valueTypeAsObject = valueType;
 		this.valueType = valueType;
 	}
 
 	public Object getValueType() {
+		return valueTypeAsObject;
+	}
+
+	public Class<T> getValueClass() {
 		return valueType;
 	}
 

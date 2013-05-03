@@ -13,6 +13,7 @@ package org.eclipse.jface.internal.databinding.provisional.swt;
 
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.databinding.observable.ChangeEvent;
@@ -100,7 +101,7 @@ public abstract class CompositeUpdater {
 
 	private class LayoutRunnable implements Runnable {
 		private boolean posted = false;
-		private Set controlsToLayout = new HashSet();
+		private Set<Control> controlsToLayout = new HashSet<Control>();
 
 		void add(Control toLayout) {
 			controlsToLayout.add(toLayout);
@@ -113,8 +114,8 @@ public abstract class CompositeUpdater {
 		public void run() {
 			posted = false;
 			theComposite.getShell().layout(
-					(Control[]) controlsToLayout
-							.toArray(new Control[controlsToLayout.size()]));
+					controlsToLayout.toArray(new Control[controlsToLayout
+							.size()]));
 			controlsToLayout.clear();
 		}
 	}
@@ -134,20 +135,20 @@ public abstract class CompositeUpdater {
 	}
 
 	private class PrivateInterface implements DisposeListener,
-			IListChangeListener {
+			IListChangeListener<Object> {
 
 		// DisposeListener implementation
 		public void widgetDisposed(DisposeEvent e) {
 			CompositeUpdater.this.dispose();
 		}
 
-		public void handleListChange(ListChangeEvent event) {
-			ListDiffEntry[] diffs = event.diff.getDifferences();
-			for (int i = 0; i < diffs.length; i++) {
-				ListDiffEntry listDiffEntry = diffs[i];
+		public void handleListChange(ListChangeEvent<Object> event) {
+			List<ListDiffEntry<Object>> diffs = event.diff
+					.getDifferencesAsList();
+			for (ListDiffEntry<Object> listDiffEntry : diffs) {
 				if (listDiffEntry.isAddition()) {
-					createChild(listDiffEntry.getElement(), listDiffEntry
-							.getPosition());
+					createChild(listDiffEntry.getElement(),
+							listDiffEntry.getPosition());
 				} else {
 					disposeWidget(listDiffEntry.getPosition());
 				}
@@ -161,7 +162,7 @@ public abstract class CompositeUpdater {
 
 	private Composite theComposite;
 
-	private IObservableList model;
+	private IObservableList<Object> model;
 
 	/**
 	 * Creates an updater for the given control and list. For each element of
@@ -173,7 +174,7 @@ public abstract class CompositeUpdater {
 	 * @param model
 	 *            an observable list to track
 	 */
-	public CompositeUpdater(Composite toUpdate, IObservableList model) {
+	public CompositeUpdater(Composite toUpdate, IObservableList<Object> model) {
 		this.theComposite = toUpdate;
 		this.model = model;
 
@@ -182,7 +183,7 @@ public abstract class CompositeUpdater {
 		ObservableTracker.setIgnore(true);
 		try {
 			int index = 0;
-			for (Iterator it = CompositeUpdater.this.model.iterator(); it
+			for (Iterator<Object> it = CompositeUpdater.this.model.iterator(); it
 					.hasNext();) {
 				Object element = it.next();
 				createChild(element, index++);

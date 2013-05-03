@@ -151,11 +151,32 @@ public abstract class ListProperty<S, E> implements IListProperty<S, E> {
 	public <U extends S> IObservableList<E> observeDetail(
 			IObservableValue<U> master) {
 		return MasterDetailObservables.detailList(master,
-				listFactory(master.getRealm()), getElementType());
+				listFactory(master.getRealm()), getElementClass());
 	}
 
 	public final <T> IListProperty<S, T> values(
 			IValueProperty<? super E, T> detailValue) {
 		return new ListPropertyDetailValuesList<S, E, T>(this, detailValue);
+	}
+
+	/**
+	 * This is a default implementation that should ideally be overridden to use
+	 * a properly typed Class field. This implementation checks to see if the
+	 * element type is of type Class and, if it is, it assumes it is the class
+	 * of the elements and makes an unchecked cast.
+	 * <P>
+	 * This method should always be overridden to provide an implementation that
+	 * never returns null.
+	 * 
+	 * @return the class of the elements, if possible, or null if this is not
+	 *         possible
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
+		Object elementType = getElementType();
+		if (elementType instanceof Class) {
+			return (Class<E>) elementType;
+		}
+		return null;
 	}
 }

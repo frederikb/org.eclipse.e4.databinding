@@ -17,16 +17,21 @@ import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.ScrollBar;
 import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.Widget;
 
 /**
- * 
+ * @deprecated use static methods in WidgetProperties instead (the method names
+ *             will start with 'enabled')
  */
-public class WidgetEnabledProperty extends WidgetDelegatingValueProperty {
-	IValueProperty control;
-	IValueProperty menu;
-	IValueProperty menuItem;
-	IValueProperty scrollBar;
-	IValueProperty toolItem;
+// ok to ignore warnings in deprecated class
+@SuppressWarnings({ "rawtypes", "unchecked" })
+public class WidgetEnabledProperty extends
+		WidgetDelegatingValueProperty<Widget, Boolean> {
+	IValueProperty<Control, Boolean> control;
+	IValueProperty<Menu, Boolean> menu;
+	IValueProperty<MenuItem, Boolean> menuItem;
+	IValueProperty<ScrollBar, Boolean> scrollBar;
+	IValueProperty<ToolItem, Boolean> toolItem;
 
 	/**
 	 * 
@@ -35,7 +40,7 @@ public class WidgetEnabledProperty extends WidgetDelegatingValueProperty {
 		super(Boolean.TYPE);
 	}
 
-	protected IValueProperty doGetDelegate(Object source) {
+	protected IValueProperty doGetDelegate(Widget source) {
 		if (source instanceof Control) {
 			if (control == null)
 				control = new ControlEnabledProperty();

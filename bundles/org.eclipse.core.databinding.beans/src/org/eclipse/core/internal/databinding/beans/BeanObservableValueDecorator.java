@@ -23,17 +23,19 @@ import org.eclipse.core.databinding.observable.value.IObservableValue;
 /**
  * {@link IBeanObservable} decorator for an {@link IObservableValue}.
  * 
+ * @param <T>
+ * 
  * @since 3.3
  */
-public class BeanObservableValueDecorator extends DecoratingObservableValue
-		implements IBeanObservable {
+public class BeanObservableValueDecorator<T> extends
+		DecoratingObservableValue<T> implements IBeanObservable {
 	private PropertyDescriptor propertyDescriptor;
 
 	/**
 	 * @param decorated
 	 * @param propertyDescriptor
 	 */
-	public BeanObservableValueDecorator(IObservableValue decorated,
+	public BeanObservableValueDecorator(IObservableValue<T> decorated,
 			PropertyDescriptor propertyDescriptor) {
 		super(decorated, true);
 		this.propertyDescriptor = propertyDescriptor;

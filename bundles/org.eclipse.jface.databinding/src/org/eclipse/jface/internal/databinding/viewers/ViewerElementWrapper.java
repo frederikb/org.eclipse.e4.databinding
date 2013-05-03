@@ -18,10 +18,12 @@ import org.eclipse.jface.viewers.IElementComparer;
  * for computing {@link Object#equals(Object) equality} and
  * {@link Object#hashCode() hashes}.
  * 
+ * @param <E>
+ * 
  * @since 1.2
  */
-public class ViewerElementWrapper {
-	private final Object element;
+public class ViewerElementWrapper<E> {
+	private final E element;
 	private final IElementComparer comparer;
 
 	/**
@@ -32,7 +34,7 @@ public class ViewerElementWrapper {
 	 * @param comparer
 	 *            the comparer to use for computing equality and hash codes.
 	 */
-	public ViewerElementWrapper(Object element, IElementComparer comparer) {
+	public ViewerElementWrapper(E element, IElementComparer comparer) {
 		if (comparer == null)
 			throw new NullPointerException();
 		this.element = element;
@@ -43,14 +45,15 @@ public class ViewerElementWrapper {
 		if (!(obj instanceof ViewerElementWrapper)) {
 			return false;
 		}
-		return comparer.equals(element, ((ViewerElementWrapper) obj).element);
+		return comparer
+				.equals(element, ((ViewerElementWrapper<?>) obj).element);
 	}
 
 	public int hashCode() {
 		return comparer.hashCode(element);
 	}
 
-	Object unwrap() {
+	E unwrap() {
 		return element;
 	}
 }

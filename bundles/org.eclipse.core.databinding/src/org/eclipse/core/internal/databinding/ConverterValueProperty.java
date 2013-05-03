@@ -46,6 +46,10 @@ public class ConverterValueProperty<S, T> extends SimpleValueProperty<S, T> {
 		return converter.getToType();
 	}
 
+	public Class<T> getValueClass() {
+		return (Class<T>) converter.getToType();
+	}
+
 	public T getValue(S source) {
 		// We do also pass null values to the converter.
 		return doGetValue(source);

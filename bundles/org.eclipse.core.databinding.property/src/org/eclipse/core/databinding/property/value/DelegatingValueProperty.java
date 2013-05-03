@@ -33,15 +33,31 @@ import org.eclipse.core.internal.databinding.property.value.SetDelegatingValueOb
  * 
  */
 public abstract class DelegatingValueProperty<S, T> extends ValueProperty<S, T> {
-	private final Object valueType;
+	private final Object valueTypeAsObject;
+	private final Class<T> valueType;
 	private final IValueProperty<S, T> nullProperty = new NullValueProperty();
 
 	protected DelegatingValueProperty() {
 		this(null);
 	}
 
+	/**
+	 * 
+	 * @param valueType
+	 * @deprecated use the constructor that takes a Class object instead
+	 */
 	protected DelegatingValueProperty(Object valueType) {
+		this.valueType = null;
+		this.valueTypeAsObject = valueType;
+	}
+
+	/**
+	 * @param valueType
+	 * @since 1.5
+	 */
+	protected DelegatingValueProperty(Class<T> valueType) {
 		this.valueType = valueType;
+		this.valueTypeAsObject = valueType;
 	}
 
 	/**
@@ -82,6 +98,13 @@ public abstract class DelegatingValueProperty<S, T> extends ValueProperty<S, T> 
 	}
 
 	public Object getValueType() {
+		return valueTypeAsObject;
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public Class<T> getValueClass() {
 		return valueType;
 	}
 
@@ -110,6 +133,10 @@ public abstract class DelegatingValueProperty<S, T> extends ValueProperty<S, T> 
 
 	private class NullValueProperty extends SimpleValueProperty<S, T> {
 		public Object getValueType() {
+			return valueType;
+		}
+
+		public Class<T> getValueClass() {
 			return valueType;
 		}
 

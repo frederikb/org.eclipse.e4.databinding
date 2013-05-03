@@ -22,7 +22,8 @@ import org.eclipse.swt.widgets.Control;
  * @since 3.3
  * 
  */
-public class ControlBoundsProperty extends WidgetValueProperty {
+public class ControlBoundsProperty extends
+		WidgetValueProperty<Control, Rectangle> {
 	/**
 	 * 
 	 */
@@ -34,12 +35,12 @@ public class ControlBoundsProperty extends WidgetValueProperty {
 		return Rectangle.class;
 	}
 
-	protected Object doGetValue(Object source) {
-		return ((Control) source).getBounds();
+	protected Rectangle doGetValue(Control source) {
+		return source.getBounds();
 	}
 
-	protected void doSetValue(Object source, Object value) {
-		((Control) source).setBounds((Rectangle) value);
+	protected void doSetValue(Control source, Rectangle value) {
+		source.setBounds(value);
 	}
 
 	public String toString() {

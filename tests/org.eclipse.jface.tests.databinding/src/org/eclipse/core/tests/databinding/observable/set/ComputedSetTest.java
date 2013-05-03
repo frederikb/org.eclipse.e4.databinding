@@ -77,8 +77,8 @@ public class ComputedSetTest extends AbstractDefaultRealmTestCase {
 
 		set.dependency.fireChange();
 		assertEquals(
-				"ComputedSet should not fire set change events when dirty",
-				1, tracker.count);
+				"ComputedSet should not fire set change events when dirty", 1,
+				tracker.count);
 
 		set.size(); // Force set to recompute.
 		set.dependency.fireChange();
@@ -151,7 +151,16 @@ public class ComputedSetTest extends AbstractDefaultRealmTestCase {
 		}
 
 		public Object createElement(IObservableCollection collection) {
-			return new Object();
+			Class elementType = getElementType(collection);
+			try {
+				return elementType.getConstructor().newInstance();
+			} catch (Exception e) {
+				return new Object();
+			}
+		}
+
+		public Class getElementType(IObservableCollection collection) {
+			return Object.class;
 		}
 
 		public void setStale(IObservable observable, boolean stale) {

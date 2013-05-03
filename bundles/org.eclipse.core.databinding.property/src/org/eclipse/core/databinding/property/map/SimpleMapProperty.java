@@ -31,8 +31,8 @@ import org.eclipse.core.internal.databinding.property.map.SimplePropertyObservab
  * <p>
  * Subclasses must implement these methods:
  * <ul>
- * <li> {@link #getKeyType()}
- * <li> {@link #getValueType()}
+ * <li> {@link #getKeyClass()}
+ * <li> {@link #getValueClass()}
  * <li> {@link #doGetMap(Object)}
  * <li> {@link #doSetMap(Object, Map, MapDiff)}
  * <li> {@link #adaptListener(ISimplePropertyListener)}
@@ -118,7 +118,6 @@ public abstract class SimpleMapProperty<S, K, V> extends MapProperty<S, K, V> {
 	 *         specified listener, or null if the source object has no listener
 	 *         APIs for this property.
 	 * @noreference This method is not intended to be referenced by clients.
-	 * @since 1.5
 	 */
 	public abstract INativePropertyListener<S> adaptListener(
 			ISimplePropertyListener<MapDiff<K, V>> listener);

@@ -19,23 +19,23 @@ import org.eclipse.core.databinding.ValidationStatusProvider;
 import org.eclipse.core.databinding.observable.value.ComputedValue;
 import org.eclipse.core.runtime.IStatus;
 
-/*package*/ class MaxSeverityValidationStatusProvider extends ComputedValue {
+/*package*/class MaxSeverityValidationStatusProvider extends
+		ComputedValue<ValidationStatusProvider> {
 
-	private Collection validationStatusProviders;
+	private Collection<ValidationStatusProvider> validationStatusProviders;
 
 	public MaxSeverityValidationStatusProvider(DataBindingContext dbc) {
 		super(ValidationStatusProvider.class);
 		this.validationStatusProviders = dbc.getValidationStatusProviders();
 	}
 
-	protected Object calculate() {
+	protected ValidationStatusProvider calculate() {
 		int maxSeverity = IStatus.OK;
 		ValidationStatusProvider maxSeverityProvider = null;
-		for (Iterator it = validationStatusProviders.iterator(); it.hasNext();) {
-			ValidationStatusProvider provider = (ValidationStatusProvider) it
-					.next();
-			IStatus status = (IStatus) provider.getValidationStatus()
-					.getValue();
+		for (Iterator<ValidationStatusProvider> it = validationStatusProviders
+				.iterator(); it.hasNext();) {
+			ValidationStatusProvider provider = it.next();
+			IStatus status = provider.getValidationStatus().getValue();
 			if (status.getSeverity() > maxSeverity) {
 				maxSeverity = status.getSeverity();
 				maxSeverityProvider = provider;

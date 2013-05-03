@@ -17,13 +17,13 @@ import org.eclipse.swt.widgets.Control;
  * @since 3.3
  * 
  */
-public class ControlVisibleProperty extends WidgetBooleanValueProperty {
-	boolean doGetBooleanValue(Object source) {
-		return ((Control) source).getVisible();
+public class ControlVisibleProperty extends WidgetBooleanValueProperty<Control> {
+	boolean doGetBooleanValue(Control source) {
+		return source.getVisible();
 	}
 
-	void doSetBooleanValue(Object source, boolean value) {
-		((Control) source).setVisible(value);
+	void doSetBooleanValue(Control source, boolean value) {
+		source.setVisible(value);
 	}
 
 	public String toString() {

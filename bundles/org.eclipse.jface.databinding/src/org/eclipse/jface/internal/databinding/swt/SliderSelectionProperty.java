@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Slider;
 /**
  * 
  */
-public class SliderSelectionProperty extends WidgetIntValueProperty {
+public class SliderSelectionProperty extends WidgetIntValueProperty<Slider> {
 	/**
 	 * 
 	 */
@@ -25,12 +25,12 @@ public class SliderSelectionProperty extends WidgetIntValueProperty {
 		super(SWT.Selection);
 	}
 
-	int doGetIntValue(Object source) {
-		return ((Slider) source).getSelection();
+	protected Integer doGetValue(Slider source) {
+		return source.getSelection();
 	}
 
-	void doSetIntValue(Object source, int value) {
-		((Slider) source).setSelection(value);
+	protected void doSetValue(Slider source, Integer value) {
+		source.setSelection(value);
 	}
 
 	public String toString() {

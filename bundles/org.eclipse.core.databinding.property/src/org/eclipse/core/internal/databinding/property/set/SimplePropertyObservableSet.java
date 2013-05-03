@@ -113,8 +113,18 @@ public class SimplePropertyObservableSet<S, E> extends AbstractObservableSet<E>
 		return getSet();
 	}
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
 		return property.getElementType();
+	}
+
+	/**
+	 * @return the type of the elements
+	 */
+	public Class<E> getElementClass() {
+		return property.getElementClass();
 	}
 
 	// Queries

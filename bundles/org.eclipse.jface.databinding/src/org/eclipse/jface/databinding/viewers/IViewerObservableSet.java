@@ -12,12 +12,17 @@
 package org.eclipse.jface.databinding.viewers;
 
 import org.eclipse.core.databinding.observable.set.IObservableSet;
+import org.eclipse.jface.viewers.Viewer;
 
 /**
  * {@link IObservableSet} observing a JFace Viewer.
  * 
+ * @param <S>
+ * @param <E>
+ * 
  * @since 1.2
  * 
  */
-public interface IViewerObservableSet extends IObservableSet, IViewerObservable {
+public interface IViewerObservableSet<S extends Viewer, E> extends
+		IObservableSet<E>, IViewerObservable<S> {
 }

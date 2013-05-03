@@ -18,8 +18,11 @@ import org.eclipse.swt.widgets.Spinner;
 
 /**
  * @since 3.3
- * 
+ * @deprecated use static methods in WidgetProperties instead (the method names
+ *             will start with 'maximum')
  */
+// ok to ignore warnings in deprecated class
+@SuppressWarnings("rawtypes")
 public class WidgetMaximumProperty extends WidgetDelegatingValueProperty {
 	private IValueProperty scale;
 	private IValueProperty slider;

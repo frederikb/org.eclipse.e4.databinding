@@ -30,6 +30,10 @@ public final class DataBindingContextBindingsProperty extends
 		return Binding.class;
 	}
 
+	public Class<Binding<?, ?>> getElementClass() {
+		return (Class<Binding<?, ?>>) getElementType();
+	}
+
 	protected List<Binding<?, ?>> doGetList(DataBindingContext source) {
 		return source.getBindings();
 	}

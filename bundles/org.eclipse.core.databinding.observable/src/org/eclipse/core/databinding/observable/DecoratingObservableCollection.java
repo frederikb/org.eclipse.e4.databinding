@@ -115,8 +115,18 @@ public class DecoratingObservableCollection<E> extends DecoratingObservable
 		return decorated.toArray(a);
 	}
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
 		return decorated.getElementType();
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
+		return decorated.getElementClass();
 	}
 
 	public boolean equals(Object obj) {

@@ -13,6 +13,7 @@
 
 package org.eclipse.jface.internal.databinding.swt;
 
+import org.eclipse.core.databinding.observable.IDiff;
 import org.eclipse.core.databinding.property.IProperty;
 import org.eclipse.core.databinding.property.ISimplePropertyListener;
 import org.eclipse.core.databinding.property.NativePropertyListener;
@@ -22,9 +23,12 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Widget;
 
 /**
+ * @param <S>
+ * @param <D>
  * @since 3.3
  */
-public class WidgetListener extends NativePropertyListener implements Listener {
+public class WidgetListener<S, D extends IDiff> extends
+		NativePropertyListener<S, D> implements Listener {
 	private final int[] changeEvents;
 	private final int[] staleEvents;
 
@@ -34,8 +38,9 @@ public class WidgetListener extends NativePropertyListener implements Listener {
 	 * @param changeEvents
 	 * @param staleEvents
 	 */
-	public WidgetListener(IProperty property, ISimplePropertyListener listener,
-			int[] changeEvents, int[] staleEvents) {
+	public WidgetListener(IProperty property,
+			ISimplePropertyListener<D> listener, int[] changeEvents,
+			int[] staleEvents) {
 		super(property, listener);
 		this.changeEvents = changeEvents;
 		this.staleEvents = staleEvents;

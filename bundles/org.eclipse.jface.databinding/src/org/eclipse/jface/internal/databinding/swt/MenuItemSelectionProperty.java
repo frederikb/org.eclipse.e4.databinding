@@ -17,7 +17,8 @@ import org.eclipse.swt.widgets.MenuItem;
 /**
  * 
  */
-public class MenuItemSelectionProperty extends WidgetBooleanValueProperty {
+public class MenuItemSelectionProperty extends
+		WidgetBooleanValueProperty<MenuItem> {
 	/**
 	 * 
 	 */
@@ -25,12 +26,12 @@ public class MenuItemSelectionProperty extends WidgetBooleanValueProperty {
 		super(SWT.Selection);
 	}
 
-	boolean doGetBooleanValue(Object source) {
-		return ((MenuItem) source).getSelection();
+	boolean doGetBooleanValue(MenuItem source) {
+		return source.getSelection();
 	}
 
-	void doSetBooleanValue(Object source, boolean value) {
-		((MenuItem) source).setSelection(value);
+	void doSetBooleanValue(MenuItem source, boolean value) {
+		source.setSelection(value);
 	}
 
 	public String toString() {

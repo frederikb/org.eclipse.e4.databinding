@@ -20,35 +20,39 @@ import org.eclipse.core.databinding.property.map.DelegatingMapProperty;
 import org.eclipse.core.databinding.property.map.IMapProperty;
 
 /**
+ * @param <S>
+ * @param <K>
+ * @param <V>
  * @since 3.3
  * 
  */
-public class AnonymousPojoMapProperty extends DelegatingMapProperty {
+public class AnonymousPojoMapProperty<S, K, V> extends
+		DelegatingMapProperty<S, K, V> {
 	private final String propertyName;
 
-	private Map delegates;
+	private Map<Class<? extends S>, IMapProperty<S, K, V>> delegates;
 
 	/**
 	 * @param propertyName
 	 * @param keyType
 	 * @param valueType
 	 */
-	public AnonymousPojoMapProperty(String propertyName, Class keyType,
-			Class valueType) {
+	public AnonymousPojoMapProperty(String propertyName, Class<K> keyType,
+			Class<V> valueType) {
 		super(keyType, valueType);
 		this.propertyName = propertyName;
-		this.delegates = new HashMap();
+		this.delegates = new HashMap<Class<? extends S>, IMapProperty<S, K, V>>();
 	}
 
-	protected IMapProperty doGetDelegate(Object source) {
-		Class beanClass = source.getClass();
+	protected IMapProperty<S, K, V> doGetDelegate(S source) {
+		Class<? extends S> beanClass = Util.getClass(source);
 		if (delegates.containsKey(beanClass))
-			return (IMapProperty) delegates.get(beanClass);
+			return delegates.get(beanClass);
 
-		IMapProperty delegate;
+		IMapProperty<S, K, V> delegate;
 		try {
-			delegate = PojoProperties.map(beanClass, propertyName,
-					(Class) getKeyType(), (Class) getValueType());
+			delegate = PojoProperties.<S, K, V> map(beanClass, propertyName,
+					getKeyClass(), getValueClass());
 		} catch (IllegalArgumentException noSuchProperty) {
 			delegate = null;
 		}
@@ -58,8 +62,8 @@ public class AnonymousPojoMapProperty extends DelegatingMapProperty {
 
 	public String toString() {
 		String s = "?." + propertyName + "{:}"; //$NON-NLS-1$ //$NON-NLS-2$
-		Class keyType = (Class) getKeyType();
-		Class valueType = (Class) getValueType();
+		Class<K> keyType = getKeyClass();
+		Class<V> valueType = getValueClass();
 		if (keyType != null || valueType != null) {
 			s += "<" + BeanPropertyHelper.shortClassName(keyType) + ", " //$NON-NLS-1$//$NON-NLS-2$
 					+ BeanPropertyHelper.shortClassName(valueType) + ">"; //$NON-NLS-1$

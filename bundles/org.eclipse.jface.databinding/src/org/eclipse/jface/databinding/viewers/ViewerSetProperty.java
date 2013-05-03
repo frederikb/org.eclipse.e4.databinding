@@ -30,26 +30,24 @@ import org.eclipse.jface.viewers.Viewer;
  * {@link IViewerObservableSet}
  * </ul>
  * 
+ * @param <S>
+ * @param <E>
+ * 
  * @since 1.3
  */
-public abstract class ViewerSetProperty extends SimpleSetProperty implements
-		IViewerSetProperty {
-	public IObservableSet observe(Object source) {
-		if (source instanceof Viewer) {
-			return observe((Viewer) source);
-		}
-		return super.observe(source);
+public abstract class ViewerSetProperty<S extends Viewer, E> extends
+		SimpleSetProperty<S, E> implements IViewerSetProperty<S, E> {
+
+	/**
+	 * @since 1.7
+	 */
+	public IViewerObservableSet<S, E> observe(Realm realm, S viewer) {
+		IObservableSet<E> observable = super.observe(realm, viewer);
+		return new ViewerObservableSetDecorator<S, E>(observable, viewer);
 	}
 
-	public IObservableSet observe(Realm realm, Object source) {
-		IObservableSet observable = super.observe(realm, source);
-		if (source instanceof Viewer)
-			return new ViewerObservableSetDecorator(observable, (Viewer) source);
-		return observable;
-	}
-
-	public IViewerObservableSet observe(Viewer viewer) {
-		return (IViewerObservableSet) observe(SWTObservables.getRealm(viewer
-				.getControl().getDisplay()), viewer);
+	public IViewerObservableSet<S, E> observe(S viewer) {
+		return observe(SWTObservables.getRealm(((Viewer) viewer).getControl()
+				.getDisplay()), viewer);
 	}
 }

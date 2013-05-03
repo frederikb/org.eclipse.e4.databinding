@@ -17,13 +17,13 @@ import org.eclipse.swt.widgets.Button;
  * @since 3.3
  * 
  */
-public class ButtonTextProperty extends WidgetStringValueProperty {
-	String doGetStringValue(Object source) {
-		return ((Button) source).getText();
+public class ButtonTextProperty extends WidgetStringValueProperty<Button> {
+	protected String doGetValue(Button source) {
+		return source.getText();
 	}
 
-	void doSetStringValue(Object source, String value) {
-		((Button) source).setText(value == null ? "" : value); //$NON-NLS-1$
+	protected void doSetValue(Button source, String value) {
+		source.setText(value == null ? "" : value); //$NON-NLS-1$
 	}
 
 	public String toString() {

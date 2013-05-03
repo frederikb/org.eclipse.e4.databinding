@@ -17,14 +17,16 @@ import org.eclipse.jface.viewers.Viewer;
 /**
  * {@link IObservable} observing a JFace Viewer.
  * 
+ * @param <S>
+ * 
  * @since 1.2
  * 
  */
-public interface IViewerObservable extends IObservable {
+public interface IViewerObservable<S extends Viewer> extends IObservable {
 	/**
 	 * Returns the underlying viewer for this observable.
 	 * 
 	 * @return the viewer.
 	 */
-	public Viewer getViewer();
+	public S getViewer();
 }

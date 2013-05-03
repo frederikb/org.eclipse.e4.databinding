@@ -17,8 +17,9 @@ import org.eclipse.jface.databinding.swt.IWidgetValueProperty;
 import org.eclipse.jface.databinding.swt.SWTObservables;
 import org.eclipse.swt.widgets.Widget;
 
-abstract class WidgetDelegatingValueProperty extends DelegatingValueProperty
-		implements IWidgetValueProperty {
+public abstract class WidgetDelegatingValueProperty<S extends Widget, T>
+		extends DelegatingValueProperty<S, T> implements
+		IWidgetValueProperty<S, T> {
 	RuntimeException notSupported(Object source) {
 		return new IllegalArgumentException(
 				"Widget [" + source.getClass().getName() + "] is not supported."); //$NON-NLS-1$//$NON-NLS-2$
@@ -31,12 +32,12 @@ abstract class WidgetDelegatingValueProperty extends DelegatingValueProperty
 		super(valueType);
 	}
 
-	public ISWTObservableValue observe(Widget widget) {
-		return (ISWTObservableValue) observe(SWTObservables.getRealm(widget
-				.getDisplay()), widget);
+	public ISWTObservableValue<T> observe(S widget) {
+		return (ISWTObservableValue<T>) observe(
+				SWTObservables.getRealm(widget.getDisplay()), widget);
 	}
 
-	public ISWTObservableValue observeDelayed(int delay, Widget widget) {
+	public ISWTObservableValue<T> observeDelayed(int delay, S widget) {
 		return SWTObservables.observeDelayedValue(delay, observe(widget));
 	}
 }

@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Scale;
  * @since 3.3
  * 
  */
-public class ScaleSelectionProperty extends WidgetIntValueProperty {
+public class ScaleSelectionProperty extends WidgetIntValueProperty<Scale> {
 	/**
 	 * 
 	 */
@@ -26,12 +26,12 @@ public class ScaleSelectionProperty extends WidgetIntValueProperty {
 		super(SWT.Selection);
 	}
 
-	int doGetIntValue(Object source) {
-		return ((Scale) source).getSelection();
+	protected Integer doGetValue(Scale source) {
+		return source.getSelection();
 	}
 
-	void doSetIntValue(Object source, int value) {
-		((Scale) source).setSelection(value);
+	protected void doSetValue(Scale source, Integer value) {
+		source.setSelection(value);
 	}
 
 	public String toString() {

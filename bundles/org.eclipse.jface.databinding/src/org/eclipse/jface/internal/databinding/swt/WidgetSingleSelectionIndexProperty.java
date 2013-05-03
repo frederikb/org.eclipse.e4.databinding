@@ -19,8 +19,11 @@ import org.eclipse.swt.widgets.Table;
 
 /**
  * @since 3.3
- * 
+ * @deprecated use static methods in SelectionProviderProperties or
+ *             ViewerProperties instead
  */
+// ok to ignore warnings in deprecated class
+@SuppressWarnings("rawtypes")
 public final class WidgetSingleSelectionIndexProperty extends
 		WidgetDelegatingValueProperty {
 	private IValueProperty cCombo;

@@ -40,13 +40,23 @@ import org.eclipse.core.databinding.property.value.IValueProperty;
  */
 public interface IListProperty<S, E> extends IProperty {
 	/**
-	 * Returns the type of the elements in the collection or <code>null</code>
-	 * if untyped
+	 * Returns the type of the elements in the list or <code>null</code> if
+	 * untyped
 	 * 
-	 * @return the type of the elements in the collection or <code>null</code>
-	 *         if untyped
+	 * @return the type of the elements in the list or <code>null</code> if
+	 *         untyped
+	 * @deprecated use getElementClass instead
 	 */
 	public Object getElementType();
+
+	/**
+	 * Returns the type of the elements in the list or <code>Object.class</code>
+	 * if untyped
+	 * 
+	 * @return the type of the elements in the list
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass();
 
 	/**
 	 * Returns an unmodifiable List with the current contents of the source's

@@ -12,13 +12,16 @@
 package org.eclipse.jface.databinding.viewers;
 
 import org.eclipse.core.databinding.observable.list.IObservableList;
+import org.eclipse.jface.viewers.Viewer;
 
 /**
  * {@link IObservableList} observing a JFace Viewer.
  * 
+ * @param <S>
+ * 
  * @since 1.2
  * 
  */
-public interface IViewerObservableList extends IObservableList,
-		IViewerObservable {
+public interface IViewerObservableList<S extends Viewer> extends
+		IObservableList<Object>, IViewerObservable<S> {
 }

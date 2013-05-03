@@ -17,10 +17,13 @@ import org.eclipse.jface.viewers.Viewer;
 /**
  * {@link IListProperty} for observing a JFace viewer
  * 
+ * @param <S>
+ * 
  * @since 1.3
  * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface IViewerListProperty extends IListProperty {
+public interface IViewerListProperty<S extends Viewer> extends
+		IListProperty<S, Object> {
 	/**
 	 * Returns an {@link IViewerObservableList} observing this list property on
 	 * the given viewer
@@ -30,5 +33,5 @@ public interface IViewerListProperty extends IListProperty {
 	 * @return an observable list observing this list property on the given
 	 *         viewer
 	 */
-	public IViewerObservableList observe(Viewer viewer);
+	public IViewerObservableList<S> observe(S viewer);
 }

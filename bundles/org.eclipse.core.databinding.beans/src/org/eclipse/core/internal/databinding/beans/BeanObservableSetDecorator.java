@@ -23,9 +23,11 @@ import org.eclipse.core.databinding.observable.set.IObservableSet;
 /**
  * {@link IBeanObservable} decorator for an {@link IObservableSet}.
  * 
+ * @param <E>
+ * 
  * @since 3.3
  */
-public class BeanObservableSetDecorator extends DecoratingObservableSet
+public class BeanObservableSetDecorator<E> extends DecoratingObservableSet<E>
 		implements IBeanObservable {
 	private PropertyDescriptor propertyDescriptor;
 
@@ -33,7 +35,7 @@ public class BeanObservableSetDecorator extends DecoratingObservableSet
 	 * @param decorated
 	 * @param propertyDescriptor
 	 */
-	public BeanObservableSetDecorator(IObservableSet decorated,
+	public BeanObservableSetDecorator(IObservableSet<E> decorated,
 			PropertyDescriptor propertyDescriptor) {
 		super(decorated, true);
 		this.propertyDescriptor = propertyDescriptor;

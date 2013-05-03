@@ -17,13 +17,13 @@ import org.eclipse.swt.widgets.Shell;
  * @since 3.3
  * 
  */
-public class ShellTextProperty extends WidgetStringValueProperty {
-	String doGetStringValue(Object source) {
-		return ((Shell) source).getText();
+public class ShellTextProperty extends WidgetStringValueProperty<Shell> {
+	protected String doGetValue(Shell source) {
+		return source.getText();
 	}
 
-	void doSetStringValue(Object source, String value) {
-		((Shell) source).setText(value == null ? "" : value); //$NON-NLS-1$
+	protected void doSetValue(Shell source, String value) {
+		source.setText(value == null ? "" : value); //$NON-NLS-1$
 	}
 
 	public String toString() {

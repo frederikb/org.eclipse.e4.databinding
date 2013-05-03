@@ -17,13 +17,14 @@ import org.eclipse.swt.widgets.Control;
  * @since 3.3
  * 
  */
-public class ControlTooltipTextProperty extends WidgetStringValueProperty {
-	String doGetStringValue(Object source) {
-		return ((Control) source).getToolTipText();
+public class ControlTooltipTextProperty extends
+		WidgetStringValueProperty<Control> {
+	protected String doGetValue(Control source) {
+		return source.getToolTipText();
 	}
 
-	void doSetStringValue(Object source, String value) {
-		((Control) source).setToolTipText(value);
+	protected void doSetValue(Control source, String value) {
+		source.setToolTipText(value);
 	}
 
 	public String toString() {

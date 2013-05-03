@@ -18,13 +18,13 @@ import org.eclipse.swt.widgets.Label;
  * @since 3.3
  * 
  */
-public class LabelImageProperty extends WidgetImageValueProperty {
-	Image doGetImageValue(Object source) {
-		return ((Label) source).getImage();
+public class LabelImageProperty extends WidgetImageValueProperty<Label> {
+	Image doGetImageValue(Label source) {
+		return source.getImage();
 	}
 
-	void doSetImageValue(Object source, Image value) {
-		((Label) source).setImage(value);
+	void doSetImageValue(Label source, Image value) {
+		source.setImage(value);
 	}
 
 	public String toString() {

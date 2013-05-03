@@ -40,16 +40,33 @@ import org.eclipse.core.databinding.property.value.SimpleValueProperty;
  */
 public class ObservableValueProperty<T> extends
 		SimpleValueProperty<IObservableValue<T>, T> {
-	private final Object valueType;
+	private final Object valueTypeAsObject;
+	private final Class<T> valueType;
+
+	/**
+	 * 
+	 * @param valueType
+	 * @deprecated use the constructor that takes a Class object instead
+	 */
+	public ObservableValueProperty(Object valueType) {
+		this.valueType = null;
+		this.valueTypeAsObject = valueType;
+	}
 
 	/**
 	 * @param valueType
+	 * @since 1.5
 	 */
-	public ObservableValueProperty(Object valueType) {
+	public ObservableValueProperty(Class<T> valueType) {
 		this.valueType = valueType;
+		this.valueTypeAsObject = valueType;
 	}
 
 	public Object getValueType() {
+		return valueTypeAsObject;
+	}
+
+	public Class<T> getValueClass() {
 		return valueType;
 	}
 

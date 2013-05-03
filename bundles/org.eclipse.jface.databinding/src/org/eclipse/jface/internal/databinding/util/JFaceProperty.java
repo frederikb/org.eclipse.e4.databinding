@@ -15,6 +15,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.core.databinding.observable.value.ValueDiff;
 import org.eclipse.core.databinding.property.INativePropertyListener;
 import org.eclipse.core.databinding.property.ISimplePropertyListener;
 import org.eclipse.core.databinding.property.NativePropertyListener;
@@ -26,10 +27,13 @@ import org.eclipse.jface.util.PropertyChangeEvent;
  * Class that supports the use of {@link IObservableValue} with objects that
  * follow standard bean method naming conventions but notify an
  * {@link IPropertyChangeListener} when the property changes.
+ * 
+ * @param <S>
+ * @param <T>
  */
-public class JFaceProperty extends SimpleValueProperty {
+public class JFaceProperty<S, T> extends SimpleValueProperty<S, T> {
 
-	private Class returnType;
+	private Class<T> returnType;
 	private Method setterMethod;
 	private Method getterMethod;
 	private final String property;
@@ -56,9 +60,9 @@ public class JFaceProperty extends SimpleValueProperty {
 		return fieldName;
 	}
 
-	class Listener extends NativePropertyListener implements
+	class Listener extends NativePropertyListener<S, ValueDiff<T>> implements
 			IPropertyChangeListener {
-		public Listener(ISimplePropertyListener listener) {
+		public Listener(ISimplePropertyListener<ValueDiff<T>> listener) {
 			super(JFaceProperty.this, listener);
 		}
 
@@ -103,7 +107,7 @@ public class JFaceProperty extends SimpleValueProperty {
 				String getterName = getBooleanGetterName(fieldName);
 				getterMethod = clazz.getMethod(getterName, new Class[] {});
 			}
-			returnType = getterMethod.getReturnType();
+			returnType = (Class<T>) getterMethod.getReturnType();
 			setterMethod = clazz.getMethod(getSetterName(fieldName),
 					new Class[] { returnType });
 			addPropertyListenerMethod = clazz
@@ -119,14 +123,14 @@ public class JFaceProperty extends SimpleValueProperty {
 		}
 	}
 
-	public INativePropertyListener adaptListener(
-			ISimplePropertyListener listener) {
+	public INativePropertyListener<S> adaptListener(
+			ISimplePropertyListener<ValueDiff<T>> listener) {
 		return new Listener(listener);
 	}
 
-	protected Object doGetValue(Object model) {
+	protected T doGetValue(S model) {
 		try {
-			return getterMethod.invoke(model, new Object[] {});
+			return (T) getterMethod.invoke(model, new Object[] {});
 		} catch (InvocationTargetException e) {
 			throw new IllegalStateException(e.getMessage());
 		} catch (IllegalAccessException e) {

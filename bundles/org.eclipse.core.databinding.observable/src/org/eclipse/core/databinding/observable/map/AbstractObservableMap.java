@@ -251,4 +251,46 @@ public abstract class AbstractObservableMap<K, V> extends AbstractMap<K, V>
 		Assert.isTrue(getRealm().isCurrent(),
 				"This operation must be run within the observable's realm"); //$NON-NLS-1$
 	}
+
+	/**
+	 * This is a default implementation that should ideally be overridden to use
+	 * a properly typed Class field. This implementation checks to see if the
+	 * key type is of type Class and, if it is, it assumes it is the class of
+	 * the keys and makes an unchecked cast.
+	 * <P>
+	 * This method should always be overridden to provide an implementation that
+	 * never returns null.
+	 * 
+	 * @return the class of the keys, if possible, or null if this is not
+	 *         possible
+	 * @since 1.5
+	 */
+	public Class<K> getKeyClass() {
+		Object keyType = getKeyType();
+		if (keyType instanceof Class) {
+			return (Class<K>) keyType;
+		}
+		return null;
+	}
+
+	/**
+	 * This is a default implementation that should ideally be overridden to use
+	 * a properly typed Class field. This implementation checks to see if the
+	 * value type is of type Class and, if it is, it assumes it is the class of
+	 * the values and makes an unchecked cast.
+	 * <P>
+	 * This method should always be overridden to provide an implementation that
+	 * never returns null.
+	 * 
+	 * @return the class of the values, if possible, or null if this is not
+	 *         possible
+	 * @since 1.5
+	 */
+	public Class<V> getValueClass() {
+		Object valueType = getKeyType();
+		if (valueType instanceof Class) {
+			return (Class<V>) valueType;
+		}
+		return null;
+	}
 }

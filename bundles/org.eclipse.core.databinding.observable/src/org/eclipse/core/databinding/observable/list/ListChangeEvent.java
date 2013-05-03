@@ -41,7 +41,7 @@ public class ListChangeEvent<E> extends ObservableEvent<ListChangeEvent<E>> {
 	 * Always identical to <code>EventObject.source</code> but the type
 	 * information is maintained.
 	 */
-	private IObservableList<E> typedSource;
+	private IObservableList<? extends E> typedSource;
 
 	/**
 	 * Creates a new list change event.
@@ -62,7 +62,7 @@ public class ListChangeEvent<E> extends ObservableEvent<ListChangeEvent<E>> {
 	 * 
 	 * @return the observable list from which this event originated
 	 */
-	public IObservableList<E> getObservableList() {
+	public IObservableList<? extends E> getObservableList() {
 		return typedSource;
 	}
 

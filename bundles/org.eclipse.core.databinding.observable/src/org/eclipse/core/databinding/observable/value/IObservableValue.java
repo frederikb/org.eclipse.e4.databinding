@@ -42,6 +42,15 @@ public interface IObservableValue<T> extends IObservable {
 	public Object getValueType();
 
 	/**
+	 * The value class of this observable value, or <code>Object.class</code> if
+	 * this observable value is untyped.
+	 * 
+	 * @return the value type, never null
+	 * @since 1.5
+	 */
+	public Class<T> getValueClass();
+
+	/**
 	 * Returns the value. Must be invoked in the {@link Realm} of the
 	 * observable.
 	 * 
@@ -64,10 +73,11 @@ public interface IObservableValue<T> extends IObservable {
 	 * 
 	 * @param listener
 	 */
-	public void addValueChangeListener(IValueChangeListener<T> listener);
+	public void addValueChangeListener(IValueChangeListener<? super T> listener);
 
 	/**
 	 * @param listener
 	 */
-	public void removeValueChangeListener(IValueChangeListener<T> listener);
+	public void removeValueChangeListener(
+			IValueChangeListener<? super T> listener);
 }

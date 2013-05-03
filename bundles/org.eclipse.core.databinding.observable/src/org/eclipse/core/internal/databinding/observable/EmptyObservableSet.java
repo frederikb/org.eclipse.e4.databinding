@@ -36,7 +36,16 @@ public class EmptyObservableSet<E> implements IObservableSet<E> {
 	private final Set<E> emptySet = Collections.emptySet();
 
 	private final Realm realm;
+
+	/**
+	 * @deprecated use getElementClass() instead
+	 */
 	private Object elementType;
+
+	/**
+	 * @since 1.5
+	 */
+	private Class<E> elementClass;
 
 	/**
 	 * Creates a singleton empty set. This set may be disposed multiple times
@@ -58,10 +67,36 @@ public class EmptyObservableSet<E> implements IObservableSet<E> {
 	 * @param elementType
 	 *            the element type of the constructed set
 	 * @since 1.1
+	 * @deprecated use instead the form of the constructor that takes Class as
+	 *             the parameter type for the element type
 	 */
 	public EmptyObservableSet(Realm realm, Object elementType) {
 		this.realm = realm;
 		this.elementType = elementType;
+		if (elementType instanceof Class) {
+			this.elementClass = (Class<E>) elementType;
+		} else {
+			this.elementClass = null;
+		}
+		ObservableTracker.observableCreated(this);
+	}
+
+	/**
+	 * Creates a singleton empty set. This set may be disposed multiple times
+	 * without any side-effects.
+	 * 
+	 * @param realm
+	 *            the realm of the constructed set
+	 * @param elementType
+	 *            the element type of the constructed set
+	 * @since 1.1
+	 */
+	// We must set deprecated fields in case any one uses them
+	@SuppressWarnings("deprecation")
+	public EmptyObservableSet(Realm realm, Class<E> elementType) {
+		this.realm = realm;
+		this.elementType = elementType;
+		this.elementClass = elementType;
 		ObservableTracker.observableCreated(this);
 	}
 
@@ -71,8 +106,18 @@ public class EmptyObservableSet<E> implements IObservableSet<E> {
 	public void removeSetChangeListener(ISetChangeListener<? super E> listener) {
 	}
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
 		return elementType;
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
+		return elementClass;
 	}
 
 	public int size() {

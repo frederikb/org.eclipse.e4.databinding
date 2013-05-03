@@ -21,16 +21,18 @@ import org.eclipse.core.databinding.property.ISimplePropertyListener;
 import org.eclipse.core.databinding.property.NativePropertyListener;
 
 /**
+ * @param <S>
+ * @param <D>
  * @since 3.3
  * 
  */
-public abstract class BeanPropertyListener extends NativePropertyListener
-		implements PropertyChangeListener {
+public abstract class BeanPropertyListener<S, D extends IDiff> extends
+		NativePropertyListener<S, D> implements PropertyChangeListener {
 	private final PropertyDescriptor propertyDescriptor;
 
 	protected BeanPropertyListener(IProperty property,
 			PropertyDescriptor propertyDescriptor,
-			ISimplePropertyListener listener) {
+			ISimplePropertyListener<D> listener) {
 		super(property, listener);
 		this.propertyDescriptor = propertyDescriptor;
 	}
@@ -40,7 +42,7 @@ public abstract class BeanPropertyListener extends NativePropertyListener
 				|| propertyDescriptor.getName().equals(evt.getPropertyName())) {
 			Object oldValue = evt.getOldValue();
 			Object newValue = evt.getNewValue();
-			IDiff diff;
+			D diff;
 			if (evt.getPropertyName() == null || oldValue == null
 					|| newValue == null)
 				diff = null;
@@ -50,15 +52,15 @@ public abstract class BeanPropertyListener extends NativePropertyListener
 		}
 	}
 
-	protected abstract IDiff computeDiff(Object oldValue, Object newValue);
+	protected abstract D computeDiff(Object oldValue, Object newValue);
 
 	protected void doAddTo(Object source) {
-		BeanPropertyListenerSupport.hookListener(source, propertyDescriptor
-				.getName(), this);
+		BeanPropertyListenerSupport.hookListener(source,
+				propertyDescriptor.getName(), this);
 	}
 
 	protected void doRemoveFrom(Object source) {
-		BeanPropertyListenerSupport.unhookListener(source, propertyDescriptor
-				.getName(), this);
+		BeanPropertyListenerSupport.unhookListener(source,
+				propertyDescriptor.getName(), this);
 	}
 }

@@ -29,6 +29,7 @@ import org.eclipse.core.databinding.beans.BeanProperties;
 import org.eclipse.core.databinding.beans.BeansObservables;
 import org.eclipse.core.databinding.beans.IBeanObservable;
 import org.eclipse.core.databinding.beans.IBeanProperty;
+import org.eclipse.core.databinding.observable.DecoratingObservableCollection;
 import org.eclipse.core.databinding.observable.IObservable;
 import org.eclipse.core.databinding.observable.IObservableCollection;
 import org.eclipse.core.databinding.observable.Realm;
@@ -65,8 +66,9 @@ public class JavaBeanObservableArrayBasedSetTest extends
 				propertyName)).getPropertyDescriptor();
 		bean = new Bean(new HashSet());
 
-		set = BeansObservables.observeSet(SWTObservables.getRealm(Display
-				.getDefault()), bean, propertyName);
+		set = BeansObservables.observeSet(
+				SWTObservables.getRealm(Display.getDefault()), bean,
+				propertyName);
 		beanObservable = (IBeanObservable) set;
 	}
 
@@ -302,10 +304,10 @@ public class JavaBeanObservableArrayBasedSetTest extends
 				.observe(observable);
 		bean.setArray(new Object[] { "new" });
 		assertEquals(1, tracker.count);
-		assertEquals(Collections.singleton("old"), tracker.event.diff
-				.getRemovals());
-		assertEquals(Collections.singleton("new"), tracker.event.diff
-				.getAdditions());
+		assertEquals(Collections.singleton("old"),
+				tracker.event.diff.getRemovals());
+		assertEquals(Collections.singleton("new"),
+				tracker.event.diff.getAdditions());
 	}
 
 	public void testModifyObservableSet_FiresSetChange() {
@@ -317,8 +319,8 @@ public class JavaBeanObservableArrayBasedSetTest extends
 		observable.add("new");
 
 		assertEquals(1, tracker.count);
-		assertDiff(tracker.event.diff, Collections.EMPTY_SET, Collections
-				.singleton("new"));
+		assertDiff(tracker.event.diff, Collections.EMPTY_SET,
+				Collections.singleton("new"));
 	}
 
 	public void testSetBeanPropertyOutsideRealm_FiresEventInsideRealm() {
@@ -335,8 +337,8 @@ public class JavaBeanObservableArrayBasedSetTest extends
 
 		realm.setCurrent(true);
 		assertEquals(1, tracker.count);
-		assertDiff(tracker.event.diff, Collections.EMPTY_SET, Collections
-				.singleton("element"));
+		assertDiff(tracker.event.diff, Collections.EMPTY_SET,
+				Collections.singleton("element"));
 	}
 
 	private static void assertDiff(SetDiff diff, Set oldSet, Set newSet) {
@@ -359,10 +361,10 @@ public class JavaBeanObservableArrayBasedSetTest extends
 		PropertyChangeEvent event = listener.evt;
 		assertEquals("event did not fire", 1, listener.count);
 		assertEquals("array", event.getPropertyName());
-		assertTrue("old value", Arrays.equals(old, (Object[]) event
-				.getOldValue()));
-		assertTrue("new value", Arrays.equals(bean.getArray(), (Object[]) event
-				.getNewValue()));
+		assertTrue("old value",
+				Arrays.equals(old, (Object[]) event.getOldValue()));
+		assertTrue("new value",
+				Arrays.equals(bean.getArray(), (Object[]) event.getNewValue()));
 		assertFalse("sets are equal", Arrays.equals(bean.getArray(), old));
 	}
 
@@ -400,10 +402,22 @@ public class JavaBeanObservableArrayBasedSetTest extends
 		}
 
 		public Object createElement(IObservableCollection collection) {
-			return new Object().toString();
+			Class elementType = getElementType(collection);
+			try {
+				return elementType.getConstructor().newInstance();
+			} catch (Exception e) {
+				return new Object();
+			}
 		}
 
-		public Object getElementType(IObservableCollection collection) {
+		public Class getElementType(IObservableCollection collection) {
+			if (collection instanceof DecoratingObservableCollection) {
+				DecoratingObservableCollection x = (DecoratingObservableCollection) collection;
+				if (x.getElementClass() != null) {
+					return x.getElementClass();
+				}
+			}
+
 			return String.class;
 		}
 

@@ -13,7 +13,6 @@
 
 package org.eclipse.jface.internal.databinding.viewers;
 
-import org.eclipse.core.databinding.observable.IObservable;
 import org.eclipse.core.databinding.observable.IObservableCollection;
 import org.eclipse.core.databinding.observable.Observables;
 import org.eclipse.core.databinding.observable.masterdetail.IObservableFactory;
@@ -43,14 +42,14 @@ public abstract class ObservableCollectionContentProvider implements
 		IStructuredContentProvider {
 	private Display display;
 
-	private IObservableValue viewerObservable;
+	private IObservableValue<Viewer> viewerObservable;
 
 	/**
 	 * Element comparer used by the viewer (may be null).
 	 */
 	protected IElementComparer comparer;
 
-	private IObservableFactory elementSetFactory;
+	private IObservableFactory<Viewer, IObservableSet<Object>> elementSetFactory;
 
 	private final IViewerUpdater explicitViewerUpdater;
 
@@ -65,8 +64,8 @@ public abstract class ObservableCollectionContentProvider implements
 	 * viewer, and must remove old elements from this set <b>after</b> removing
 	 * them from the viewer.
 	 */
-	protected IObservableSet knownElements;
-	private IObservableSet unmodifiableKnownElements;
+	protected IObservableSet<Object> knownElements;
+	private IObservableSet<Object> unmodifiableKnownElements;
 
 	/**
 	 * Observable set of known elements which have been realized in the viewer.
@@ -74,10 +73,10 @@ public abstract class ObservableCollectionContentProvider implements
 	 * the viewer, and must remove old elements from this set <b>before</b>
 	 * removing them from the viewer.
 	 */
-	protected IObservableSet realizedElements;
-	private IObservableSet unmodifiableRealizedElements;
+	protected IObservableSet<Object> realizedElements;
+	private IObservableSet<Object> unmodifiableRealizedElements;
 
-	private IObservableCollection observableCollection;
+	private IObservableCollection<?> observableCollection;
 
 	/**
 	 * Constructs an ObservableCollectionContentProvider
@@ -89,16 +88,17 @@ public abstract class ObservableCollectionContentProvider implements
 		this.explicitViewerUpdater = explicitViewerUpdater;
 
 		display = Display.getDefault();
-		viewerObservable = new WritableValue(SWTObservables.getRealm(display));
+		viewerObservable = new WritableValue<Viewer>(
+				SWTObservables.getRealm(display));
 		viewerUpdater = null;
 
-		elementSetFactory = new IObservableFactory() {
-			public IObservable createObservable(Object target) {
+		elementSetFactory = new IObservableFactory<Viewer, IObservableSet<Object>>() {
+			public IObservableSet<Object> createObservable(Viewer target) {
 				IElementComparer comparer = null;
 				if (target instanceof StructuredViewer)
 					comparer = ((StructuredViewer) target).getComparer();
-				return ObservableViewerElementSet.withComparer(SWTObservables
-						.getRealm(display), null, comparer);
+				return ObservableViewerElementSet.<Object> withComparer(
+						SWTObservables.getRealm(display), null, comparer);
 			}
 		};
 		knownElements = MasterDetailObservables.detailSet(viewerObservable,
@@ -195,7 +195,7 @@ public abstract class ObservableCollectionContentProvider implements
 			checkInput(input);
 			Assert.isTrue(input instanceof IObservableCollection,
 					"Input must be an IObservableCollection"); //$NON-NLS-1$
-			observableCollection = (IObservableCollection) input;
+			observableCollection = (IObservableCollection<?>) input;
 			addCollectionChangeListener(observableCollection);
 		}
 	}
@@ -215,7 +215,7 @@ public abstract class ObservableCollectionContentProvider implements
 	 *            observable collection to listen to
 	 */
 	protected abstract void addCollectionChangeListener(
-			IObservableCollection collection);
+			IObservableCollection<?> collection);
 
 	/**
 	 * Deregisters from change events notification on the given collection.
@@ -224,7 +224,7 @@ public abstract class ObservableCollectionContentProvider implements
 	 *            observable collection to stop listening to
 	 */
 	protected abstract void removeCollectionChangeListener(
-			IObservableCollection collection);
+			IObservableCollection<?> collection);
 
 	/**
 	 * Returns whether the viewer is disposed. Collection change listeners in
@@ -234,7 +234,7 @@ public abstract class ObservableCollectionContentProvider implements
 	 * @return whether the viewer is disposed.
 	 */
 	protected final boolean isViewerDisposed() {
-		Viewer viewer = (Viewer) viewerObservable.getValue();
+		Viewer viewer = viewerObservable.getValue();
 		return viewer == null || viewer.getControl() == null
 				|| viewer.getControl().isDisposed();
 	}
@@ -248,7 +248,7 @@ public abstract class ObservableCollectionContentProvider implements
 	 * 
 	 * @return unmodifiable observable set of items that will need labels
 	 */
-	public IObservableSet getKnownElements() {
+	public IObservableSet<Object> getKnownElements() {
 		return unmodifiableKnownElements;
 	}
 
@@ -260,7 +260,7 @@ public abstract class ObservableCollectionContentProvider implements
 	 * @return the set of known elements which have been realized in the viewer.
 	 * @since 1.3
 	 */
-	public IObservableSet getRealizedElements() {
+	public IObservableSet<Object> getRealizedElements() {
 		if (realizedElements == null) {
 			realizedElements = MasterDetailObservables.detailSet(
 					viewerObservable, elementSetFactory, null);

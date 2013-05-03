@@ -27,13 +27,14 @@ import org.eclipse.swt.graphics.Image;
 
 /**
  * NON-API - Generic viewer label provider.
+ * 
  * @since 1.1
- *
+ * 
  */
 public class ViewerLabelProvider implements IViewerLabelProvider,
 		ILabelProvider {
 
-	private List listeners = new ArrayList();
+	private List<ILabelProviderListener> listeners = new ArrayList<ILabelProviderListener>();
 
 	/**
 	 * Subclasses should override this method. They should not call the base
@@ -43,10 +44,10 @@ public class ViewerLabelProvider implements IViewerLabelProvider,
 		label.setText(element.toString());
 	}
 
-	protected final void fireChangeEvent(Collection changes) {
+	protected final void fireChangeEvent(Collection<?> changes) {
 		final LabelProviderChangedEvent event = new LabelProviderChangedEvent(
 				this, changes.toArray());
-		ILabelProviderListener[] listenerArray = (ILabelProviderListener[]) listeners
+		ILabelProviderListener[] listenerArray = listeners
 				.toArray(new ILabelProviderListener[listeners.size()]);
 		for (int i = 0; i < listenerArray.length; i++) {
 			ILabelProviderListener listener = listenerArray[i];

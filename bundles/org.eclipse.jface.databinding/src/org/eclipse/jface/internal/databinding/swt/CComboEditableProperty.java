@@ -17,13 +17,13 @@ import org.eclipse.swt.custom.CCombo;
  * @since 3.3
  * 
  */
-public class CComboEditableProperty extends WidgetBooleanValueProperty {
-	boolean doGetBooleanValue(Object source) {
-		return ((CCombo) source).getEditable();
+public class CComboEditableProperty extends WidgetBooleanValueProperty<CCombo> {
+	boolean doGetBooleanValue(CCombo source) {
+		return source.getEditable();
 	}
 
-	void doSetBooleanValue(Object source, boolean value) {
-		((CCombo) source).setEditable(value);
+	void doSetBooleanValue(CCombo source, boolean value) {
+		source.setEditable(value);
 	}
 
 	public String toString() {

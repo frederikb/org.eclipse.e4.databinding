@@ -35,10 +35,12 @@ import org.eclipse.swt.widgets.Widget;
  * Note that this class will not forward {@link ValueChangingEvent} events from
  * a wrapped {@link IVetoableValue}.
  * 
+ * @param <T>
+ * 
  * @since 1.2
  */
-public class SWTDelayedObservableValueDecorator extends
-		SWTObservableValueDecorator {
+public class SWTDelayedObservableValueDecorator<T> extends
+		SWTObservableValueDecorator<T> {
 	private Control control;
 
 	/**

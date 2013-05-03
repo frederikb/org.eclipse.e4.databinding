@@ -32,7 +32,8 @@ import org.eclipse.core.internal.databinding.property.PropertyObservableUtil;
  */
 public class UnionSetProperty<S, E> extends SetProperty<S, E> {
 	private final ISetProperty<S, E>[] properties;
-	private final Object elementType;
+	private final Object elementTypeAsObject;
+	private final Class<E> elementType;
 
 	/**
 	 * @param properties
@@ -44,13 +45,34 @@ public class UnionSetProperty<S, E> extends SetProperty<S, E> {
 	/**
 	 * @param properties
 	 * @param elementType
+	 * @deprecated use the constuctor that takes a Class instead
 	 */
 	public UnionSetProperty(ISetProperty<S, E>[] properties, Object elementType) {
 		this.properties = properties;
+		this.elementTypeAsObject = elementType;
+		this.elementType = null;
+	}
+
+	/**
+	 * @param properties
+	 * @param elementType
+	 * @since 1.5
+	 */
+	public UnionSetProperty(ISetProperty<S, E>[] properties,
+			Class<E> elementType) {
+		this.properties = properties;
+		this.elementTypeAsObject = elementType;
 		this.elementType = elementType;
 	}
 
 	public Object getElementType() {
+		return elementTypeAsObject;
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
 		return elementType;
 	}
 

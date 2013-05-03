@@ -22,8 +22,13 @@ import org.eclipse.jface.viewers.Viewer;
 
 /**
  * @since 3.3
- * 
+ * @deprecated use CheckboxTableViewerCheckedElementsProperty for
+ *             CheckboxTableViewer, CheckboxTreeViewerCheckedElementsProperty
+ *             for CheckboxTreeViewer, and CheckableElementsProperty for all
+ *             other ICheckable sources.
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
+// ok to ignore warnings on deprecated class
 public class ViewerCheckedElementsProperty extends DelegatingSetProperty
 		implements IViewerSetProperty {
 	ISetProperty checkable;
@@ -51,7 +56,8 @@ public class ViewerCheckedElementsProperty extends DelegatingSetProperty
 	}
 
 	public IViewerObservableSet observe(Viewer viewer) {
-		return (IViewerObservableSet) observe(SWTObservables.getRealm(viewer
-				.getControl().getDisplay()), viewer);
+		return (IViewerObservableSet) observe(
+				SWTObservables.getRealm(viewer.getControl().getDisplay()),
+				viewer);
 	}
 }

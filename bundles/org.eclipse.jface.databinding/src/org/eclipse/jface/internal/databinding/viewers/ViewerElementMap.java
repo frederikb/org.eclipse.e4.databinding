@@ -12,7 +12,6 @@
 
 package org.eclipse.jface.internal.databinding.viewers;
 
-import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -20,13 +19,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.jface.util.Util;
+import org.eclipse.jface.databinding.util.Util;
+import org.eclipse.jface.internal.databinding.viewers.ObservableCollectionTreeContentProvider.TreeNode;
 import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.StructuredViewer;
 
 /**
- * A {@link Map} whose keys are elements in a {@link StructuredViewer}. The
- * keys in the map are compared using an {@link IElementComparer} instead of
+ * A {@link Map} whose keys are elements in a {@link StructuredViewer}. The keys
+ * in the map are compared using an {@link IElementComparer} instead of
  * {@link #equals(Object)}.
  * <p>
  * This class is <i>not</i> a strict implementation the {@link Map} interface.
@@ -35,10 +35,13 @@ import org.eclipse.jface.viewers.StructuredViewer;
  * with {@link StructuredViewer} which uses {@link IElementComparer} for element
  * comparisons.
  * 
+ * @param <K>
+ * @param <V>
+ * 
  * @since 1.2
  */
-public class ViewerElementMap implements Map { 
-	private Map wrappedMap;
+public class ViewerElementMap<K, V> implements Map<K, V> {
+	private Map<ViewerElementWrapper<K>, V> wrappedMap;
 	private IElementComparer comparer;
 
 	/**
@@ -49,7 +52,7 @@ public class ViewerElementMap implements Map {
 	 */
 	public ViewerElementMap(IElementComparer comparer) {
 		Assert.isNotNull(comparer);
-		this.wrappedMap = new HashMap();
+		this.wrappedMap = new HashMap<ViewerElementWrapper<K>, V>();
 		this.comparer = comparer;
 	}
 
@@ -62,7 +65,8 @@ public class ViewerElementMap implements Map {
 	 * @param comparer
 	 *            the {@link IElementComparer} used for comparing keys.
 	 */
-	public ViewerElementMap(Map map, IElementComparer comparer) {
+	public ViewerElementMap(Map<? extends K, ? extends V> map,
+			IElementComparer comparer) {
 		this(comparer);
 		Assert.isNotNull(map);
 		putAll(map);
@@ -73,21 +77,23 @@ public class ViewerElementMap implements Map {
 	}
 
 	public boolean containsKey(Object key) {
-		return wrappedMap.containsKey(new ViewerElementWrapper(key, comparer));
+		return wrappedMap.containsKey(new ViewerElementWrapper<Object>(key,
+				comparer));
 	}
 
 	public boolean containsValue(Object value) {
 		return wrappedMap.containsValue(value);
 	}
 
-	public Set entrySet() {
-		final Set wrappedEntrySet = wrappedMap.entrySet();
-		return new Set() {
-			public boolean add(Object o) {
+	public Set<Entry<K, V>> entrySet() {
+		final Set<Entry<ViewerElementWrapper<K>, V>> wrappedEntrySet = wrappedMap
+				.entrySet();
+		return new Set<Entry<K, V>>() {
+			public boolean add(Entry<K, V> o) {
 				throw new UnsupportedOperationException();
 			}
 
-			public boolean addAll(Collection c) {
+			public boolean addAll(Collection<? extends Entry<K, V>> c) {
 				throw new UnsupportedOperationException();
 			}
 
@@ -96,14 +102,15 @@ public class ViewerElementMap implements Map {
 			}
 
 			public boolean contains(Object o) {
-				for (Iterator iterator = iterator(); iterator.hasNext();)
+				for (Iterator<Entry<K, V>> iterator = iterator(); iterator
+						.hasNext();)
 					if (iterator.next().equals(o))
 						return true;
 				return false;
 			}
 
-			public boolean containsAll(Collection c) {
-				for (Iterator iterator = c.iterator(); iterator.hasNext();)
+			public boolean containsAll(Collection<?> c) {
+				for (Iterator<?> iterator = c.iterator(); iterator.hasNext();)
 					if (!contains(iterator.next()))
 						return false;
 				return true;
@@ -113,27 +120,27 @@ public class ViewerElementMap implements Map {
 				return wrappedEntrySet.isEmpty();
 			}
 
-			public Iterator iterator() {
-				final Iterator wrappedIterator = wrappedEntrySet.iterator();
-				return new Iterator() {
+			public Iterator<Entry<K, V>> iterator() {
+				final Iterator<Entry<ViewerElementWrapper<K>, V>> wrappedIterator = wrappedEntrySet
+						.iterator();
+				return new Iterator<Entry<K, V>>() {
 					public boolean hasNext() {
 						return wrappedIterator.hasNext();
 					}
 
-					public Object next() {
-						final Map.Entry wrappedEntry = (Map.Entry) wrappedIterator
+					public Entry<K, V> next() {
+						final Entry<ViewerElementWrapper<K>, V> wrappedEntry = wrappedIterator
 								.next();
-						return new Map.Entry() {
-							public Object getKey() {
-								return ((ViewerElementWrapper) wrappedEntry.getKey())
-										.unwrap();
+						return new Map.Entry<K, V>() {
+							public K getKey() {
+								return wrappedEntry.getKey().unwrap();
 							}
 
-							public Object getValue() {
+							public V getValue() {
 								return wrappedEntry.getValue();
 							}
 
-							public Object setValue(Object value) {
+							public V setValue(V value) {
 								return wrappedEntry.setValue(value);
 							}
 
@@ -142,11 +149,11 @@ public class ViewerElementMap implements Map {
 									return true;
 								if (obj == null || !(obj instanceof Map.Entry))
 									return false;
-								Map.Entry that = (Map.Entry) obj;
-								return comparer.equals(this.getKey(), that
-										.getKey())
-										&& Util.equals(this.getValue(), that
-												.getValue());
+								Map.Entry<?, ?> that = (Map.Entry<?, ?>) obj;
+								return comparer.equals(this.getKey(),
+										that.getKey())
+										&& Util.equals(this.getValue(),
+												that.getValue());
 							}
 
 							public int hashCode() {
@@ -162,10 +169,10 @@ public class ViewerElementMap implements Map {
 			}
 
 			public boolean remove(Object o) {
-				final Map.Entry unwrappedEntry = (Map.Entry) o;
-				final ViewerElementWrapper wrappedKey = new ViewerElementWrapper(
+				final Map.Entry<?, ?> unwrappedEntry = (Map.Entry<?, ?>) o;
+				final ViewerElementWrapper<?> wrappedKey = new ViewerElementWrapper<Object>(
 						unwrappedEntry.getKey(), comparer);
-				Map.Entry wrappedEntry = new Map.Entry() {
+				Map.Entry<?, ?> wrappedEntry = new Map.Entry<Object, Object>() {
 					public Object getKey() {
 						return wrappedKey;
 					}
@@ -183,11 +190,9 @@ public class ViewerElementMap implements Map {
 							return true;
 						if (obj == null || !(obj instanceof Map.Entry))
 							return false;
-						Map.Entry that = (Map.Entry) obj;
+						Map.Entry<?, ?> that = (Map.Entry<?, ?>) obj;
 						return Util.equals(wrappedKey, that.getKey())
-								&& Util
-										.equals(this.getValue(), that
-												.getValue());
+								&& Util.equals(this.getValue(), that.getValue());
 					}
 
 					public int hashCode() {
@@ -199,17 +204,18 @@ public class ViewerElementMap implements Map {
 				return wrappedEntrySet.remove(wrappedEntry);
 			}
 
-			public boolean removeAll(Collection c) {
+			public boolean removeAll(Collection<?> c) {
 				boolean changed = false;
-				for (Iterator iterator = c.iterator(); iterator.hasNext();)
+				for (Iterator<?> iterator = c.iterator(); iterator.hasNext();)
 					changed |= remove(iterator.next());
 				return changed;
 			}
 
-			public boolean retainAll(Collection c) {
+			public boolean retainAll(Collection<?> c) {
 				boolean changed = false;
 				Object[] toRetain = c.toArray();
-				outer: for (Iterator iterator = iterator(); iterator.hasNext();) {
+				outer: for (Iterator<?> iterator = iterator(); iterator
+						.hasNext();) {
 					Object entry = iterator.next();
 					for (int i = 0; i < toRetain.length; i++)
 						if (entry.equals(toRetain[i]))
@@ -228,18 +234,21 @@ public class ViewerElementMap implements Map {
 				return toArray(new Object[size()]);
 			}
 
-			public Object[] toArray(Object[] a) {
+			public <E2> E2[] toArray(E2[] a) {
 				int size = size();
+				Class<E2> componentType = Util.getComponentType(a);
+
+				E2[] result = a;
 				if (a.length < size) {
-					a = (Object[]) Array.newInstance(a.getClass()
-							.getComponentType(), size);
+					result = Util.createArrayInstance(componentType, size);
 				}
+
 				int i = 0;
-				for (Iterator iterator = iterator(); iterator.hasNext();) {
-					a[i] = iterator.next();
-					i++;
+				for (Object element : this) {
+					result[i] = componentType.cast(element);
 				}
-				return a;
+
+				return result;
 			}
 
 			public boolean equals(Object obj) {
@@ -247,7 +256,7 @@ public class ViewerElementMap implements Map {
 					return true;
 				if (obj == null || !(obj instanceof Set))
 					return false;
-				Set that = (Set) obj;
+				Set<?> that = (Set<?>) obj;
 				return this.size() == that.size() && containsAll(that);
 			}
 
@@ -257,22 +266,22 @@ public class ViewerElementMap implements Map {
 		};
 	}
 
-	public Object get(Object key) {
-		return wrappedMap.get(new ViewerElementWrapper(key, comparer));
+	public V get(Object key) {
+		return wrappedMap.get(new ViewerElementWrapper<Object>(key, comparer));
 	}
 
 	public boolean isEmpty() {
 		return wrappedMap.isEmpty();
 	}
 
-	public Set keySet() {
-		final Set wrappedKeySet = wrappedMap.keySet();
-		return new Set() {
-			public boolean add(Object o) {
+	public Set<K> keySet() {
+		final Set<ViewerElementWrapper<K>> wrappedKeySet = wrappedMap.keySet();
+		return new Set<K>() {
+			public boolean add(K o) {
 				throw new UnsupportedOperationException();
 			}
 
-			public boolean addAll(Collection c) {
+			public boolean addAll(Collection<? extends K> c) {
 				throw new UnsupportedOperationException();
 			}
 
@@ -281,12 +290,15 @@ public class ViewerElementMap implements Map {
 			}
 
 			public boolean contains(Object o) {
-				return wrappedKeySet.contains(new ViewerElementWrapper(o, comparer));
+				return wrappedKeySet.contains(new ViewerElementWrapper<Object>(
+						o, comparer));
 			}
 
-			public boolean containsAll(Collection c) {
-				for (Iterator iterator = c.iterator(); iterator.hasNext();)
-					if (!wrappedKeySet.contains(new ViewerElementWrapper(iterator.next(), comparer)))
+			public boolean containsAll(Collection<?> c) {
+				for (Iterator<?> iterator = c.iterator(); iterator.hasNext();)
+					if (!wrappedKeySet
+							.contains(new ViewerElementWrapper<Object>(iterator
+									.next(), comparer)))
 						return false;
 				return true;
 			}
@@ -295,15 +307,16 @@ public class ViewerElementMap implements Map {
 				return wrappedKeySet.isEmpty();
 			}
 
-			public Iterator iterator() {
-				final Iterator wrappedIterator = wrappedKeySet.iterator();
-				return new Iterator() {
+			public Iterator<K> iterator() {
+				final Iterator<ViewerElementWrapper<K>> wrappedIterator = wrappedKeySet
+						.iterator();
+				return new Iterator<K>() {
 					public boolean hasNext() {
 						return wrappedIterator.hasNext();
 					}
 
-					public Object next() {
-						return ((ViewerElementWrapper) wrappedIterator.next()).unwrap();
+					public K next() {
+						return wrappedIterator.next().unwrap();
 					}
 
 					public void remove() {
@@ -313,22 +326,25 @@ public class ViewerElementMap implements Map {
 			}
 
 			public boolean remove(Object o) {
-				return wrappedKeySet.remove(new ViewerElementWrapper(o, comparer));
+				return wrappedKeySet.remove(new ViewerElementWrapper<Object>(o,
+						comparer));
 			}
 
-			public boolean removeAll(Collection c) {
+			public boolean removeAll(Collection<?> c) {
 				boolean changed = false;
-				for (Iterator iterator = c.iterator(); iterator.hasNext();)
+				for (Iterator<?> iterator = c.iterator(); iterator.hasNext();)
 					changed |= wrappedKeySet
-							.remove(new ViewerElementWrapper(iterator.next(), comparer));
+							.remove(new ViewerElementWrapper<Object>(iterator
+									.next(), comparer));
 				return changed;
 			}
 
-			public boolean retainAll(Collection c) {
+			public boolean retainAll(Collection<?> c) {
 				boolean changed = false;
 				Object[] toRetain = c.toArray();
-				outer: for (Iterator iterator = iterator(); iterator.hasNext();) {
-					Object element = iterator.next();
+				outer: for (Iterator<K> iterator = iterator(); iterator
+						.hasNext();) {
+					K element = iterator.next();
 					for (int i = 0; i < toRetain.length; i++)
 						if (comparer.equals(element, toRetain[i]))
 							continue outer;
@@ -347,17 +363,20 @@ public class ViewerElementMap implements Map {
 				return toArray(new Object[wrappedKeySet.size()]);
 			}
 
-			public Object[] toArray(Object[] a) {
+			public <E2> E2[] toArray(E2[] a) {
 				int size = wrappedKeySet.size();
-				ViewerElementWrapper[] wrappedArray = (ViewerElementWrapper[]) wrappedKeySet
-						.toArray(new ViewerElementWrapper[size]);
-				Object[] result = a;
+				Class<E2> componentType = Util.getComponentType(a);
+
+				E2[] result = a;
 				if (a.length < size) {
-					result = (Object[]) Array.newInstance(a.getClass()
-							.getComponentType(), size);
+					result = Util.createArrayInstance(componentType, size);
 				}
-				for (int i = 0; i < size; i++)
-					result[i] = wrappedArray[i].unwrap();
+
+				int i = 0;
+				for (ViewerElementWrapper<K> element : wrappedKeySet) {
+					result[i] = componentType.cast(element.unwrap());
+				}
+
 				return result;
 			}
 
@@ -366,7 +385,7 @@ public class ViewerElementMap implements Map {
 					return true;
 				if (obj == null || !(obj instanceof Set))
 					return false;
-				Set that = (Set) obj;
+				Set<?> that = (Set<?>) obj;
 				return this.size() == that.size() && containsAll(that);
 			}
 
@@ -376,27 +395,29 @@ public class ViewerElementMap implements Map {
 		};
 	}
 
-	public Object put(Object key, Object value) {
-		return wrappedMap.put(new ViewerElementWrapper(key, comparer), value);
+	public V put(K key, V value) {
+		return wrappedMap
+				.put(new ViewerElementWrapper<K>(key, comparer), value);
 	}
 
-	public void putAll(Map other) {
-		for (Iterator iterator = other.entrySet().iterator(); iterator
-				.hasNext();) {
-			Map.Entry entry = (Map.Entry) iterator.next();
-			wrappedMap.put(new ViewerElementWrapper(entry.getKey(), comparer), entry.getValue());
+	public void putAll(Map<? extends K, ? extends V> other) {
+		for (Map.Entry<? extends K, ? extends V> entry : other.entrySet()) {
+			wrappedMap.put(
+					new ViewerElementWrapper<K>(entry.getKey(), comparer),
+					entry.getValue());
 		}
 	}
 
-	public Object remove(Object key) {
-		return wrappedMap.remove(new ViewerElementWrapper(key, comparer));
+	public V remove(Object key) {
+		return wrappedMap
+				.remove(new ViewerElementWrapper<Object>(key, comparer));
 	}
 
 	public int size() {
 		return wrappedMap.size();
 	}
 
-	public Collection values() {
+	public Collection<V> values() {
 		return wrappedMap.values();
 	}
 
@@ -405,7 +426,7 @@ public class ViewerElementMap implements Map {
 			return true;
 		if (obj == null || !(obj instanceof Map))
 			return false;
-		Map that = (Map) obj;
+		Map<?, ?> that = (Map<?, ?>) obj;
 		return this.entrySet().equals(that.entrySet());
 	}
 
@@ -424,9 +445,9 @@ public class ViewerElementMap implements Map {
 	 * @return a Map for mapping viewer elements as keys to values, using the
 	 *         given {@link IElementComparer} for key comparisons.
 	 */
-	public static Map withComparer(IElementComparer comparer) {
+	public static <K> Map<K, TreeNode> withComparer(IElementComparer comparer) {
 		if (comparer == null)
-			return new HashMap();
-		return new ViewerElementMap(comparer);
+			return new HashMap<K, TreeNode>();
+		return new ViewerElementMap<K, TreeNode>(comparer);
 	}
 }

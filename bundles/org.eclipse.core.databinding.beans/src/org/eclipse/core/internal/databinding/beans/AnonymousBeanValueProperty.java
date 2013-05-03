@@ -22,36 +22,40 @@ import org.eclipse.core.databinding.property.value.DelegatingValueProperty;
 import org.eclipse.core.databinding.property.value.IValueProperty;
 
 /**
+ * @param <S>
+ * @param <T>
  * @since 3.3
  * 
  */
-public class AnonymousBeanValueProperty extends DelegatingValueProperty {
+public class AnonymousBeanValueProperty<S, T> extends
+		DelegatingValueProperty<S, T> {
 	private final String propertyName;
 
-	private Map delegates;
+	private Map<Class<? extends S>, IValueProperty<S, T>> delegates;
 
 	/**
 	 * @param propertyName
 	 * @param valueType
 	 */
-	public AnonymousBeanValueProperty(String propertyName, Class valueType) {
+	public AnonymousBeanValueProperty(String propertyName, Class<T> valueType) {
 		super(valueType);
 		this.propertyName = propertyName;
-		this.delegates = new HashMap();
+		this.delegates = new HashMap<Class<? extends S>, IValueProperty<S, T>>();
 	}
 
-	protected IValueProperty doGetDelegate(Object source) {
-		return getClassDelegate(source.getClass());
+	protected IValueProperty<S, T> doGetDelegate(S source) {
+		Class<? extends S> beanClass = Util.getClass(source);
+		return getClassDelegate(beanClass);
 	}
 
-	private IValueProperty getClassDelegate(Class beanClass) {
+	private IValueProperty<S, T> getClassDelegate(Class<? extends S> beanClass) {
 		if (delegates.containsKey(beanClass))
-			return (IValueProperty) delegates.get(beanClass);
+			return delegates.get(beanClass);
 
-		IValueProperty delegate;
+		IValueProperty<S, T> delegate;
 		try {
-			delegate = BeanProperties.value(beanClass, propertyName,
-					(Class) getValueType());
+			delegate = BeanProperties.<S, T> value(beanClass, propertyName,
+					getValueClass());
 		} catch (IllegalArgumentException noSuchProperty) {
 			delegate = null;
 		}
@@ -59,25 +63,27 @@ public class AnonymousBeanValueProperty extends DelegatingValueProperty {
 		return delegate;
 	}
 
-	public IObservableValue observeDetail(IObservableValue master) {
+	public <M extends S> IObservableValue<T> observeDetail(
+			IObservableValue<M> master) {
 		Object valueType = getValueType();
 		if (valueType == null)
 			valueType = inferValueType(master.getValueType());
-		return MasterDetailObservables.detailValue(master, valueFactory(master
-				.getRealm()), valueType);
+		return MasterDetailObservables.detailValue(master,
+				valueFactory(master.getRealm()), valueType);
 	}
 
 	private Object inferValueType(Object masterObservableValueType) {
 		if (masterObservableValueType instanceof Class) {
-			return getClassDelegate((Class) masterObservableValueType)
-					.getValueType();
+			return getClassDelegate(
+					(Class<? extends S>) masterObservableValueType)
+					.getValueClass();
 		}
 		return null;
 	}
 
 	public String toString() {
 		String s = "?." + propertyName; //$NON-NLS-1$
-		Class valueType = (Class) getValueType();
+		Class<T> valueType = getValueClass();
 		if (valueType != null)
 			s += "<" + BeanPropertyHelper.shortClassName(valueType) + ">"; //$NON-NLS-1$//$NON-NLS-2$
 		return s;

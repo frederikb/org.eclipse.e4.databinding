@@ -17,11 +17,16 @@ import org.eclipse.core.databinding.property.set.ISetProperty;
  * An {@link ISetProperty} extension interface with convenience methods for
  * creating nested bean properties.
  * 
+ * @param <S>
+ *            type of the source object
+ * @param <E>
+ *            type of the elements in the set
  * @since 1.2
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface IBeanSetProperty extends IBeanProperty, ISetProperty {
+public interface IBeanSetProperty<S, E> extends IBeanProperty,
+		ISetProperty<S, E> {
 	/**
 	 * Returns a master-detail combination of this property and the specified
 	 * value property.
@@ -33,7 +38,7 @@ public interface IBeanSetProperty extends IBeanProperty, ISetProperty {
 	 *         value property.
 	 * @see #values(IBeanValueProperty)
 	 */
-	public IBeanMapProperty values(String propertyName);
+	public <T> IBeanMapProperty<S, E, T> values(String propertyName);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -48,7 +53,8 @@ public interface IBeanSetProperty extends IBeanProperty, ISetProperty {
 	 *         value property.
 	 * @see #values(IBeanValueProperty)
 	 */
-	public IBeanMapProperty values(String propertyName, Class valueType);
+	public <T> IBeanMapProperty<S, E, T> values(String propertyName,
+			Class<T> valueType);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -75,5 +81,6 @@ public interface IBeanSetProperty extends IBeanProperty, ISetProperty {
 	 * @return a master-detail combination of this property and the specified
 	 *         value property.
 	 */
-	public IBeanMapProperty values(IBeanValueProperty property);
+	public <T> IBeanMapProperty<S, E, T> values(
+			IBeanValueProperty<E, T> property);
 }

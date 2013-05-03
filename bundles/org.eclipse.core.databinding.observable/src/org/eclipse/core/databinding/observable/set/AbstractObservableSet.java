@@ -195,4 +195,25 @@ public abstract class AbstractObservableSet<E> extends AbstractObservable
 		throw new RuntimeException(
 				"fireChange should not be called, use fireSetChange() instead"); //$NON-NLS-1$
 	}
+
+	/**
+	 * This is a default implementation that should ideally be overridden to use
+	 * a properly typed Class field. This implementation checks to see if the
+	 * element type is of type Class and, if it is, it assumes it is the class
+	 * of the elements and makes an unchecked cast.
+	 * <P>
+	 * This method should always be overridden to provide an implementation that
+	 * never returns null.
+	 * 
+	 * @return the class of the elements, if possible, or null if this is not
+	 *         possible
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
+		Object elementType = getElementType();
+		if (elementType instanceof Class) {
+			return (Class<E>) elementType;
+		}
+		return null;
+	}
 }

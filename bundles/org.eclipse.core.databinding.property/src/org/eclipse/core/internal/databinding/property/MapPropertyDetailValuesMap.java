@@ -53,12 +53,26 @@ public class MapPropertyDetailValuesMap<S, K, V, T> extends
 		this.detailProperty = detailProperty;
 	}
 
+	/**
+	 * @deprecated use getValueClass instead
+	 */
+	public Object getValueType() {
+		return detailProperty.getValueType();
+	}
+
+	/**
+	 * @deprecated use getKeyClass instead
+	 */
 	public Object getKeyType() {
 		return masterProperty.getKeyType();
 	}
 
-	public Object getValueType() {
-		return detailProperty.getValueType();
+	public Class<K> getKeyClass() {
+		return masterProperty.getKeyClass();
+	}
+
+	public Class<T> getValueClass() {
+		return detailProperty.getValueClass();
 	}
 
 	protected Map<K, T> doGetMap(S source) {

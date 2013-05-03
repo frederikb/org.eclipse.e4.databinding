@@ -13,6 +13,7 @@
 package org.eclipse.jface.internal.databinding.swt;
 
 import org.eclipse.core.databinding.observable.Diffs;
+import org.eclipse.core.databinding.observable.value.ValueDiff;
 import org.eclipse.core.databinding.property.INativePropertyListener;
 import org.eclipse.core.databinding.property.IProperty;
 import org.eclipse.core.databinding.property.ISimplePropertyListener;
@@ -24,7 +25,7 @@ import org.eclipse.swt.widgets.Event;
  * @since 3.3
  * 
  */
-public class ControlFocusedProperty extends WidgetBooleanValueProperty {
+public class ControlFocusedProperty extends WidgetBooleanValueProperty<Control> {
 	/**
 	 * 
 	 */
@@ -32,22 +33,23 @@ public class ControlFocusedProperty extends WidgetBooleanValueProperty {
 		super();
 	}
 
-	public boolean doGetBooleanValue(Object source) {
-		return ((Control) source).isFocusControl();
+	public boolean doGetBooleanValue(Control source) {
+		return source.isFocusControl();
 	}
 
-	public void doSetBooleanValue(Object source, boolean value) {
+	public void doSetBooleanValue(Control source, boolean value) {
 		if (value)
-			((Control) source).setFocus();
+			source.setFocus();
 	}
 
-	public INativePropertyListener adaptListener(
-			ISimplePropertyListener listener) {
+	public INativePropertyListener<Control> adaptListener(
+			ISimplePropertyListener<ValueDiff<Boolean>> listener) {
 		int[] events = { SWT.FocusIn, SWT.FocusOut };
 		return new ControlFocusListener(this, listener, events, null);
 	}
 
-	private class ControlFocusListener extends WidgetListener {
+	private class ControlFocusListener extends
+			WidgetListener<Control, ValueDiff<Boolean>> {
 		/**
 		 * @param property
 		 * @param listener
@@ -55,20 +57,20 @@ public class ControlFocusedProperty extends WidgetBooleanValueProperty {
 		 * @param staleEvents
 		 */
 		private ControlFocusListener(IProperty property,
-				ISimplePropertyListener listener, int[] changeEvents,
-				int[] staleEvents) {
+				ISimplePropertyListener<ValueDiff<Boolean>> listener,
+				int[] changeEvents, int[] staleEvents) {
 			super(property, listener, changeEvents, staleEvents);
 		}
 
 		public void handleEvent(Event event) {
 			switch (event.type) {
 			case SWT.FocusIn:
-				fireChange(event.widget, Diffs.createValueDiff(Boolean.FALSE,
-						Boolean.TRUE));
+				fireChange(event.widget,
+						Diffs.createValueDiff(Boolean.FALSE, Boolean.TRUE));
 				break;
 			case SWT.FocusOut:
-				fireChange(event.widget, Diffs.createValueDiff(Boolean.TRUE,
-						Boolean.FALSE));
+				fireChange(event.widget,
+						Diffs.createValueDiff(Boolean.TRUE, Boolean.FALSE));
 				break;
 			}
 		}

@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.List;
  * 
  */
 public class ListSingleSelectionIndexProperty extends
-		SingleSelectionIndexProperty {
+		WidgetIntValueProperty<List> {
 	/**
 	 * 
 	 */
@@ -27,15 +27,18 @@ public class ListSingleSelectionIndexProperty extends
 		super(new int[] { SWT.Selection, SWT.DefaultSelection });
 	}
 
-	int doGetIntValue(Object source) {
-		return ((List) source).getSelectionIndex();
+	protected Integer doGetValue(List source) {
+		// Ideally we would return null when no selection but
+		// that might break existing users so we stick with -1
+		return source.getSelectionIndex();
 	}
 
-	void doSetIntValue(Object source, int value) {
-		if (value == -1)
-			((List) source).deselectAll();
-		else
-			((List) source).setSelection(value);
+	protected void doSetValue(List source, Integer value) {
+		if (value == null || value.intValue() == -1) {
+			source.deselectAll();
+		} else {
+			source.setSelection(value);
+		}
 	}
 
 	public String toString() {

@@ -13,7 +13,7 @@
 package org.eclipse.core.internal.databinding.beans;
 
 import java.beans.PropertyDescriptor;
-import java.util.HashMap;
+import java.util.Collections;
 import java.util.Map;
 
 import org.eclipse.core.databinding.observable.map.MapDiff;
@@ -22,13 +22,16 @@ import org.eclipse.core.databinding.property.ISimplePropertyListener;
 import org.eclipse.core.databinding.property.map.SimpleMapProperty;
 
 /**
+ * @param <S>
+ * @param <K>
+ * @param <V>
  * @since 3.3
  * 
  */
-public class PojoMapProperty extends SimpleMapProperty {
+public class PojoMapProperty<S, K, V> extends SimpleMapProperty<S, K, V> {
 	private final PropertyDescriptor propertyDescriptor;
-	private final Class keyType;
-	private final Class valueType;
+	private final Class<K> keyType;
+	private final Class<V> valueType;
 
 	/**
 	 * @param propertyDescriptor
@@ -36,7 +39,7 @@ public class PojoMapProperty extends SimpleMapProperty {
 	 * @param valueType
 	 */
 	public PojoMapProperty(PropertyDescriptor propertyDescriptor,
-			Class keyType, Class valueType) {
+			Class<K> keyType, Class<V> valueType) {
 		this.propertyDescriptor = propertyDescriptor;
 		this.keyType = keyType;
 		this.valueType = valueType;
@@ -50,27 +53,35 @@ public class PojoMapProperty extends SimpleMapProperty {
 		return valueType;
 	}
 
-	protected Map doGetMap(Object source) {
-		return asMap(BeanPropertyHelper
-				.readProperty(source, propertyDescriptor));
+	public Class<K> getKeyClass() {
+		return keyType;
 	}
 
-	private Map asMap(Object propertyValue) {
+	public Class<V> getValueClass() {
+		return valueType;
+	}
+
+	protected Map<K, V> doGetMap(S source) {
+		return (Map<K, V>) asMap(BeanPropertyHelper.readProperty(source,
+				propertyDescriptor));
+	}
+
+	private Map<?, ?> asMap(Object propertyValue) {
 		if (propertyValue == null)
-			return new HashMap();
-		return (Map) propertyValue;
+			return Collections.emptyMap();
+		return (Map<?, ?>) propertyValue;
 	}
 
-	protected void doSetMap(Object source, Map map, MapDiff diff) {
+	protected void doSetMap(S source, Map<K, V> map, MapDiff<K, V> diff) {
 		doSetMap(source, map);
 	}
 
-	protected void doSetMap(Object source, Map map) {
+	protected void doSetMap(S source, Map<K, V> map) {
 		BeanPropertyHelper.writeProperty(source, propertyDescriptor, map);
 	}
 
-	public INativePropertyListener adaptListener(
-			ISimplePropertyListener listener) {
+	public INativePropertyListener<S> adaptListener(
+			ISimplePropertyListener<MapDiff<K, V>> listener) {
 		return null;
 	}
 

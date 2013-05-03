@@ -28,6 +28,10 @@ public class BindingTargetProperty extends
 		return IObservable.class;
 	}
 
+	public Class<IObservable> getValueClass() {
+		return IObservable.class;
+	}
+
 	protected IObservable doGetValue(Binding<?, ?> source) {
 		return source.getTarget();
 	}

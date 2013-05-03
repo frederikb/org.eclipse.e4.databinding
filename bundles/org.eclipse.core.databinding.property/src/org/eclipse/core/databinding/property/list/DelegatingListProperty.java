@@ -31,14 +31,35 @@ import org.eclipse.core.databinding.property.ISimplePropertyListener;
  */
 public abstract class DelegatingListProperty<S, E> extends ListProperty<S, E> {
 	private final IListProperty<S, E> nullProperty;
-	private final Object elementType;
+	private final Class<E> elementType;
+	private final Object elementTypeAsObject;
 
 	protected DelegatingListProperty() {
 		this(null);
 	}
 
+	/**
+	 * 
+	 * @param elementType
+	 * @deprecated use the constructor which takes Class as a parameter. This is
+	 *             safer because code in this plug-in fails anyway if a Class is
+	 *             not passed.
+	 * 
+	 */
 	protected DelegatingListProperty(Object elementType) {
+		//		throw new IllegalArgumentException("elementType must be a Class object"); //$NON-NLS-1$
+		this.elementType = null;
+		this.elementTypeAsObject = elementType;
+		this.nullProperty = new NullListProperty();
+	}
+
+	/**
+	 * @param elementType
+	 * @since 1.5
+	 */
+	protected DelegatingListProperty(Class<E> elementType) {
 		this.elementType = elementType;
+		this.elementTypeAsObject = elementType;
 		this.nullProperty = new NullListProperty();
 	}
 
@@ -69,9 +90,20 @@ public abstract class DelegatingListProperty<S, E> extends ListProperty<S, E> {
 	 *            the property source
 	 * @return the property to delegate to for the specified source object.
 	 */
-	protected abstract IListProperty<S, E> doGetDelegate(Object source);
+	protected abstract IListProperty<S, E> doGetDelegate(S source);
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
+		return elementTypeAsObject;
+	}
+
+	/**
+	 * @return the class of the elements in the list
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
 		return elementType;
 	}
 
@@ -97,6 +129,10 @@ public abstract class DelegatingListProperty<S, E> extends ListProperty<S, E> {
 
 	private class NullListProperty extends SimpleListProperty<S, E> {
 		public Object getElementType() {
+			return elementTypeAsObject;
+		}
+
+		public Class<E> getElementClass() {
 			return elementType;
 		}
 

@@ -42,12 +42,12 @@ public class DecoratingObservableValue<T> extends DecoratingObservable
 	}
 
 	public synchronized void addValueChangeListener(
-			IValueChangeListener<T> listener) {
+			IValueChangeListener<? super T> listener) {
 		addListener(ValueChangeEvent.TYPE, listener);
 	}
 
 	public synchronized void removeValueChangeListener(
-			IValueChangeListener<T> listener) {
+			IValueChangeListener<? super T> listener) {
 		removeListener(ValueChangeEvent.TYPE, listener);
 	}
 
@@ -107,6 +107,13 @@ public class DecoratingObservableValue<T> extends DecoratingObservable
 
 	public Object getValueType() {
 		return decorated.getValueType();
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public Class<T> getValueClass() {
+		return decorated.getValueClass();
 	}
 
 	public synchronized void dispose() {

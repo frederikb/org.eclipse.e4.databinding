@@ -13,7 +13,6 @@
 package org.eclipse.jface.databinding.swt;
 
 import org.eclipse.core.databinding.observable.Realm;
-import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.property.list.SimpleListProperty;
 import org.eclipse.jface.internal.databinding.swt.SWTObservableListDecorator;
 import org.eclipse.swt.widgets.Widget;
@@ -29,24 +28,23 @@ import org.eclipse.swt.widgets.Widget;
  * {@link ISWTObservable}
  * </ul>
  * 
+ * @param <S>
+ * @param <E>
+ * 
  * @since 1.3
  */
-public abstract class WidgetListProperty extends SimpleListProperty implements
-		IWidgetListProperty {
-	public IObservableList observe(Object source) {
-		if (source instanceof Widget) {
-			return observe((Widget) source);
-		}
-		return super.observe(source);
+public abstract class WidgetListProperty<S extends Widget, E> extends
+		SimpleListProperty<S, E> implements IWidgetListProperty<S, E> {
+
+	/**
+	 * @since 1.7
+	 */
+	public ISWTObservableList<E> observe(Realm realm, S widget) {
+		return new SWTObservableListDecorator<E>(super.observe(realm, widget),
+				widget);
 	}
 
-	public IObservableList observe(Realm realm, Object source) {
-		return new SWTObservableListDecorator(super.observe(realm, source),
-				(Widget) source);
-	}
-
-	public ISWTObservableList observe(Widget widget) {
-		return (ISWTObservableList) observe(SWTObservables.getRealm(widget
-				.getDisplay()), widget);
+	public ISWTObservableList<E> observe(S widget) {
+		return observe(SWTObservables.getRealm(widget.getDisplay()), widget);
 	}
 }

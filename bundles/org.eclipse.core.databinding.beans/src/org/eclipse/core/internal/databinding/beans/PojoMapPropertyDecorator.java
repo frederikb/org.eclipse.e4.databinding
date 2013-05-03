@@ -26,41 +26,58 @@ import org.eclipse.core.databinding.property.map.IMapProperty;
 import org.eclipse.core.databinding.property.map.MapProperty;
 
 /**
+ * @param <S>
+ * @param <K>
+ * @param <V>
  * @since 3.3
  * 
  */
-public class PojoMapPropertyDecorator extends MapProperty implements
-		IBeanMapProperty {
-	private final IMapProperty delegate;
+public class PojoMapPropertyDecorator<S, K, V> extends MapProperty<S, K, V>
+		implements IBeanMapProperty<S, K, V> {
+	private final IMapProperty<S, K, V> delegate;
 	private final PropertyDescriptor propertyDescriptor;
 
 	/**
 	 * @param delegate
 	 * @param propertyDescriptor
 	 */
-	public PojoMapPropertyDecorator(IMapProperty delegate,
+	public PojoMapPropertyDecorator(IMapProperty<S, K, V> delegate,
 			PropertyDescriptor propertyDescriptor) {
 		this.delegate = delegate;
 		this.propertyDescriptor = propertyDescriptor;
 	}
 
+	/**
+	 * @deprecated use getKeyClass instead
+	 */
 	public Object getKeyType() {
 		return delegate.getKeyType();
 	}
 
+	/**
+	 * @deprecated use getValueClass instead
+	 */
 	public Object getValueType() {
 		return delegate.getValueType();
 	}
 
-	protected Map doGetMap(Object source) {
+	public Class<K> getKeyClass() {
+		return delegate.getKeyClass();
+	}
+
+	public Class<V> getValueClass() {
+		return delegate.getValueClass();
+	}
+
+	protected Map<K, V> doGetMap(S source) {
 		return delegate.getMap(source);
 	}
 
-	protected void doSetMap(Object source, Map map) {
+	protected void doSetMap(S source, Map<K, V> map) {
 		delegate.setMap(source, map);
 	}
 
-	protected void doUpdateMap(Object source, MapDiff diff) {
+	protected void doUpdateMap(S source, MapDiff<K, V> diff) {
 		delegate.updateMap(source, diff);
 	}
 
@@ -68,33 +85,36 @@ public class PojoMapPropertyDecorator extends MapProperty implements
 		return propertyDescriptor;
 	}
 
-	public IBeanMapProperty values(String propertyName) {
+	public <T> IBeanMapProperty<S, K, T> values(String propertyName) {
 		return values(propertyName, null);
 	}
 
-	public IBeanMapProperty values(String propertyName, Class valueType) {
-		Class beanClass = (Class) delegate.getValueType();
+	public <T> IBeanMapProperty<S, K, T> values(String propertyName,
+			Class<T> valueType) {
+		Class<V> beanClass = delegate.getValueClass();
 		return values(PojoProperties.value(beanClass, propertyName, valueType));
 	}
 
-	public IBeanMapProperty values(IBeanValueProperty property) {
-		return new PojoMapPropertyDecorator(super.values(property),
+	public <T> IBeanMapProperty<S, K, T> values(
+			IBeanValueProperty<V, T> property) {
+		return new PojoMapPropertyDecorator<S, K, T>(super.values(property),
 				property.getPropertyDescriptor());
 	}
 
-	public IObservableMap observe(Object source) {
-		return new BeanObservableMapDecorator(delegate.observe(source),
+	public IObservableMap<K, V> observe(S source) {
+		return new BeanObservableMapDecorator<K, V>(delegate.observe(source),
 				propertyDescriptor);
 	}
 
-	public IObservableMap observe(Realm realm, Object source) {
-		return new BeanObservableMapDecorator(delegate.observe(realm, source),
-				propertyDescriptor);
+	public IObservableMap<K, V> observe(Realm realm, S source) {
+		return new BeanObservableMapDecorator<K, V>(delegate.observe(realm,
+				source), propertyDescriptor);
 	}
 
-	public IObservableMap observeDetail(IObservableValue master) {
-		return new BeanObservableMapDecorator(delegate.observeDetail(master),
-				propertyDescriptor);
+	public <M extends S> IObservableMap<K, V> observeDetail(
+			IObservableValue<M> master) {
+		return new BeanObservableMapDecorator<K, V>(
+				delegate.observeDetail(master), propertyDescriptor);
 	}
 
 	public String toString() {

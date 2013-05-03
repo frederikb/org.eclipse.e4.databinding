@@ -47,8 +47,19 @@ public interface IMapProperty<S, K, V> extends IProperty {
 	 * 
 	 * @return the element type of the map's key set or <code>null</code> if the
 	 *         key set is untyped.
+	 * @deprecated use getKeyClass instead
 	 */
 	public Object getKeyType();
+
+	/**
+	 * Returns the element type of the map's key set or <code>null</code> if the
+	 * key set is untyped.
+	 * 
+	 * @return the element type of the map's key set or <code>null</code> if the
+	 *         key set is untyped.
+	 * @since 1.5
+	 */
+	public Class<K> getKeyClass();
 
 	/**
 	 * Returns the element type of the map's values collection or
@@ -56,8 +67,19 @@ public interface IMapProperty<S, K, V> extends IProperty {
 	 * 
 	 * @return the element type of the map's values collection or
 	 *         <code>null</code> if the collection is untyped.
+	 * @deprecated use getValueClass instead
 	 */
 	public Object getValueType();
+
+	/**
+	 * Returns the element type of the map's values collection or
+	 * <code>null</code> if the collection is untyped.
+	 * 
+	 * @return the element type of the map's values collection or
+	 *         <code>null</code> if the collection is untyped.
+	 * @since 1.5
+	 */
+	public Class<V> getValueClass();
 
 	/**
 	 * Returns an unmodifiable Map with the current contents of the source's map

@@ -13,6 +13,10 @@
 
 package org.eclipse.jface.databinding.viewers;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.databinding.observable.map.IMapChangeListener;
@@ -31,10 +35,17 @@ import org.eclipse.swt.graphics.Image;
  * {@link #getColumnImage(Object, int)}, for tables or trees with columns, or by
  * implementing additional mixin interfaces for colors, fonts etc.
  * 
+ * @param <T>
+ *            the basemost class of all elements expected
+ * @param <E>
+ *            the basemost class of all label values, which will often be
+ *            <String> but no always because values are converted using
+ *            toString() method
+ * 
  * @since 1.1
  * 
  */
-public class ObservableMapLabelProvider extends LabelProvider implements
+public class ObservableMapLabelProvider<T, E> extends LabelProvider implements
 		ILabelProvider, ITableLabelProvider {
 
 	/**
@@ -42,12 +53,21 @@ public class ObservableMapLabelProvider extends LabelProvider implements
 	 * Subclasses may reference these maps to provide custom labels.
 	 * 
 	 * @since 1.4
+	 * @deprecated to access the maps use attributeMapsList instead
 	 */
-	protected IObservableMap[] attributeMaps;
+	protected IObservableMap<?, ?>[] attributeMaps;
 
-	private IMapChangeListener mapChangeListener = new IMapChangeListener() {
-		public void handleMapChange(MapChangeEvent event) {
-			Set affectedElements = event.diff.getChangedKeys();
+	/**
+	 * Observable maps typically mapping from viewer elements to label values.
+	 * Subclasses may reference these maps to provide custom labels.
+	 * 
+	 * @since 1.7
+	 */
+	protected List<IObservableMap<T, E>> attributeMapsList;
+
+	private IMapChangeListener<T, E> mapChangeListener = new IMapChangeListener<T, E>() {
+		public void handleMapChange(MapChangeEvent<T, E> event) {
+			Set<T> affectedElements = event.diff.getChangedKeys();
 			LabelProviderChangedEvent newEvent = new LabelProviderChangedEvent(
 					ObservableMapLabelProvider.this, affectedElements.toArray());
 			fireLabelProviderChanged(newEvent);
@@ -57,28 +77,44 @@ public class ObservableMapLabelProvider extends LabelProvider implements
 	/**
 	 * @param attributeMap
 	 */
-	public ObservableMapLabelProvider(IObservableMap attributeMap) {
-		this(new IObservableMap[] { attributeMap });
+	public ObservableMapLabelProvider(IObservableMap<T, E> attributeMap) {
+		this(Collections.singletonList(attributeMap));
 	}
 
 	/**
 	 * @param attributeMaps
+	 * @deprecated use the constructor that takes a List instead
 	 */
-	public ObservableMapLabelProvider(IObservableMap[] attributeMaps) {
-		System.arraycopy(attributeMaps, 0,
-				this.attributeMaps = new IObservableMap[attributeMaps.length],
-				0, attributeMaps.length);
-		for (int i = 0; i < attributeMaps.length; i++) {
-			attributeMaps[i].addMapChangeListener(mapChangeListener);
+	public ObservableMapLabelProvider(IObservableMap<T, E>[] attributeMaps) {
+		this(Arrays.asList(attributeMaps));
+	}
+
+	/**
+	 * @param attributeMapsList
+	 * @since 1.7
+	 */
+	@SuppressWarnings("deprecation")
+	// This class must initialize the deprecated field
+	public ObservableMapLabelProvider(
+			List<IObservableMap<T, E>> attributeMapsList) {
+		this.attributeMapsList = new ArrayList<IObservableMap<T, E>>(
+				attributeMapsList);
+
+		// Also copy to the array for legacy reasons
+		this.attributeMaps = attributeMapsList
+				.toArray(new IObservableMap<?, ?>[attributeMapsList.size()]);
+
+		for (IObservableMap<T, E> map : attributeMapsList) {
+			map.addMapChangeListener(mapChangeListener);
 		}
 	}
 
 	public void dispose() {
-		for (int i = 0; i < attributeMaps.length; i++) {
-			attributeMaps[i].removeMapChangeListener(mapChangeListener);
+		for (IObservableMap<T, E> map : attributeMapsList) {
+			map.removeMapChangeListener(mapChangeListener);
 		}
 		super.dispose();
-		this.attributeMaps = null;
+		this.attributeMapsList = null;
 		this.mapChangeListener = null;
 	}
 
@@ -95,8 +131,8 @@ public class ObservableMapLabelProvider extends LabelProvider implements
 	}
 
 	public String getColumnText(Object element, int columnIndex) {
-		if (columnIndex < attributeMaps.length) {
-			Object result = attributeMaps[columnIndex].get(element);
+		if (columnIndex < attributeMapsList.size()) {
+			Object result = attributeMapsList.get(columnIndex).get(element);
 			return result == null ? "" : result.toString(); //$NON-NLS-1$
 		}
 		return null;

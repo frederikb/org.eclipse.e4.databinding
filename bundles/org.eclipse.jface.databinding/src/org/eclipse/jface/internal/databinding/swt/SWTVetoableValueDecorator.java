@@ -23,17 +23,18 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Widget;
 
 /**
+ * @param <S>
  * @since 3.3
  * 
  */
-public class SWTVetoableValueDecorator extends DecoratingVetoableValue
-		implements ISWTObservableValue {
-	private Widget widget;
-	private WidgetStringValueProperty property;
+public class SWTVetoableValueDecorator<S extends Widget> extends
+		DecoratingVetoableValue<String> implements ISWTObservableValue<String> {
+	private S widget;
+	private WidgetStringValueProperty<S> property;
 
 	private Listener verifyListener = new Listener() {
 		public void handleEvent(Event event) {
-			String currentText = (String) property.getValue(widget);
+			String currentText = property.getValue(widget);
 			String newText = currentText.substring(0, event.start) + event.text
 					+ currentText.substring(event.end);
 			if (!fireValueChanging(Diffs.createValueDiff(currentText, newText))) {
@@ -53,14 +54,15 @@ public class SWTVetoableValueDecorator extends DecoratingVetoableValue
 	 * @param property
 	 * @param decorated
 	 */
-	public SWTVetoableValueDecorator(Widget widget,
-			WidgetStringValueProperty property, IObservableValue decorated) {
+	public SWTVetoableValueDecorator(S widget,
+			WidgetStringValueProperty<S> property,
+			IObservableValue<String> decorated) {
 		super(decorated, true);
 		this.property = property;
 		this.widget = widget;
-		Assert
-				.isTrue(decorated.getValueType().equals(String.class),
-						"SWTVetoableValueDecorator can only decorate observable values of String value type"); //$NON-NLS-1$
+		Assert.isTrue(
+				decorated.getValueType().equals(String.class),
+				"SWTVetoableValueDecorator can only decorate observable values of String value type"); //$NON-NLS-1$
 		WidgetListenerUtil.asyncAddListener(widget, SWT.Dispose,
 				disposeListener);
 	}
@@ -85,7 +87,7 @@ public class SWTVetoableValueDecorator extends DecoratingVetoableValue
 		super.dispose();
 	}
 
-	public Widget getWidget() {
+	public S getWidget() {
 		return widget;
 	}
 }

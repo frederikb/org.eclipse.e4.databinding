@@ -18,6 +18,7 @@
 package org.eclipse.jface.databinding.dialog;
 
 import java.util.Iterator;
+import java.util.List;
 
 import org.eclipse.core.databinding.DataBindingContext;
 import org.eclipse.core.databinding.ValidationStatusProvider;
@@ -70,47 +71,47 @@ public class TitleAreaDialogSupport {
 	private TitleAreaDialog dialog;
 	private DataBindingContext dbc;
 	private IValidationMessageProvider messageProvider = new ValidationMessageProvider();
-	private IObservableValue aggregateStatusProvider;
+	private IObservableValue<ValidationStatusProvider> aggregateStatusProvider;
 	private boolean uiChanged = false;
 	private IChangeListener uiChangeListener = new IChangeListener() {
 		public void handleChange(ChangeEvent event) {
 			handleUIChanged();
 		}
 	};
-	private IListChangeListener validationStatusProvidersListener = new IListChangeListener() {
-		public void handleListChange(ListChangeEvent event) {
-			ListDiff diff = event.diff;
-			ListDiffEntry[] differences = diff.getDifferences();
-			for (int i = 0; i < differences.length; i++) {
-				ListDiffEntry listDiffEntry = differences[i];
-				ValidationStatusProvider validationStatusProvider = (ValidationStatusProvider) listDiffEntry
+	private IListChangeListener<ValidationStatusProvider> validationStatusProvidersListener = new IListChangeListener<ValidationStatusProvider>() {
+		public void handleListChange(
+				ListChangeEvent<ValidationStatusProvider> event) {
+			ListDiff<ValidationStatusProvider> diff = event.diff;
+			List<ListDiffEntry<ValidationStatusProvider>> differences = diff
+					.getDifferencesAsList();
+			for (ListDiffEntry<ValidationStatusProvider> listDiffEntry : differences) {
+				ValidationStatusProvider validationStatusProvider = listDiffEntry
 						.getElement();
-				IObservableList targets = validationStatusProvider.getTargets();
+				IObservableList<IObservable> targets = validationStatusProvider
+						.getTargets();
 				if (listDiffEntry.isAddition()) {
-					targets
-							.addListChangeListener(validationStatusProviderTargetsListener);
-					for (Iterator it = targets.iterator(); it.hasNext();) {
-						((IObservable) it.next())
-								.addChangeListener(uiChangeListener);
+					targets.addListChangeListener(validationStatusProviderTargetsListener);
+					for (Iterator<IObservable> it = targets.iterator(); it
+							.hasNext();) {
+						it.next().addChangeListener(uiChangeListener);
 					}
 				} else {
-					targets
-							.removeListChangeListener(validationStatusProviderTargetsListener);
-					for (Iterator it = targets.iterator(); it.hasNext();) {
-						((IObservable) it.next())
-								.removeChangeListener(uiChangeListener);
+					targets.removeListChangeListener(validationStatusProviderTargetsListener);
+					for (Iterator<IObservable> it = targets.iterator(); it
+							.hasNext();) {
+						it.next().removeChangeListener(uiChangeListener);
 					}
 				}
 			}
 		}
 	};
-	private IListChangeListener validationStatusProviderTargetsListener = new IListChangeListener() {
-		public void handleListChange(ListChangeEvent event) {
-			ListDiff diff = event.diff;
-			ListDiffEntry[] differences = diff.getDifferences();
-			for (int i = 0; i < differences.length; i++) {
-				ListDiffEntry listDiffEntry = differences[i];
-				IObservable target = (IObservable) listDiffEntry.getElement();
+	private IListChangeListener<IObservable> validationStatusProviderTargetsListener = new IListChangeListener<IObservable>() {
+		public void handleListChange(ListChangeEvent<IObservable> event) {
+			ListDiff<IObservable> diff = event.diff;
+			List<ListDiffEntry<IObservable>> differences = diff
+					.getDifferencesAsList();
+			for (ListDiffEntry<IObservable> listDiffEntry : differences) {
+				IObservable target = listDiffEntry.getElement();
 				if (listDiffEntry.isAddition()) {
 					target.addChangeListener(uiChangeListener);
 				} else {
@@ -156,8 +157,9 @@ public class TitleAreaDialogSupport {
 		}
 
 		aggregateStatusProvider
-				.addValueChangeListener(new IValueChangeListener() {
-					public void handleValueChange(ValueChangeEvent event) {
+				.addValueChangeListener(new IValueChangeListener<ValidationStatusProvider>() {
+					public void handleValueChange(
+							ValueChangeEvent<ValidationStatusProvider> event) {
 						statusProviderChanged();
 					}
 				});
@@ -169,25 +171,24 @@ public class TitleAreaDialogSupport {
 		statusProviderChanged();
 		dbc.getValidationStatusProviders().addListChangeListener(
 				validationStatusProvidersListener);
-		for (Iterator it = dbc.getValidationStatusProviders().iterator(); it
-				.hasNext();) {
-			ValidationStatusProvider validationStatusProvider = (ValidationStatusProvider) it
-					.next();
-			IObservableList targets = validationStatusProvider.getTargets();
-			targets
-					.addListChangeListener(validationStatusProviderTargetsListener);
-			for (Iterator iter = targets.iterator(); iter.hasNext();) {
-				((IObservable) iter.next()).addChangeListener(uiChangeListener);
+		for (Iterator<ValidationStatusProvider> it = dbc
+				.getValidationStatusProviders().iterator(); it.hasNext();) {
+			ValidationStatusProvider validationStatusProvider = it.next();
+			IObservableList<IObservable> targets = validationStatusProvider
+					.getTargets();
+			targets.addListChangeListener(validationStatusProviderTargetsListener);
+			for (Iterator<IObservable> iter = targets.iterator(); iter
+					.hasNext();) {
+				iter.next().addChangeListener(uiChangeListener);
 			}
 		}
 	}
 
 	private void statusProviderChanged() {
-		currentStatusProvider = (ValidationStatusProvider) aggregateStatusProvider
-				.getValue();
+		currentStatusProvider = aggregateStatusProvider.getValue();
 		if (currentStatusProvider != null) {
-			currentStatus = (IStatus) currentStatusProvider
-					.getValidationStatus().getValue();
+			currentStatus = currentStatusProvider.getValidationStatus()
+					.getValue();
 		} else {
 			currentStatus = null;
 		}
@@ -201,16 +202,15 @@ public class TitleAreaDialogSupport {
 		}
 		dbc.getValidationStatusProviders().removeListChangeListener(
 				validationStatusProvidersListener);
-		for (Iterator it = dbc.getValidationStatusProviders().iterator(); it
-				.hasNext();) {
-			ValidationStatusProvider validationStatusProvider = (ValidationStatusProvider) it
-					.next();
-			IObservableList targets = validationStatusProvider.getTargets();
-			targets
-					.removeListChangeListener(validationStatusProviderTargetsListener);
-			for (Iterator iter = targets.iterator(); iter.hasNext();) {
-				((IObservable) iter.next())
-						.removeChangeListener(uiChangeListener);
+		for (Iterator<ValidationStatusProvider> it = dbc
+				.getValidationStatusProviders().iterator(); it.hasNext();) {
+			ValidationStatusProvider validationStatusProvider = it.next();
+			IObservableList<IObservable> targets = validationStatusProvider
+					.getTargets();
+			targets.removeListChangeListener(validationStatusProviderTargetsListener);
+			for (Iterator<IObservable> iter = targets.iterator(); iter
+					.hasNext();) {
+				iter.next().removeChangeListener(uiChangeListener);
 			}
 		}
 	}
@@ -270,14 +270,12 @@ public class TitleAreaDialogSupport {
 	}
 
 	private void logThrowable(Throwable throwable) {
-		Policy
-				.getLog()
-				.log(
-						new Status(
-								IStatus.ERROR,
-								Policy.JFACE_DATABINDING,
-								IStatus.OK,
-								"Unhandled exception: " + throwable.getMessage(), throwable)); //$NON-NLS-1$
+		Policy.getLog()
+				.log(new Status(
+						IStatus.ERROR,
+						Policy.JFACE_DATABINDING,
+						IStatus.OK,
+						"Unhandled exception: " + throwable.getMessage(), throwable)); //$NON-NLS-1$
 	}
 
 	/**
@@ -288,16 +286,15 @@ public class TitleAreaDialogSupport {
 		if (aggregateStatusProvider != null)
 			aggregateStatusProvider.dispose();
 		if (dbc != null && !uiChanged) {
-			for (Iterator it = dbc.getValidationStatusProviders().iterator(); it
-					.hasNext();) {
-				ValidationStatusProvider validationStatusProvider = (ValidationStatusProvider) it
-						.next();
-				IObservableList targets = validationStatusProvider.getTargets();
-				targets
-						.removeListChangeListener(validationStatusProviderTargetsListener);
-				for (Iterator iter = targets.iterator(); iter.hasNext();) {
-					((IObservable) iter.next())
-							.removeChangeListener(uiChangeListener);
+			for (Iterator<ValidationStatusProvider> it = dbc
+					.getValidationStatusProviders().iterator(); it.hasNext();) {
+				ValidationStatusProvider validationStatusProvider = it.next();
+				IObservableList<IObservable> targets = validationStatusProvider
+						.getTargets();
+				targets.removeListChangeListener(validationStatusProviderTargetsListener);
+				for (Iterator<IObservable> iter = targets.iterator(); iter
+						.hasNext();) {
+					iter.next().removeChangeListener(uiChangeListener);
 				}
 			}
 			dbc.getValidationStatusProviders().removeListChangeListener(

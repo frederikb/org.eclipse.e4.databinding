@@ -11,6 +11,7 @@
 
 package org.eclipse.jface.internal.databinding.viewers;
 
+import org.eclipse.core.databinding.observable.value.ValueDiff;
 import org.eclipse.core.databinding.property.INativePropertyListener;
 import org.eclipse.core.databinding.property.ISimplePropertyListener;
 import org.eclipse.core.databinding.property.value.SimpleValueProperty;
@@ -21,21 +22,22 @@ import org.eclipse.swt.widgets.Control;
  * @since 3.3
  * 
  */
-public class CellEditorControlProperty extends SimpleValueProperty {
+public class CellEditorControlProperty extends
+		SimpleValueProperty<CellEditor, Control> {
 	public Object getValueType() {
 		return Control.class;
 	}
 
-	protected Object doGetValue(Object source) {
-		return ((CellEditor) source).getControl();
+	protected Control doGetValue(CellEditor source) {
+		return source.getControl();
 	}
 
-	protected void doSetValue(Object source, Object value) {
+	protected void doSetValue(CellEditor source, Control value) {
 		throw new UnsupportedOperationException();
 	}
 
-	public INativePropertyListener adaptListener(
-			ISimplePropertyListener listener) {
+	public INativePropertyListener<CellEditor> adaptListener(
+			ISimplePropertyListener<ValueDiff<Control>> listener) {
 		return null;
 	}
 

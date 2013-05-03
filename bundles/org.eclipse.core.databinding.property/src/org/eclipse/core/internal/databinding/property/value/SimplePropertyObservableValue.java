@@ -126,8 +126,15 @@ public class SimplePropertyObservableValue<S, T> extends
 		}
 	}
 
+	/**
+	 * @deprecated use getValueClass instead
+	 */
 	public Object getValueType() {
 		return property.getValueType();
+	}
+
+	public Class<T> getValueClass() {
+		return property.getValueClass();
 	}
 
 	public Object getObserved() {

@@ -28,19 +28,21 @@ import org.eclipse.core.databinding.property.value.IValueProperty;
 import org.eclipse.core.databinding.property.value.ValueProperty;
 
 /**
+ * @param <S>
+ * @param <T>
  * @since 3.3
  * 
  */
-public class BeanValuePropertyDecorator extends ValueProperty implements
-		IBeanValueProperty {
-	private final IValueProperty delegate;
+public class BeanValuePropertyDecorator<S, T> extends ValueProperty<S, T>
+		implements IBeanValueProperty<S, T> {
+	private final IValueProperty<S, T> delegate;
 	private final PropertyDescriptor propertyDescriptor;
 
 	/**
 	 * @param delegate
 	 * @param propertyDescriptor
 	 */
-	public BeanValuePropertyDecorator(IValueProperty delegate,
+	public BeanValuePropertyDecorator(IValueProperty<S, T> delegate,
 			PropertyDescriptor propertyDescriptor) {
 		this.delegate = delegate;
 		this.propertyDescriptor = propertyDescriptor;
@@ -50,104 +52,124 @@ public class BeanValuePropertyDecorator extends ValueProperty implements
 		return propertyDescriptor;
 	}
 
+	/**
+	 * @deprecated use getValueClass instead
+	 */
 	public Object getValueType() {
 		return delegate.getValueType();
 	}
 
-	protected Object doGetValue(Object source) {
+	public Class<T> getValueClass() {
+		return delegate.getValueClass();
+	}
+
+	protected T doGetValue(S source) {
 		return delegate.getValue(source);
 	}
 
-	protected void doSetValue(Object source, Object value) {
+	protected void doSetValue(S source, T value) {
 		delegate.setValue(source, value);
 	}
 
-	public IBeanValueProperty value(String propertyName) {
+	public <V> IBeanValueProperty<S, V> value(String propertyName) {
 		return value(propertyName, null);
 	}
 
-	public IBeanValueProperty value(String propertyName, Class valueType) {
-		Class beanClass = (Class) delegate.getValueType();
+	/**
+	 * @param propertyName
+	 * @param valueType
+	 * @return x
+	 */
+	public <V> IBeanValueProperty<S, V> value(String propertyName,
+			Class<V> valueType) {
+		Class<T> beanClass = delegate.getValueClass();
 		return value(BeanProperties.value(beanClass, propertyName, valueType));
 	}
 
-	public IBeanValueProperty value(IBeanValueProperty property) {
-		return new BeanValuePropertyDecorator(super.value(property),
+	public <V> IBeanValueProperty<S, V> value(IBeanValueProperty<T, V> property) {
+		return new BeanValuePropertyDecorator<S, V>(super.value(property),
 				property.getPropertyDescriptor());
 	}
 
-	public IBeanListProperty list(String propertyName) {
+	public <E> IBeanListProperty<S, E> list(String propertyName) {
 		return list(propertyName, null);
 	}
 
-	public IBeanListProperty list(String propertyName, Class elementType) {
-		Class beanClass = (Class) delegate.getValueType();
+	public <E> IBeanListProperty<S, E> list(String propertyName,
+			Class<E> elementType) {
+		Class<T> beanClass = delegate.getValueClass();
 		return list(BeanProperties.list(beanClass, propertyName, elementType));
 	}
 
-	public IBeanListProperty list(IBeanListProperty property) {
-		return new BeanListPropertyDecorator(super.list(property),
+	public <E> IBeanListProperty<S, E> list(IBeanListProperty<T, E> property) {
+		return new BeanListPropertyDecorator<S, E>(super.list(property),
 				property.getPropertyDescriptor());
 	}
 
-	public IBeanSetProperty set(String propertyName) {
+	public <E> IBeanSetProperty<S, E> set(String propertyName) {
 		return set(propertyName, null);
 	}
 
-	public IBeanSetProperty set(String propertyName, Class elementType) {
-		Class beanClass = (Class) delegate.getValueType();
+	public <E> IBeanSetProperty<S, E> set(String propertyName,
+			Class<E> elementType) {
+		Class<T> beanClass = delegate.getValueClass();
 		return set(BeanProperties.set(beanClass, propertyName, elementType));
 	}
 
-	public IBeanSetProperty set(IBeanSetProperty property) {
-		return new BeanSetPropertyDecorator(super.set(property),
+	public <E> IBeanSetProperty<S, E> set(IBeanSetProperty<T, E> property) {
+		return new BeanSetPropertyDecorator<S, E>(super.set(property),
 				property.getPropertyDescriptor());
 	}
 
-	public IBeanMapProperty map(String propertyName) {
+	public <K, V> IBeanMapProperty<S, K, V> map(String propertyName) {
 		return map(propertyName, null, null);
 	}
 
-	public IBeanMapProperty map(String propertyName, Class keyType,
-			Class valueType) {
-		Class beanClass = (Class) delegate.getValueType();
+	public <K, V> IBeanMapProperty<S, K, V> map(String propertyName,
+			Class<K> keyType, Class<V> valueType) {
+		Class<T> beanClass = delegate.getValueClass();
 		return map(BeanProperties.map(beanClass, propertyName, keyType,
 				valueType));
 	}
 
-	public IBeanMapProperty map(IBeanMapProperty property) {
-		return new BeanMapPropertyDecorator(super.map(property),
+	public <K, V> IBeanMapProperty<S, K, V> map(
+			IBeanMapProperty<? super T, K, V> property) {
+		return new BeanMapPropertyDecorator<S, K, V>(super.map(property),
 				property.getPropertyDescriptor());
 	}
 
-	public IObservableValue observe(Object source) {
-		return new BeanObservableValueDecorator(delegate.observe(source),
+	public IObservableValue<T> observe(S source) {
+		return new BeanObservableValueDecorator<T>(delegate.observe(source),
 				propertyDescriptor);
 	}
 
-	public IObservableValue observe(Realm realm, Object source) {
-		return new BeanObservableValueDecorator(
-				delegate.observe(realm, source), propertyDescriptor);
+	public IObservableValue<T> observe(Realm realm, S source) {
+		return new BeanObservableValueDecorator<T>(delegate.observe(realm,
+				source), propertyDescriptor);
 	}
 
-	public IObservableValue observeDetail(IObservableValue master) {
-		return new BeanObservableValueDecorator(delegate.observeDetail(master),
-				propertyDescriptor);
+	public <M extends S> IObservableValue<T> observeDetail(
+			IObservableValue<M> master) {
+		return new BeanObservableValueDecorator<T>(
+				delegate.observeDetail(master), propertyDescriptor);
 	}
 
-	public IObservableList observeDetail(IObservableList master) {
-		return new BeanObservableListDecorator(delegate.observeDetail(master),
-				propertyDescriptor);
+	public <M extends S> IObservableList<T> observeDetail(
+			IObservableList<M> master) {
+		return new BeanObservableListDecorator<T>(
+				delegate.observeDetail(master), propertyDescriptor);
 	}
 
-	public IObservableMap observeDetail(IObservableSet master) {
-		return new BeanObservableMapDecorator(delegate.observeDetail(master),
-				propertyDescriptor);
+	public <M extends S> IObservableMap<M, T> observeDetail(
+			IObservableSet<M> master) {
+		return new BeanObservableMapDecorator<M, T>(
+				delegate.observeDetail(master), propertyDescriptor);
 	}
 
-	public IObservableMap observeDetail(IObservableMap master) {
-		return new BeanObservableMapDecorator(delegate.observeDetail(master),
-				propertyDescriptor);
+	public <K, M extends S> IObservableMap<K, T> observeDetail(
+			IObservableMap<K, M> master) {
+		return new BeanObservableMapDecorator<K, T>(
+				delegate.observeDetail(master), propertyDescriptor);
 	}
 
 	public String toString() {

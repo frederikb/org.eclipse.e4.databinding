@@ -26,19 +26,22 @@ import org.eclipse.core.databinding.property.map.IMapProperty;
 import org.eclipse.core.databinding.property.map.MapProperty;
 
 /**
+ * @param <S>
+ * @param <K>
+ * @param <V>
  * @since 3.3
  * 
  */
-public class BeanMapPropertyDecorator extends MapProperty implements
-		IBeanMapProperty {
-	private final IMapProperty delegate;
+public class BeanMapPropertyDecorator<S, K, V> extends MapProperty<S, K, V>
+		implements IBeanMapProperty<S, K, V> {
+	private final IMapProperty<S, K, V> delegate;
 	private final PropertyDescriptor propertyDescriptor;
 
 	/**
 	 * @param delegate
 	 * @param propertyDescriptor
 	 */
-	public BeanMapPropertyDecorator(IMapProperty delegate,
+	public BeanMapPropertyDecorator(IMapProperty<S, K, V> delegate,
 			PropertyDescriptor propertyDescriptor) {
 		this.delegate = delegate;
 		this.propertyDescriptor = propertyDescriptor;
@@ -48,53 +51,70 @@ public class BeanMapPropertyDecorator extends MapProperty implements
 		return propertyDescriptor;
 	}
 
+	/**
+	 * @deprecated use getKeyClass instead
+	 */
 	public Object getKeyType() {
 		return delegate.getKeyType();
 	}
 
+	/**
+	 * @deprecated use getValueClass instead
+	 */
 	public Object getValueType() {
 		return delegate.getValueType();
 	}
 
-	protected Map doGetMap(Object source) {
+	public Class<K> getKeyClass() {
+		return delegate.getKeyClass();
+	}
+
+	public Class<V> getValueClass() {
+		return delegate.getValueClass();
+	}
+
+	protected Map<K, V> doGetMap(S source) {
 		return delegate.getMap(source);
 	}
 
-	protected void doSetMap(Object source, Map map) {
+	protected void doSetMap(S source, Map<K, V> map) {
 		delegate.setMap(source, map);
 	}
 
-	protected void doUpdateMap(Object source, MapDiff diff) {
+	protected void doUpdateMap(S source, MapDiff<K, V> diff) {
 		delegate.updateMap(source, diff);
 	}
 
-	public IBeanMapProperty values(String propertyName) {
+	public <T> IBeanMapProperty<S, K, T> values(String propertyName) {
 		return values(propertyName, null);
 	}
 
-	public IBeanMapProperty values(String propertyName, Class valueType) {
-		Class beanClass = (Class) delegate.getValueType();
+	public <T> IBeanMapProperty<S, K, T> values(String propertyName,
+			Class<T> valueType) {
+		Class<V> beanClass = delegate.getValueClass();
 		return values(BeanProperties.value(beanClass, propertyName, valueType));
 	}
 
-	public IBeanMapProperty values(IBeanValueProperty property) {
-		return new BeanMapPropertyDecorator(super.values(property),
+	public <T> IBeanMapProperty<S, K, T> values(
+			IBeanValueProperty<V, T> property) {
+		return new BeanMapPropertyDecorator<S, K, T>(super.values(property),
 				property.getPropertyDescriptor());
 	}
 
-	public IObservableMap observe(Object source) {
-		return new BeanObservableMapDecorator(delegate.observe(source),
+	public IObservableMap<K, V> observe(S source) {
+		return new BeanObservableMapDecorator<K, V>(delegate.observe(source),
 				propertyDescriptor);
 	}
 
-	public IObservableMap observe(Realm realm, Object source) {
-		return new BeanObservableMapDecorator(delegate.observe(realm, source),
-				propertyDescriptor);
+	public IObservableMap<K, V> observe(Realm realm, S source) {
+		return new BeanObservableMapDecorator<K, V>(delegate.observe(realm,
+				source), propertyDescriptor);
 	}
 
-	public IObservableMap observeDetail(IObservableValue master) {
-		return new BeanObservableMapDecorator(delegate.observeDetail(master),
-				propertyDescriptor);
+	public <U extends S> IObservableMap<K, V> observeDetail(
+			IObservableValue<U> master) {
+		return new BeanObservableMapDecorator<K, V>(
+				delegate.observeDetail(master), propertyDescriptor);
 	}
 
 	public String toString() {

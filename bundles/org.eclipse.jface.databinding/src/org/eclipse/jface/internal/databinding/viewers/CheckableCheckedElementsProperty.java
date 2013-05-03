@@ -29,7 +29,8 @@ import org.eclipse.jface.viewers.Viewer;
  * @since 3.3
  * 
  */
-public class CheckableCheckedElementsProperty extends SetProperty {
+public class CheckableCheckedElementsProperty extends
+		SetProperty<ICheckable, Object> {
 	private final Object elementType;
 
 	/**
@@ -43,26 +44,30 @@ public class CheckableCheckedElementsProperty extends SetProperty {
 		return elementType;
 	}
 
-	protected Set doGetSet(Object source) {
+	public Class<Object> getElementClass() {
+		return Object.class;
+	}
+
+	protected Set<Object> doGetSet(ICheckable source) {
 		throw new UnsupportedOperationException(
 				"Cannot query the checked elements on an ICheckable"); //$NON-NLS-1$
 	}
 
-	protected void doSetSet(Object source, Set set) {
+	protected void doSetSet(ICheckable source, Set<Object> set) {
 		throw new UnsupportedOperationException(
 				"Cannot batch replace the checked elements on an ICheckable.  " + //$NON-NLS-1$
 						"Use updateSet(SetDiff) instead"); //$NON-NLS-1$
 	}
 
-	protected void doUpdateSet(Object source, SetDiff diff) {
-		ICheckable checkable = (ICheckable) source;
-		for (Iterator it = diff.getAdditions().iterator(); it.hasNext();)
+	protected void doUpdateSet(ICheckable source, SetDiff<Object> diff) {
+		ICheckable checkable = source;
+		for (Iterator<Object> it = diff.getAdditions().iterator(); it.hasNext();)
 			checkable.setChecked(it.next(), true);
-		for (Iterator it = diff.getRemovals().iterator(); it.hasNext();)
+		for (Iterator<Object> it = diff.getRemovals().iterator(); it.hasNext();)
 			checkable.setChecked(it.next(), false);
 	}
 
-	public IObservableSet observe(Object source) {
+	public IObservableSet<Object> observe(ICheckable source) {
 		if (source instanceof Viewer) {
 			return observe(SWTObservables.getRealm(((Viewer) source)
 					.getControl().getDisplay()), source);
@@ -70,16 +75,16 @@ public class CheckableCheckedElementsProperty extends SetProperty {
 		return super.observe(source);
 	}
 
-	public IObservableSet observe(Realm realm, Object source) {
+	public IObservableSet<Object> observe(Realm realm, ICheckable source) {
 		IElementComparer comparer = null;
 		if (source instanceof StructuredViewer)
 			comparer = ((StructuredViewer) source).getComparer();
-		Set wrappedSet = ViewerElementSet.withComparer(comparer);
-		IObservableSet observable = new CheckableCheckedElementsObservableSet(
-				realm, wrappedSet, elementType, comparer, (ICheckable) source);
+		Set<Object> wrappedSet = ViewerElementSet.withComparer(comparer);
+		IObservableSet<Object> observable = new CheckableCheckedElementsObservableSet(
+				realm, wrappedSet, elementType, comparer, source);
 		if (source instanceof Viewer)
-			observable = new ViewerObservableSetDecorator(observable,
-					(Viewer) source);
+			observable = new ViewerObservableSetDecorator<Viewer, Object>(
+					observable, (Viewer) source);
 		return observable;
 	}
 }

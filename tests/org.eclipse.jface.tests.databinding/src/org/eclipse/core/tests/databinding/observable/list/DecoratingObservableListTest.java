@@ -34,14 +34,14 @@ import org.eclipse.jface.databinding.conformance.delegate.AbstractObservableColl
  */
 public class DecoratingObservableListTest {
 	public static Test suite() {
-		TestSuite suite = new TestSuite(DecoratingObservableListTest.class
-				.getName());
+		TestSuite suite = new TestSuite(
+				DecoratingObservableListTest.class.getName());
 		suite.addTest(MutableObservableListContractTest.suite(new Delegate()));
 		return suite;
 	}
 
 	static class Delegate extends AbstractObservableCollectionContractDelegate {
-		private Object elementType = Object.class;
+		private Class elementType = Object.class;
 
 		public IObservableCollection createObservableCollection(Realm realm,
 				int elementCount) {
@@ -53,10 +53,15 @@ public class DecoratingObservableListTest {
 		}
 
 		public Object createElement(IObservableCollection collection) {
-			return new Object();
+			Class elementType = getElementType(collection);
+			try {
+				return elementType.getConstructor().newInstance();
+			} catch (Exception e) {
+				return new Object();
+			}
 		}
 
-		public Object getElementType(IObservableCollection collection) {
+		public Class getElementType(IObservableCollection collection) {
 			return elementType;
 		}
 

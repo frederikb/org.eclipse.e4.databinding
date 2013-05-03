@@ -53,7 +53,7 @@ public abstract class SetProperty<S, E> implements ISetProperty<S, E> {
 	 * 
 	 * @since 1.3
 	 */
-	public final Set<E> getSet(S source) {
+	public Set<E> getSet(S source) {
 		if (source == null) {
 			return Collections.emptySet();
 		}
@@ -152,11 +152,32 @@ public abstract class SetProperty<S, E> implements ISetProperty<S, E> {
 	public <U extends S> IObservableSet<E> observeDetail(
 			IObservableValue<U> master) {
 		return MasterDetailObservables.detailSet(master,
-				setFactory(master.getRealm()), getElementType());
+				setFactory(master.getRealm()), getElementClass());
 	}
 
 	public final <T> IMapProperty<S, E, T> values(
 			IValueProperty<? super E, T> detailValues) {
 		return new SetPropertyDetailValuesMap<S, E, T>(this, detailValues);
+	}
+
+	/**
+	 * This is a default implementation that should ideally be overridden to use
+	 * a properly typed Class field. This implementation checks to see if the
+	 * element type is of type Class and, if it is, it assumes it is the class
+	 * of the elements and makes an unchecked cast.
+	 * <P>
+	 * This method should always be overridden to provide an implementation that
+	 * never returns null.
+	 * 
+	 * @return the class of the elements, if possible, or null if this is not
+	 *         possible
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
+		Object elementType = getElementType();
+		if (elementType instanceof Class) {
+			return (Class<E>) elementType;
+		}
+		return null;
 	}
 }

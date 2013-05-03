@@ -17,13 +17,13 @@ import org.eclipse.swt.widgets.Scale;
  * @since 3.3
  * 
  */
-public class ScaleMaximumProperty extends WidgetIntValueProperty {
-	int doGetIntValue(Object source) {
-		return ((Scale) source).getMaximum();
+public class ScaleMaximumProperty extends WidgetIntValueProperty<Scale> {
+	protected Integer doGetValue(Scale source) {
+		return source.getMaximum();
 	}
 
-	void doSetIntValue(Object source, int value) {
-		((Scale) source).setMaximum(value);
+	protected void doSetValue(Scale source, Integer value) {
+		source.setMaximum(value);
 	}
 
 	public String toString() {

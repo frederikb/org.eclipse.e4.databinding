@@ -25,8 +25,11 @@ import org.eclipse.swt.widgets.Spinner;
 
 /**
  * @since 3.3
- * 
+ * @deprecated use static methods in WidgetProperties instead (the method names
+ *             will start with 'selection')
  */
+// ok to ignore warnings in deprecated class
+@SuppressWarnings("rawtypes")
 public final class WidgetSelectionProperty extends
 		WidgetDelegatingValueProperty {
 	private IValueProperty button;

@@ -20,77 +20,105 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.databinding.observable.Diffs;
-import org.eclipse.core.databinding.observable.IDiff;
 import org.eclipse.core.databinding.observable.list.ListDiff;
 import org.eclipse.core.databinding.property.INativePropertyListener;
 import org.eclipse.core.databinding.property.ISimplePropertyListener;
 import org.eclipse.core.databinding.property.list.SimpleListProperty;
+import org.eclipse.core.databinding.util.Policy;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
 
 /**
+ * @param <S>
+ * @param <E>
  * @since 3.3
  * 
  */
-public class BeanListProperty extends SimpleListProperty {
+public class BeanListProperty<S, E> extends SimpleListProperty<S, E> {
 	private final PropertyDescriptor propertyDescriptor;
-	private final Class elementType;
+	private final Class<E> elementType;
 
 	/**
 	 * @param propertyDescriptor
 	 * @param elementType
 	 */
 	public BeanListProperty(PropertyDescriptor propertyDescriptor,
-			Class elementType) {
+			Class<E> elementType) {
+		if (elementType == null) {
+			// elementType cannot be null.
+			// For legacy reasons, we allow this through but log it.
+			// Three cycles after Kepler this should be replaced by the
+			// exception (currently
+			// commented out) because it is not type safe.
+			// throw new IllegalArgumentException("elementType cannot be null."); //$NON-NLS-1$
+			Policy.getLog().log(
+					new Status(IStatus.WARNING, Policy.JFACE_DATABINDING,
+							"elementType cannot be null")); //$NON-NLS-1$
+
+			if (propertyDescriptor.getPropertyType().isArray()) {
+				elementType = (Class<E>) propertyDescriptor.getPropertyType()
+						.getComponentType();
+			} else {
+				elementType = (Class<E>) Object.class;
+			}
+		}
+
+		BeanPropertyHelper.checkCollectionPropertyElementType(
+				propertyDescriptor, elementType);
 		this.propertyDescriptor = propertyDescriptor;
-		this.elementType = elementType == null ? BeanPropertyHelper
-				.getCollectionPropertyElementType(propertyDescriptor)
-				: elementType;
+		this.elementType = elementType;
 	}
 
 	public Object getElementType() {
 		return elementType;
 	}
 
-	protected List doGetList(Object source) {
-		return asList(BeanPropertyHelper.readProperty(source,
+	public Class<E> getElementClass() {
+		return elementType;
+	}
+
+	protected List<E> doGetList(S source) {
+		return (List<E>) asList(BeanPropertyHelper.readProperty(source,
 				propertyDescriptor));
 	}
 
-	private List asList(Object propertyValue) {
+	private List<?> asList(Object propertyValue) {
 		if (propertyValue == null)
-			return Collections.EMPTY_LIST;
+			return Collections.emptyList();
 		if (propertyDescriptor.getPropertyType().isArray())
 			return Arrays.asList((Object[]) propertyValue);
-		return (List) propertyValue;
+		return (List<?>) propertyValue;
 	}
 
-	protected void doSetList(Object source, List list, ListDiff diff) {
+	protected void doSetList(S source, List<E> list, ListDiff<E> diff) {
 		doSetList(source, list);
 	}
 
-	protected void doSetList(Object source, List list) {
+	protected void doSetList(S source, List<E> list) {
 		BeanPropertyHelper.writeProperty(source, propertyDescriptor,
 				convertListToBeanPropertyType(list));
 	}
 
-	private Object convertListToBeanPropertyType(List list) {
+	private Object convertListToBeanPropertyType(List<E> list) {
 		Object propertyValue = list;
 		if (propertyDescriptor.getPropertyType().isArray()) {
-			Class componentType = propertyDescriptor.getPropertyType()
+			Class<?> componentType = propertyDescriptor.getPropertyType()
 					.getComponentType();
-			Object[] array = (Object[]) Array.newInstance(componentType, list
-					.size());
+			Object[] array = (Object[]) Array.newInstance(componentType,
+					list.size());
 			list.toArray(array);
 			propertyValue = array;
 		}
 		return propertyValue;
 	}
 
-	public INativePropertyListener adaptListener(
-			final ISimplePropertyListener listener) {
-		return new BeanPropertyListener(this, propertyDescriptor, listener) {
-			protected IDiff computeDiff(Object oldValue, Object newValue) {
-				return Diffs
-						.computeListDiff(asList(oldValue), asList(newValue));
+	public INativePropertyListener<S> adaptListener(
+			final ISimplePropertyListener<ListDiff<E>> listener) {
+		return new BeanPropertyListener<S, ListDiff<E>>(this,
+				propertyDescriptor, listener) {
+			protected ListDiff<E> computeDiff(Object oldValue, Object newValue) {
+				return Diffs.computeAndCastListDiff(asList(oldValue),
+						asList(newValue), elementType);
 			}
 		};
 	}

@@ -30,6 +30,10 @@ public final class ValidationStatusProviderValidationStatusProperty
 		return IObservableValue.class;
 	}
 
+	public Class<IObservableValue<IStatus>> getValueClass() {
+		return (Class<IObservableValue<IStatus>>) getValueType();
+	}
+
 	protected IObservableValue<IStatus> doGetValue(
 			ValidationStatusProvider source) {
 		return source.getValidationStatus();

@@ -21,18 +21,21 @@ import org.eclipse.swt.widgets.Listener;
 import org.eclipse.swt.widgets.Widget;
 
 /**
+ * @param <T>
  * @since 3.3
  * 
  */
-public class SWTObservableValueDecorator extends DecoratingObservableValue
-		implements ISWTObservableValue, Listener {
+public class SWTObservableValueDecorator<T> extends
+		DecoratingObservableValue<T> implements ISWTObservableValue<T>,
+		Listener {
 	private Widget widget;
 
 	/**
 	 * @param decorated
 	 * @param widget
 	 */
-	public SWTObservableValueDecorator(IObservableValue decorated, Widget widget) {
+	public SWTObservableValueDecorator(IObservableValue<T> decorated,
+			Widget widget) {
 		super(decorated, true);
 		this.widget = widget;
 		WidgetListenerUtil.asyncAddListener(widget, SWT.Dispose, this);

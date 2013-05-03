@@ -31,6 +31,10 @@ public class ValidationStatusProviderTargetsProperty extends
 		return IObservable.class;
 	}
 
+	public Class<IObservable> getElementClass() {
+		return IObservable.class;
+	}
+
 	protected List<IObservable> doGetList(ValidationStatusProvider source) {
 		return Collections.unmodifiableList(source.getTargets());
 	}

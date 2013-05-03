@@ -30,31 +30,27 @@ import org.eclipse.jface.viewers.Viewer;
  * {@link IViewerObservableValue}
  * </ul>
  * 
+ * @param <S>
+ * 
  * @since 1.3
  */
-public abstract class ViewerValueProperty extends SimpleValueProperty implements
-		IViewerValueProperty {
-	public IObservableValue observe(Object source) {
-		if (source instanceof Viewer) {
-			return observe((Viewer) source);
-		}
-		return super.observe(source);
+public abstract class ViewerValueProperty<S extends Viewer> extends
+		SimpleValueProperty<S, Object> implements IViewerValueProperty<S> {
+	/**
+	 * @since 1.7
+	 */
+	public IViewerObservableValue<S> observe(Realm realm, S source) {
+		IObservableValue<Object> observable = super.observe(realm, source);
+		return new ViewerObservableValueDecorator<S>(observable, source);
 	}
 
-	public IObservableValue observe(Realm realm, Object source) {
-		IObservableValue observable = super.observe(realm, source);
-		if (source instanceof Viewer)
-			observable = new ViewerObservableValueDecorator(observable,
-					(Viewer) source);
-		return observable;
+	public IViewerObservableValue<S> observe(S viewer) {
+		return observe(
+				SWTObservables.getRealm(viewer.getControl().getDisplay()),
+				viewer);
 	}
 
-	public IViewerObservableValue observe(Viewer viewer) {
-		return (IViewerObservableValue) observe(SWTObservables.getRealm(viewer
-				.getControl().getDisplay()), viewer);
-	}
-
-	public IViewerObservableValue observeDelayed(int delay, Viewer viewer) {
+	public IViewerObservableValue<S> observeDelayed(int delay, S viewer) {
 		return ViewersObservables.observeDelayedValue(delay, observe(viewer));
 	}
 }

@@ -45,7 +45,8 @@ public class ObservableListTreeContentProvider implements ITreeContentProvider {
 	private static class Impl extends ObservableCollectionTreeContentProvider {
 		private Viewer viewer;
 
-		public Impl(IObservableFactory listFactory,
+		public Impl(
+				IObservableFactory<Object, IObservableList<Object>> listFactory,
 				TreeStructureAdvisor structureAdvisor) {
 			super(listFactory, structureAdvisor);
 		}
@@ -55,24 +56,24 @@ public class ObservableListTreeContentProvider implements ITreeContentProvider {
 			super.inputChanged(viewer, oldInput, newInput);
 		}
 
-		private class ListChangeListener implements IListChangeListener {
+		private class ListChangeListener implements IListChangeListener<Object> {
 			final Object parentElement;
 
 			public ListChangeListener(Object parentElement) {
 				this.parentElement = parentElement;
 			}
 
-			public void handleListChange(ListChangeEvent event) {
+			public void handleListChange(ListChangeEvent<Object> event) {
 				if (isViewerDisposed())
 					return;
 
 				// Determine which elements are being added and removed
-				final Set localKnownElementAdditions = ViewerElementSet
+				final Set<Object> localKnownElementAdditions = ViewerElementSet
 						.withComparer(comparer);
-				final Set localKnownElementRemovals = ViewerElementSet
+				final Set<Object> localKnownElementRemovals = ViewerElementSet
 						.withComparer(comparer);
 				final boolean[] suspendRedraw = new boolean[] { false };
-				event.diff.accept(new ListDiffVisitor() {
+				event.diff.accept(new ListDiffVisitor<Object>() {
 					public void handleAdd(int index, Object element) {
 						localKnownElementAdditions.add(element);
 					}
@@ -95,13 +96,13 @@ public class ObservableListTreeContentProvider implements ITreeContentProvider {
 				});
 				localKnownElementRemovals.removeAll(event.getObservableList());
 
-				Set knownElementAdditions = ViewerElementSet
+				Set<Object> knownElementAdditions = ViewerElementSet
 						.withComparer(comparer);
 				knownElementAdditions.addAll(localKnownElementAdditions);
 				knownElementAdditions.removeAll(knownElements);
 
-				Set knownElementRemovals = findPendingRemovals(parentElement,
-						localKnownElementRemovals);
+				Set<Object> knownElementRemovals = findPendingRemovals(
+						parentElement, localKnownElementRemovals);
 				knownElementRemovals.retainAll(knownElements);
 
 				knownElements.addAll(knownElementAdditions);
@@ -109,15 +110,15 @@ public class ObservableListTreeContentProvider implements ITreeContentProvider {
 					realizedElements.removeAll(knownElementRemovals);
 				}
 
-				for (Iterator it = localKnownElementAdditions.iterator(); it
-						.hasNext();) {
+				for (Iterator<Object> it = localKnownElementAdditions
+						.iterator(); it.hasNext();) {
 					getOrCreateNode(it.next()).addParent(parentElement);
 				}
 
 				if (suspendRedraw[0])
 					viewer.getControl().setRedraw(false);
 				try {
-					event.diff.accept(new ListDiffVisitor() {
+					event.diff.accept(new ListDiffVisitor<Object>() {
 						public void handleAdd(int index, Object child) {
 							viewerUpdater.insert(parentElement, child, index);
 						}
@@ -143,7 +144,7 @@ public class ObservableListTreeContentProvider implements ITreeContentProvider {
 						viewer.getControl().setRedraw(true);
 				}
 
-				for (Iterator it = localKnownElementRemovals.iterator(); it
+				for (Iterator<Object> it = localKnownElementRemovals.iterator(); it
 						.hasNext();) {
 					TreeNode node = getExistingNode(it.next());
 					if (node != null) {
@@ -164,16 +165,18 @@ public class ObservableListTreeContentProvider implements ITreeContentProvider {
 		}
 
 		protected void addCollectionChangeListener(
-				IObservableCollection collection, IObservablesListener listener) {
-			IObservableList list = (IObservableList) collection;
-			IListChangeListener listListener = (IListChangeListener) listener;
+				IObservableCollection<Object> collection,
+				IObservablesListener listener) {
+			IObservableList<Object> list = (IObservableList<Object>) collection;
+			IListChangeListener<Object> listListener = (IListChangeListener<Object>) listener;
 			list.addListChangeListener(listListener);
 		}
 
 		protected void removeCollectionChangeListener(
-				IObservableCollection collection, IObservablesListener listener) {
-			IObservableList list = (IObservableList) collection;
-			IListChangeListener listListener = (IListChangeListener) listener;
+				IObservableCollection<Object> collection,
+				IObservablesListener listener) {
+			IObservableList<Object> list = (IObservableList<Object>) collection;
+			IListChangeListener<Object> listListener = (IListChangeListener<Object>) listener;
 			list.removeListChangeListener(listListener);
 		}
 	}
@@ -194,7 +197,8 @@ public class ObservableListTreeContentProvider implements ITreeContentProvider {
 	 *            non-null advisor if they can provide additional structural
 	 *            information about the tree.
 	 */
-	public ObservableListTreeContentProvider(IObservableFactory listFactory,
+	public ObservableListTreeContentProvider(
+			IObservableFactory<Object, IObservableList<Object>> listFactory,
 			TreeStructureAdvisor structureAdvisor) {
 		impl = new Impl(listFactory, structureAdvisor);
 	}
@@ -244,7 +248,7 @@ public class ObservableListTreeContentProvider implements ITreeContentProvider {
 	 * 
 	 * @return readableSet of items that will need labels
 	 */
-	public IObservableSet getKnownElements() {
+	public IObservableSet<Object> getKnownElements() {
 		return impl.getKnownElements();
 	}
 
@@ -256,7 +260,7 @@ public class ObservableListTreeContentProvider implements ITreeContentProvider {
 	 * @return the set of known elements which have been realized in the viewer.
 	 * @since 1.3
 	 */
-	public IObservableSet getRealizedElements() {
+	public IObservableSet<Object> getRealizedElements() {
 		return impl.getRealizedElements();
 	}
 }

@@ -46,12 +46,12 @@ abstract public class AbstractObservableValue<T> extends AbstractObservable
 	}
 
 	public synchronized void addValueChangeListener(
-			IValueChangeListener<T> listener) {
+			IValueChangeListener<? super T> listener) {
 		addListener(ValueChangeEvent.TYPE, listener);
 	}
 
 	public synchronized void removeValueChangeListener(
-			IValueChangeListener<T> listener) {
+			IValueChangeListener<? super T> listener) {
 		removeListener(ValueChangeEvent.TYPE, listener);
 	}
 
@@ -90,10 +90,28 @@ abstract public class AbstractObservableValue<T> extends AbstractObservable
 
 	private void getterCalled() {
 		ObservableTracker.getterCalled(this);
+
 	}
 
 	protected void fireChange() {
 		throw new RuntimeException(
 				"fireChange should not be called, use fireValueChange() instead"); //$NON-NLS-1$
+	}
+
+	/**
+	 * This is a default implementation that should ideally be overridden to use
+	 * a properly typed Class field. This implementation checks to see if the
+	 * value type is of type Class and, if it is, it assumes it is the class of
+	 * the values and makes an unchecked cast.
+	 * 
+	 * @return Class to which values of this observable are constrained
+	 * @since 1.5
+	 */
+	public Class<T> getValueClass() {
+		Object valueType = getValueType();
+		if (valueType instanceof Class) {
+			return (Class<T>) valueType;
+		}
+		return null;
 	}
 }

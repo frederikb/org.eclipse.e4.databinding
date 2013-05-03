@@ -16,13 +16,12 @@ import org.eclipse.core.databinding.observable.value.IObservableValue;
 import org.eclipse.jface.databinding.swt.ISWTObservableValue;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Text;
-import org.eclipse.swt.widgets.Widget;
 
 /**
  * @since 3.3
  * 
  */
-public class TextTextProperty extends WidgetStringValueProperty {
+public class TextTextProperty extends WidgetStringValueProperty<Text> {
 	/**
 	 * 
 	 */
@@ -59,20 +58,20 @@ public class TextTextProperty extends WidgetStringValueProperty {
 		return new int[] { SWT.Modify };
 	}
 
-	String doGetStringValue(Object source) {
-		return ((Text) source).getText();
+	protected String doGetValue(Text source) {
+		return source.getText();
 	}
 
-	void doSetStringValue(Object source, String value) {
-		((Text) source).setText(value == null ? "" : value); //$NON-NLS-1$
+	protected void doSetValue(Text source, String value) {
+		source.setText(value == null ? "" : value); //$NON-NLS-1$
 	}
 
 	public String toString() {
 		return "Text.text <String>"; //$NON-NLS-1$
 	}
 
-	protected ISWTObservableValue wrapObservable(IObservableValue observable,
-			Widget widget) {
-		return new SWTVetoableValueDecorator(widget, this, observable);
+	protected ISWTObservableValue<String> wrapObservable(
+			IObservableValue<String> observable, Text widget) {
+		return new SWTVetoableValueDecorator<Text>(widget, this, observable);
 	}
 }

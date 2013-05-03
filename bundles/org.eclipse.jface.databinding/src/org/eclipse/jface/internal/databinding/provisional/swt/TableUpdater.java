@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.eclipse.jface.internal.databinding.provisional.swt;
 
+import java.util.List;
+
 import org.eclipse.core.databinding.observable.ChangeEvent;
 import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.IObservable;
@@ -126,7 +128,8 @@ public abstract class TableUpdater {
 			if (e.type == SWT.SetData) {
 				UpdateRunnable runnable = (UpdateRunnable) e.item.getData();
 				if (runnable == null) {
-					runnable = new UpdateRunnable((TableItem) e.item, list.get(e.index));
+					runnable = new UpdateRunnable((TableItem) e.item,
+							list.get(e.index));
 					e.item.setData(runnable);
 					runnable.makeDirty();
 				} else {
@@ -146,15 +149,16 @@ public abstract class TableUpdater {
 
 	private Table table;
 
-	private IListChangeListener listChangeListener = new IListChangeListener() {
-		public void handleListChange(ListChangeEvent event) {
-			ListDiffEntry[] differences = event.diff.getDifferences();
-			for (int i = 0; i < differences.length; i++) {
-				ListDiffEntry entry = differences[i];
+	private IListChangeListener<Object> listChangeListener = new IListChangeListener<Object>() {
+		public void handleListChange(ListChangeEvent<Object> event) {
+			List<ListDiffEntry<Object>> differences = event.diff
+					.getDifferencesAsList();
+			for (ListDiffEntry<Object> entry : differences) {
 				if (entry.isAddition()) {
-					TableItem item = new TableItem(table, SWT.NONE, entry
-							.getPosition());
-					UpdateRunnable updateRunnable = new UpdateRunnable(item, entry.getElement());
+					TableItem item = new TableItem(table, SWT.NONE,
+							entry.getPosition());
+					UpdateRunnable updateRunnable = new UpdateRunnable(item,
+							entry.getElement());
 					item.setData(updateRunnable);
 					updateRunnable.makeDirty();
 				} else {
@@ -164,17 +168,18 @@ public abstract class TableUpdater {
 		}
 	};
 
-	private IObservableList list;
+	private IObservableList<IListChangeListener<Object>> list;
 
 	/**
-	 * Creates an updator for the given control.
+	 * Creates an updater for the given control.
 	 * 
 	 * @param table
 	 *            table to update
 	 * @param list
 	 * @since 1.2
 	 */
-	public TableUpdater(Table table, IObservableList list) {
+	public TableUpdater(Table table,
+			IObservableList<IListChangeListener<Object>> list) {
 		this.table = table;
 		this.list = list;
 		Assert.isLegal((table.getStyle() & SWT.VIRTUAL) != 0,
@@ -189,7 +194,7 @@ public abstract class TableUpdater {
 
 	/**
 	 * This is called automatically when the control is disposed. It may also be
-	 * called explicitly to remove this updator from the control. Subclasses
+	 * called explicitly to remove this updater from the control. Subclasses
 	 * will normally extend this method to detach any listeners they attached in
 	 * their constructor.
 	 */
@@ -202,7 +207,7 @@ public abstract class TableUpdater {
 	}
 
 	/**
-	 * Updates the control. This method will be invoked once after the updator
+	 * Updates the control. This method will be invoked once after the updater
 	 * is created, and once before any repaint during which the control is
 	 * visible and dirty.
 	 * 

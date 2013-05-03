@@ -32,7 +32,7 @@ import org.eclipse.core.internal.databinding.property.value.SimplePropertyObserv
  * <p>
  * Subclasses must implement these methods:
  * <ul>
- * <li> {@link #getValueType()}
+ * <li> {@link #getValueClass()}
  * <li> {@link #doGetValue(Object)}
  * <li> {@link #doSetValue(Object, Object)}
  * <li> {@link #adaptListener(ISimplePropertyListener)}

@@ -16,13 +16,13 @@ import org.eclipse.swt.widgets.Slider;
 /**
  * 
  */
-public class SliderMinimumProperty extends WidgetIntValueProperty {
-	int doGetIntValue(Object source) {
-		return ((Slider) source).getMinimum();
+public class SliderMinimumProperty extends WidgetIntValueProperty<Slider> {
+	protected Integer doGetValue(Slider source) {
+		return source.getMinimum();
 	}
 
-	void doSetIntValue(Object source, int value) {
-		((Slider) source).setMinimum(value);
+	protected void doSetValue(Slider source, Integer value) {
+		source.setMinimum(value);
 	}
 
 	public String toString() {

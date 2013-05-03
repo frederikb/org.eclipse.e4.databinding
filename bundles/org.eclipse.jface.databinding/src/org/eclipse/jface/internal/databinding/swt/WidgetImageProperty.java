@@ -21,7 +21,10 @@ import org.eclipse.swt.widgets.Label;
 /**
  * @since 3.3
  * 
+ * @deprecated this method is used only by deprecated methods
  */
+// ok to ignore warnings in deprecated class
+@SuppressWarnings("rawtypes")
 public class WidgetImageProperty extends WidgetDelegatingValueProperty {
 	private IValueProperty button;
 	private IValueProperty cLabel;

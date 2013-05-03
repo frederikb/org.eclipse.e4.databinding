@@ -21,16 +21,17 @@ import org.eclipse.swt.widgets.Control;
  * @since 3.3
  * 
  */
-public class CComboItemsProperty extends ControlStringListProperty {
-	protected void doUpdateStringList(final Control control, ListDiff diff) {
-		diff.accept(new ListDiffVisitor() {
-			CCombo combo = (CCombo) control;
+public class CComboItemsProperty extends ControlStringListProperty<CCombo> {
+	protected void doUpdateStringList(final CCombo control,
+			ListDiff<String> diff) {
+		diff.accept(new ListDiffVisitor<String>() {
+			CCombo combo = control;
 
-			public void handleAdd(int index, Object element) {
-				combo.add((String) element, index);
+			public void handleAdd(int index, String element) {
+				combo.add(element, index);
 			}
 
-			public void handleRemove(int index, Object element) {
+			public void handleRemove(int index, String element) {
 				combo.remove(index);
 			}
 
@@ -52,9 +53,9 @@ public class CComboItemsProperty extends ControlStringListProperty {
 			// }
 			// }
 
-			public void handleReplace(int index, Object oldElement,
-					Object newElement) {
-				combo.setItem(index, (String) newElement);
+			public void handleReplace(int index, String oldElement,
+					String newElement) {
+				combo.setItem(index, newElement);
 			}
 		});
 	}

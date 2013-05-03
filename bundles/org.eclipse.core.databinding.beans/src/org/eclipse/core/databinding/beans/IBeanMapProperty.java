@@ -19,11 +19,18 @@ import org.eclipse.core.databinding.property.map.IMapProperty;
  * An {@link IMapProperty} extension interface with convenience methods for
  * creating nested bean properties.
  * 
+ * @param <S>
+ *            type of the source object
+ * @param <K>
+ *            type of the keys to the map
+ * @param <V>
+ *            type of the values in the map
  * @since 1.2
  * @noextend This interface is not intended to be extended by clients.
  * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface IBeanMapProperty extends IBeanProperty, IMapProperty {
+public interface IBeanMapProperty<S, K, V> extends IBeanProperty,
+		IMapProperty<S, K, V> {
 	/**
 	 * Returns a master-detail combination of this property and the specified
 	 * value property.
@@ -35,7 +42,7 @@ public interface IBeanMapProperty extends IBeanProperty, IMapProperty {
 	 *         value property.
 	 * @see #values(IBeanValueProperty)
 	 */
-	public IBeanMapProperty values(String propertyName);
+	public <T> IBeanMapProperty<S, K, T> values(String propertyName);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -50,7 +57,8 @@ public interface IBeanMapProperty extends IBeanProperty, IMapProperty {
 	 *         value property.
 	 * @see #values(IBeanValueProperty)
 	 */
-	public IBeanMapProperty values(String propertyName, Class valueType);
+	public <V2> IBeanMapProperty<S, K, V2> values(String propertyName,
+			Class<V2> valueType);
 
 	/**
 	 * Returns a master-detail combination of this property and the specified
@@ -65,5 +73,6 @@ public interface IBeanMapProperty extends IBeanProperty, IMapProperty {
 	 * @return a master-detail combination of this property and the specified
 	 *         value property.
 	 */
-	public IBeanMapProperty values(IBeanValueProperty property);
+	public <V2> IBeanMapProperty<S, K, V2> values(
+			IBeanValueProperty<V, V2> property);
 }

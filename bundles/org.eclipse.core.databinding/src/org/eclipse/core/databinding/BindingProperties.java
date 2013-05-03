@@ -118,9 +118,10 @@ public class BindingProperties {
 	/**
 	 * Returns an {@link IValueProperty} whose value results from applying the
 	 * given {@link IConverter} on the source object of the value property.
-	 * Consequently, the {@link IValueProperty#getValueType() value type} of the
-	 * returned property is the same as the {@link IConverter#getToType() target
-	 * type} of the converter. Setting a value on the property is not supported.
+	 * Consequently, the {@link IValueProperty#getValueClass() value type} of
+	 * the returned property is the same as the {@link IConverter#getToType()
+	 * target type} of the converter. Setting a value on the property is not
+	 * supported.
 	 * 
 	 * @param converter
 	 *            The converter to apply to the source object of the value

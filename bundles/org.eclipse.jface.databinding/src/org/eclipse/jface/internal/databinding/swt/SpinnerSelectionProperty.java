@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Spinner;
  * @since 3.3
  * 
  */
-public class SpinnerSelectionProperty extends WidgetIntValueProperty {
+public class SpinnerSelectionProperty extends WidgetIntValueProperty<Spinner> {
 	/**
 	 * 
 	 */
@@ -26,12 +26,12 @@ public class SpinnerSelectionProperty extends WidgetIntValueProperty {
 		super(SWT.Modify);
 	}
 
-	int doGetIntValue(Object source) {
-		return ((Spinner) source).getSelection();
+	protected Integer doGetValue(Spinner source) {
+		return source.getSelection();
 	}
 
-	void doSetIntValue(Object source, int value) {
-		((Spinner) source).setSelection(value);
+	protected void doSetValue(Spinner source, Integer value) {
+		source.setSelection(value);
 	}
 
 	public String toString() {

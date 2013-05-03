@@ -39,14 +39,14 @@ public class ObservableMapCellLabelProvider extends CellLabelProvider {
 	 * 
 	 * @since 1.4
 	 */
-	protected IObservableMap[] attributeMaps;
+	protected IObservableMap<Object, Object>[] attributeMaps;
 
-	private IMapChangeListener mapChangeListener = new IMapChangeListener() {
-		public void handleMapChange(MapChangeEvent event) {
-			Set affectedElements = event.diff.getChangedKeys();
+	private IMapChangeListener<Object, Object> mapChangeListener = new IMapChangeListener<Object, Object>() {
+		public void handleMapChange(MapChangeEvent<Object, Object> event) {
+			Set<Object> affectedElements = event.diff.getChangedKeys();
 			LabelProviderChangedEvent newEvent = new LabelProviderChangedEvent(
-					ObservableMapCellLabelProvider.this, affectedElements
-							.toArray());
+					ObservableMapCellLabelProvider.this,
+					affectedElements.toArray());
 			fireLabelProviderChanged(newEvent);
 		}
 	};
@@ -56,7 +56,8 @@ public class ObservableMapCellLabelProvider extends CellLabelProvider {
 	 * 
 	 * @param attributeMap
 	 */
-	public ObservableMapCellLabelProvider(IObservableMap attributeMap) {
+	public ObservableMapCellLabelProvider(
+			IObservableMap<Object, Object> attributeMap) {
 		this(new IObservableMap[] { attributeMap });
 	}
 
@@ -67,7 +68,8 @@ public class ObservableMapCellLabelProvider extends CellLabelProvider {
 	 * 
 	 * @param attributeMaps
 	 */
-	protected ObservableMapCellLabelProvider(IObservableMap[] attributeMaps) {
+	protected ObservableMapCellLabelProvider(
+			IObservableMap<Object, Object>[] attributeMaps) {
 		System.arraycopy(attributeMaps, 0,
 				this.attributeMaps = new IObservableMap[attributeMaps.length],
 				0, attributeMaps.length);

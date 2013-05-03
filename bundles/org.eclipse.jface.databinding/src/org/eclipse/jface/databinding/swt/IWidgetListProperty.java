@@ -17,10 +17,14 @@ import org.eclipse.swt.widgets.Widget;
 /**
  * {@link IListProperty} for observing an SWT Widget
  * 
+ * @param <S>
+ * @param <E>
+ * 
  * @since 1.3
  * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface IWidgetListProperty extends IListProperty {
+public interface IWidgetListProperty<S extends Widget, E> extends
+		IListProperty<S, E> {
 	/**
 	 * Returns an {@link ISWTObservableList} observing this list property on the
 	 * given widget
@@ -30,5 +34,5 @@ public interface IWidgetListProperty extends IListProperty {
 	 * @return an observable list observing this list property on the given
 	 *         widget
 	 */
-	public ISWTObservableList observe(Widget widget);
+	public ISWTObservableList<E> observe(S widget);
 }

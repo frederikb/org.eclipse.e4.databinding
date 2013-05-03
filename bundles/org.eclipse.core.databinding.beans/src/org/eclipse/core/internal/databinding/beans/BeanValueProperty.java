@@ -15,47 +15,65 @@ package org.eclipse.core.internal.databinding.beans;
 import java.beans.PropertyDescriptor;
 
 import org.eclipse.core.databinding.observable.Diffs;
-import org.eclipse.core.databinding.observable.IDiff;
+import org.eclipse.core.databinding.observable.value.ValueDiff;
 import org.eclipse.core.databinding.property.INativePropertyListener;
 import org.eclipse.core.databinding.property.ISimplePropertyListener;
 import org.eclipse.core.databinding.property.value.SimpleValueProperty;
 
 /**
+ * @param <S>
+ * @param <T>
  * @since 3.3
  * 
  */
-public class BeanValueProperty extends SimpleValueProperty {
+public class BeanValueProperty<S, T> extends SimpleValueProperty<S, T> {
 	private final PropertyDescriptor propertyDescriptor;
-	private final Class valueType;
+	private final Class<T> valueType;
 
 	/**
 	 * @param propertyDescriptor
 	 * @param valueType
 	 */
 	public BeanValueProperty(PropertyDescriptor propertyDescriptor,
-			Class valueType) {
+			Class<T> valueType) {
+		if (valueType == null) {
+			throw new IllegalArgumentException("valueType cannot be null."); //$NON-NLS-1$
+		}
+		Class<?> propertyType = propertyDescriptor.getPropertyType();
+		propertyType = Util.convertToObjectClass(propertyType);
+		if (valueType != propertyType) {
+			throw new IllegalArgumentException(
+					"valueType does not match the actual property type."); //$NON-NLS-1$
+		}
 		this.propertyDescriptor = propertyDescriptor;
-		this.valueType = valueType == null ? propertyDescriptor
-				.getPropertyType() : valueType;
+		this.valueType = valueType;
 	}
 
-	public Object getValueType() {
+	public Class<T> getValueType() {
 		return valueType;
 	}
 
-	protected Object doGetValue(Object source) {
-		return BeanPropertyHelper.readProperty(source, propertyDescriptor);
+	public Class<T> getValueClass() {
+		return valueType;
 	}
 
-	protected void doSetValue(Object source, Object value) {
+	protected T doGetValue(S source) {
+		Object value = BeanPropertyHelper.readProperty(source,
+				propertyDescriptor);
+		return valueType.cast(value);
+	}
+
+	protected void doSetValue(S source, T value) {
 		BeanPropertyHelper.writeProperty(source, propertyDescriptor, value);
 	}
 
-	public INativePropertyListener adaptListener(
-			final ISimplePropertyListener listener) {
-		return new BeanPropertyListener(this, propertyDescriptor, listener) {
-			protected IDiff computeDiff(Object oldValue, Object newValue) {
-				return Diffs.createValueDiff(oldValue, newValue);
+	public INativePropertyListener<S> adaptListener(
+			final ISimplePropertyListener<ValueDiff<T>> listener) {
+		return new BeanPropertyListener<S, ValueDiff<T>>(this,
+				propertyDescriptor, listener) {
+			protected ValueDiff<T> computeDiff(Object oldValue, Object newValue) {
+				return Diffs.createValueDiff(valueType.cast(oldValue),
+						valueType.cast(newValue));
 			}
 		};
 	}

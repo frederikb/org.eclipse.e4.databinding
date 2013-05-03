@@ -39,7 +39,38 @@ import org.eclipse.core.databinding.observable.set.IObservableSet;
  */
 public class IdentityObservableSet<E> extends AbstractObservableSet<E> {
 	private Set<E> wrappedSet;
+
+	/**
+	 * @deprecated use getElementClass() instead
+	 */
 	private Object elementType;
+
+	/**
+	 * @since 1.5
+	 */
+	private Class<E> elementClass;
+
+	/**
+	 * Constructs an IdentityObservableSet on the given {@link Realm}.
+	 * 
+	 * @param realm
+	 *            the realm of the constructed set.
+	 * @param elementType
+	 *            the element type of the constructed set.
+	 * @deprecated use instead the form of the constructor that takes Class as
+	 *             the parameter type for the element type
+	 */
+	public IdentityObservableSet(Realm realm, Object elementType) {
+		super(realm);
+
+		this.wrappedSet = new IdentitySet<E>();
+		this.elementType = elementType;
+		if (elementType instanceof Class) {
+			this.elementClass = (Class<E>) elementType;
+		} else {
+			this.elementClass = null;
+		}
+	}
 
 	/**
 	 * Constructs an IdentityObservableSet on the given {@link Realm}.
@@ -49,19 +80,32 @@ public class IdentityObservableSet<E> extends AbstractObservableSet<E> {
 	 * @param elementType
 	 *            the element type of the constructed set.
 	 */
-	public IdentityObservableSet(Realm realm, Object elementType) {
+	// We must set deprecated fields in case any one uses them
+	@SuppressWarnings("deprecation")
+	public IdentityObservableSet(Realm realm, Class<E> elementType) {
 		super(realm);
 
 		this.wrappedSet = new IdentitySet<E>();
 		this.elementType = elementType;
+		this.elementClass = elementType;
 	}
 
 	protected Set<E> getWrappedSet() {
 		return wrappedSet;
 	}
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
 		return elementType;
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
+		return elementClass;
 	}
 
 	public Iterator<E> iterator() {

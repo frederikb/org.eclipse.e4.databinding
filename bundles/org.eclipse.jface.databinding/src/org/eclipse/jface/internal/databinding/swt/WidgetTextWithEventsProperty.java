@@ -18,8 +18,11 @@ import org.eclipse.swt.widgets.Text;
 
 /**
  * @since 3.3
- * 
+ * @deprecated use static methods in WidgetProperties instead (the method names
+ *             will start with 'text')
  */
+// ok to ignore warnings in deprecated class
+@SuppressWarnings("rawtypes")
 public class WidgetTextWithEventsProperty extends WidgetDelegatingValueProperty {
 	private final int[] events;
 

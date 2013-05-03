@@ -27,33 +27,37 @@ import org.eclipse.jface.viewers.ViewerFilter;
  * @since 3.3
  * 
  */
-public class StructuredViewerFiltersProperty extends ViewerSetProperty {
+public class StructuredViewerFiltersProperty extends
+		ViewerSetProperty<StructuredViewer, ViewerFilter> {
 	public Object getElementType() {
 		return ViewerFilter.class;
 	}
 
-	protected Set doGetSet(Object source) {
-		return new HashSet(Arrays.asList(((StructuredViewer) source)
-				.getFilters()));
+	public Class<ViewerFilter> getElementClass() {
+		return ViewerFilter.class;
 	}
 
-	public void doSetSet(Object source, Set set, SetDiff diff) {
+	protected Set<ViewerFilter> doGetSet(StructuredViewer source) {
+		return new HashSet<ViewerFilter>(Arrays.asList(source.getFilters()));
+	}
+
+	public void doSetSet(StructuredViewer source, Set<ViewerFilter> set,
+			SetDiff<ViewerFilter> diff) {
 		doSetSet(source, set);
 	}
 
-	protected void doSetSet(Object source, Set set) {
-		StructuredViewer viewer = (StructuredViewer) source;
+	protected void doSetSet(StructuredViewer source, Set<ViewerFilter> set) {
+		StructuredViewer viewer = source;
 		viewer.getControl().setRedraw(false);
 		try {
-			viewer.setFilters((ViewerFilter[]) set.toArray(new ViewerFilter[set
-					.size()]));
+			viewer.setFilters(set.toArray(new ViewerFilter[set.size()]));
 		} finally {
 			viewer.getControl().setRedraw(true);
 		}
 	}
 
-	public INativePropertyListener adaptListener(
-			ISimplePropertyListener listener) {
+	public INativePropertyListener<StructuredViewer> adaptListener(
+			ISimplePropertyListener<SetDiff<ViewerFilter>> listener) {
 		return null;
 	}
 

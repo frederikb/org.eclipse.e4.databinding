@@ -30,6 +30,10 @@ public final class DataBindingContextValidationStatusProvidersProperty extends
 		return ValidationStatusProvider.class;
 	}
 
+	public Class<ValidationStatusProvider> getElementClass() {
+		return ValidationStatusProvider.class;
+	}
+
 	protected List<ValidationStatusProvider> doGetList(DataBindingContext source) {
 		return source.getValidationStatusProviders();
 	}

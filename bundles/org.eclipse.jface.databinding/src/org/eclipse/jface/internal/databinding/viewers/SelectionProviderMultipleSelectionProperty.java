@@ -13,24 +13,26 @@
 
 package org.eclipse.jface.internal.databinding.viewers;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.databinding.observable.list.ListDiff;
 import org.eclipse.core.databinding.property.INativePropertyListener;
 import org.eclipse.core.databinding.property.ISimplePropertyListener;
-import org.eclipse.jface.databinding.viewers.ViewerListProperty;
+import org.eclipse.core.databinding.property.list.SimpleListProperty;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredSelection;
 
 /**
+ * @param <S>
  * @since 3.3
  * 
  */
-public class SelectionProviderMultipleSelectionProperty extends
-		ViewerListProperty {
+public class SelectionProviderMultipleSelectionProperty<S extends ISelectionProvider>
+		extends SimpleListProperty<S, Object> {
 
 	private final boolean isPostSelection;
 
@@ -49,26 +51,34 @@ public class SelectionProviderMultipleSelectionProperty extends
 		return Object.class;
 	}
 
-	protected List doGetList(Object source) {
-		ISelection selection = ((ISelectionProvider) source).getSelection();
-		if (selection instanceof IStructuredSelection) {
-			return ((IStructuredSelection) selection).toList();
-		}
-		return Collections.EMPTY_LIST;
+	public Class<Object> getElementClass() {
+		return Object.class;
 	}
 
-	protected void doSetList(Object source, List list, ListDiff diff) {
+	protected List<Object> doGetList(S source) {
+		ISelection selection = source.getSelection();
+		if (selection instanceof IStructuredSelection) {
+			ArrayList<Object> result = new ArrayList<Object>();
+			for (Object element : ((IStructuredSelection) selection).toList()) {
+				result.add(element);
+			}
+			return result;
+		}
+		return Collections.emptyList();
+	}
+
+	protected void doSetList(S source, List<Object> list, ListDiff<Object> diff) {
 		doSetList(source, list);
 	}
 
-	protected void doSetList(Object source, List list) {
-		((ISelectionProvider) source)
-				.setSelection(new StructuredSelection(list));
+	protected void doSetList(S source, List<Object> list) {
+		source.setSelection(new StructuredSelection(list));
 	}
 
-	public INativePropertyListener adaptListener(
-			ISimplePropertyListener listener) {
-		return new SelectionChangedListener(this, listener, isPostSelection);
+	public INativePropertyListener<S> adaptListener(
+			ISimplePropertyListener<ListDiff<Object>> listener) {
+		return new SelectionChangedListener<S, ListDiff<Object>>(this,
+				listener, isPostSelection);
 	}
 
 	public String toString() {

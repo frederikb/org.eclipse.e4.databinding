@@ -18,13 +18,13 @@ import org.eclipse.swt.widgets.Button;
  * @since 3.3
  * 
  */
-public class ButtonImageProperty extends WidgetImageValueProperty {
-	Image doGetImageValue(Object source) {
-		return ((Button) source).getImage();
+public class ButtonImageProperty extends WidgetImageValueProperty<Button> {
+	Image doGetImageValue(Button source) {
+		return source.getImage();
 	}
 
-	void doSetImageValue(Object source, Image value) {
-		((Button) source).setImage(value);
+	void doSetImageValue(Button source, Image value) {
+		source.setImage(value);
 	}
 
 	public String toString() {

@@ -18,13 +18,13 @@ import org.eclipse.swt.widgets.Item;
  * @since 3.3
  * 
  */
-public class ItemImageProperty extends WidgetImageValueProperty {
-	Image doGetImageValue(Object source) {
-		return ((Item) source).getImage();
+public class ItemImageProperty extends WidgetImageValueProperty<Item> {
+	Image doGetImageValue(Item source) {
+		return source.getImage();
 	}
 
-	void doSetImageValue(Object source, Image value) {
-		((Item) source).setImage(value);
+	void doSetImageValue(Item source, Image value) {
+		source.setImage(value);
 	}
 
 	public String toString() {

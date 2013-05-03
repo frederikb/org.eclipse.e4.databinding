@@ -45,7 +45,7 @@ public class ObservableListContentProvider implements
 	private ObservableCollectionContentProvider impl;
 
 	private static class Impl extends ObservableCollectionContentProvider
-			implements IListChangeListener {
+			implements IListChangeListener<Object> {
 		private Viewer viewer;
 
 		Impl(IViewerUpdater explicitViewerUpdater) {
@@ -63,26 +63,26 @@ public class ObservableListContentProvider implements
 		}
 
 		protected void addCollectionChangeListener(
-				IObservableCollection collection) {
-			((IObservableList) collection).addListChangeListener(this);
+				IObservableCollection<?> collection) {
+			((IObservableList<?>) collection).addListChangeListener(this);
 		}
 
 		protected void removeCollectionChangeListener(
-				IObservableCollection collection) {
-			((IObservableList) collection).removeListChangeListener(this);
+				IObservableCollection<?> collection) {
+			((IObservableList<?>) collection).removeListChangeListener(this);
 		}
 
-		public void handleListChange(ListChangeEvent event) {
+		public void handleListChange(ListChangeEvent<Object> event) {
 			if (isViewerDisposed())
 				return;
 
 			// Determine which elements were added and removed
-			final Set knownElementAdditions = ViewerElementSet
+			final Set<Object> knownElementAdditions = ViewerElementSet
 					.withComparer(comparer);
-			final Set knownElementRemovals = ViewerElementSet
+			final Set<Object> knownElementRemovals = ViewerElementSet
 					.withComparer(comparer);
 			final boolean[] suspendRedraw = new boolean[] { false };
-			event.diff.accept(new ListDiffVisitor() {
+			event.diff.accept(new ListDiffVisitor<Object>() {
 				public void handleAdd(int index, Object element) {
 					knownElementAdditions.add(element);
 				}
@@ -114,7 +114,7 @@ public class ObservableListContentProvider implements
 			if (suspendRedraw[0])
 				viewer.getControl().setRedraw(false);
 			try {
-				event.diff.accept(new ListDiffVisitor() {
+				event.diff.accept(new ListDiffVisitor<Object>() {
 					public void handleAdd(int index, Object element) {
 						viewerUpdater.insert(element, index);
 					}
@@ -199,7 +199,7 @@ public class ObservableListContentProvider implements
 	 * 
 	 * @return readableSet of items that will need labels
 	 */
-	public IObservableSet getKnownElements() {
+	public IObservableSet<Object> getKnownElements() {
 		return impl.getKnownElements();
 	}
 
@@ -211,7 +211,7 @@ public class ObservableListContentProvider implements
 	 * @return the set of known elements which have been realized in the viewer.
 	 * @since 1.3
 	 */
-	public IObservableSet getRealizedElements() {
+	public IObservableSet<Object> getRealizedElements() {
 		return impl.getRealizedElements();
 	}
 }

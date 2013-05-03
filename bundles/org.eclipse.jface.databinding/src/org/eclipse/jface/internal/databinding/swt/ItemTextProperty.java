@@ -17,13 +17,13 @@ import org.eclipse.swt.widgets.Item;
  * @since 3.3
  * 
  */
-public class ItemTextProperty extends WidgetStringValueProperty {
-	String doGetStringValue(Object source) {
-		return ((Item) source).getText();
+public class ItemTextProperty extends WidgetStringValueProperty<Item> {
+	protected String doGetValue(Item source) {
+		return source.getText();
 	}
 
-	void doSetStringValue(Object source, String value) {
-		((Item) source).setText(value == null ? "" : value); //$NON-NLS-1$
+	protected void doSetValue(Item source, String value) {
+		source.setText(value == null ? "" : value); //$NON-NLS-1$
 	}
 
 	public String toString() {

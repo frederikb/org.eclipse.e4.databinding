@@ -35,7 +35,8 @@ import org.eclipse.core.internal.databinding.property.PropertyObservableUtil;
  */
 public class MultiListProperty<S, E> extends ListProperty<S, E> {
 	private IListProperty<S, E>[] properties;
-	private Object elementType;
+	private Object elementTypeAsObject;
+	private Class<E> elementType;
 
 	/**
 	 * Constructs a MultiListProperty for observing the specified list
@@ -60,10 +61,30 @@ public class MultiListProperty<S, E> extends ListProperty<S, E> {
 	public MultiListProperty(IListProperty<S, E>[] properties,
 			Object elementType) {
 		this.properties = properties;
+		this.elementTypeAsObject = elementType;
+		this.elementType = null;
+	}
+
+	/**
+	 * @param properties
+	 * @param elementType
+	 * @since 1.5
+	 */
+	public MultiListProperty(IListProperty<S, E>[] properties,
+			Class<E> elementType) {
+		this.properties = properties;
+		this.elementTypeAsObject = elementType;
 		this.elementType = elementType;
 	}
 
 	public Object getElementType() {
+		return elementTypeAsObject;
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
 		return elementType;
 	}
 

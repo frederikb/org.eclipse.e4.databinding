@@ -17,8 +17,11 @@ import org.eclipse.swt.widgets.ToolTip;
 
 /**
  * @since 3.3
- * 
+ * @deprecated use static methods in WidgetProperties instead (the method names
+ *             will start with 'message')
  */
+// ok to ignore warnings in deprecated class
+@SuppressWarnings("rawtypes")
 public class WidgetMessageProperty extends WidgetDelegatingValueProperty {
 	private IValueProperty text;
 	private IValueProperty toolTip;

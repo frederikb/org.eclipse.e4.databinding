@@ -17,13 +17,13 @@ import org.eclipse.swt.widgets.Scale;
  * @since 3.3
  * 
  */
-public class ScaleMinimumProperty extends WidgetIntValueProperty {
-	int doGetIntValue(Object source) {
-		return ((Scale) source).getMinimum();
+public class ScaleMinimumProperty extends WidgetIntValueProperty<Scale> {
+	protected Integer doGetValue(Scale source) {
+		return source.getMinimum();
 	}
 
-	void doSetIntValue(Object source, int value) {
-		((Scale) source).setMinimum(value);
+	protected void doSetValue(Scale source, Integer value) {
+		source.setMinimum(value);
 	}
 
 	public String toString() {

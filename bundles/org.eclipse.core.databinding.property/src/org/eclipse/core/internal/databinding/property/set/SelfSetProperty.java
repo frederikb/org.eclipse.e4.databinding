@@ -26,16 +26,31 @@ import org.eclipse.core.databinding.property.set.SimpleSetProperty;
  * 
  */
 public final class SelfSetProperty<E> extends SimpleSetProperty<Set<E>, E> {
-	private final Object elementType;
+	private final Object elementTypeAsObject;
+	private final Class<E> elementType;
+
+	/**
+	 * @param elementType
+	 * @deprecated use the constructor that takes a Class instead
+	 */
+	public SelfSetProperty(Object elementType) {
+		this.elementTypeAsObject = elementType;
+		this.elementType = null;
+	}
 
 	/**
 	 * @param elementType
 	 */
-	public SelfSetProperty(Object elementType) {
+	public SelfSetProperty(Class<E> elementType) {
+		this.elementTypeAsObject = elementType;
 		this.elementType = elementType;
 	}
 
 	public Object getElementType() {
+		return elementTypeAsObject;
+	}
+
+	public Class<E> getElementClass() {
 		return elementType;
 	}
 

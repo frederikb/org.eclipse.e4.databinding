@@ -22,7 +22,8 @@ import org.eclipse.swt.widgets.Control;
  * @since 3.3
  * 
  */
-public class ControlLocationProperty extends WidgetValueProperty {
+public class ControlLocationProperty extends
+		WidgetValueProperty<Control, Point> {
 	/**
 	 * 
 	 */
@@ -34,12 +35,12 @@ public class ControlLocationProperty extends WidgetValueProperty {
 		return Point.class;
 	}
 
-	protected Object doGetValue(Object source) {
-		return ((Control) source).getLocation();
+	protected Point doGetValue(Control source) {
+		return source.getLocation();
 	}
 
-	protected void doSetValue(Object source, Object value) {
-		((Control) source).setLocation((Point) value);
+	protected void doSetValue(Control source, Point value) {
+		source.setLocation(value);
 	}
 
 	public String toString() {

@@ -16,13 +16,14 @@ import org.eclipse.swt.widgets.ToolItem;
 /**
  * 
  */
-public class ToolItemEnabledProperty extends WidgetBooleanValueProperty {
-	public boolean doGetBooleanValue(Object source) {
-		return ((ToolItem) source).getEnabled();
+public class ToolItemEnabledProperty extends
+		WidgetBooleanValueProperty<ToolItem> {
+	public boolean doGetBooleanValue(ToolItem source) {
+		return source.getEnabled();
 	}
 
-	void doSetBooleanValue(Object source, boolean value) {
-		((ToolItem) source).setEnabled(value);
+	void doSetBooleanValue(ToolItem source, boolean value) {
+		source.setEnabled(value);
 	}
 
 	public String toString() {

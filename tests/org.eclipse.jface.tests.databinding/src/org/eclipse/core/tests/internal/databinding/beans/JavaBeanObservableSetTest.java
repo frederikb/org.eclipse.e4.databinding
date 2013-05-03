@@ -28,6 +28,7 @@ import org.eclipse.core.databinding.beans.BeansObservables;
 import org.eclipse.core.databinding.beans.IBeanObservable;
 import org.eclipse.core.databinding.beans.IBeanProperty;
 import org.eclipse.core.databinding.beans.PojoObservables;
+import org.eclipse.core.databinding.observable.DecoratingObservableCollection;
 import org.eclipse.core.databinding.observable.IObservable;
 import org.eclipse.core.databinding.observable.IObservableCollection;
 import org.eclipse.core.databinding.observable.Realm;
@@ -61,9 +62,9 @@ public class JavaBeanObservableSetTest extends AbstractDefaultRealmTestCase {
 		propertyDescriptor = ((IBeanProperty) BeanProperties.set(Bean.class,
 				propertyName)).getPropertyDescriptor();
 
-		observableSet = BeansObservables
-				.observeSet(SWTObservables.getRealm(Display.getDefault()),
-						bean, propertyName, Bean.class);
+		observableSet = BeansObservables.observeSet(
+				SWTObservables.getRealm(Display.getDefault()), bean,
+				propertyName, Bean.class);
 		beanObservable = (IBeanObservable) observableSet;
 		listener = new SetChangeEventTracker();
 	}
@@ -99,7 +100,7 @@ public class JavaBeanObservableSetTest extends AbstractDefaultRealmTestCase {
 	public void testFiresChangeEvents() throws Exception {
 		observableSet.addSetChangeListener(listener);
 		assertEquals(0, listener.count);
-		bean.setSet(new HashSet(Arrays.asList(new String[] { "1" })));
+		bean.setSet(new HashSet(Arrays.asList(new Bean[] { new Bean() })));
 		assertEquals(1, listener.count);
 	}
 
@@ -138,10 +139,10 @@ public class JavaBeanObservableSetTest extends AbstractDefaultRealmTestCase {
 				.observe(observable);
 		bean.setSet(Collections.singleton("new"));
 		assertEquals(1, tracker.count);
-		assertEquals(Collections.singleton("old"), tracker.event.diff
-				.getRemovals());
-		assertEquals(Collections.singleton("new"), tracker.event.diff
-				.getAdditions());
+		assertEquals(Collections.singleton("old"),
+				tracker.event.diff.getRemovals());
+		assertEquals(Collections.singleton("new"),
+				tracker.event.diff.getAdditions());
 	}
 
 	public void testModifyObservableSet_FiresSetChange() {
@@ -154,8 +155,8 @@ public class JavaBeanObservableSetTest extends AbstractDefaultRealmTestCase {
 		observable.add(element);
 
 		assertEquals(1, tracker.count);
-		assertDiff(tracker.event.diff, Collections.EMPTY_SET, Collections
-				.singleton(element));
+		assertDiff(tracker.event.diff, Collections.EMPTY_SET,
+				Collections.singleton(element));
 	}
 
 	public void testSetBeanPropertyOutsideRealm_FiresEventInsideRealm() {
@@ -172,8 +173,8 @@ public class JavaBeanObservableSetTest extends AbstractDefaultRealmTestCase {
 
 		realm.setCurrent(true);
 		assertEquals(1, tracker.count);
-		assertDiff(tracker.event.diff, Collections.EMPTY_SET, Collections
-				.singleton("element"));
+		assertDiff(tracker.event.diff, Collections.EMPTY_SET,
+				Collections.singleton("element"));
 	}
 
 	/**
@@ -209,8 +210,8 @@ public class JavaBeanObservableSetTest extends AbstractDefaultRealmTestCase {
 	}
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite(JavaBeanObservableSetTest.class
-				.getName());
+		TestSuite suite = new TestSuite(
+				JavaBeanObservableSetTest.class.getName());
 		suite.addTestSuite(JavaBeanObservableSetTest.class);
 		suite.addTest(MutableObservableSetContractTest.suite(new Delegate()));
 		return suite;
@@ -231,10 +232,22 @@ public class JavaBeanObservableSetTest extends AbstractDefaultRealmTestCase {
 		}
 
 		public Object createElement(IObservableCollection collection) {
-			return new Object();
+			Class elementType = getElementType(collection);
+			try {
+				return elementType.getConstructor().newInstance();
+			} catch (Exception e) {
+				return new Object();
+			}
 		}
 
-		public Object getElementType(IObservableCollection collection) {
+		public Class getElementType(IObservableCollection collection) {
+			if (collection instanceof DecoratingObservableCollection) {
+				DecoratingObservableCollection x = (DecoratingObservableCollection) collection;
+				if (x.getElementClass() != null) {
+					return x.getElementClass();
+				}
+			}
+
 			return String.class;
 		}
 

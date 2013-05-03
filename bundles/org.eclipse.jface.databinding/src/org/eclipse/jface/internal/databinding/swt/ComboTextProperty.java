@@ -18,7 +18,7 @@ import org.eclipse.swt.widgets.Combo;
  * @since 3.3
  * 
  */
-public class ComboTextProperty extends WidgetStringValueProperty {
+public class ComboTextProperty extends WidgetStringValueProperty<Combo> {
 	/**
 	 * 
 	 */
@@ -26,12 +26,12 @@ public class ComboTextProperty extends WidgetStringValueProperty {
 		super(SWT.Modify);
 	}
 
-	String doGetStringValue(Object source) {
-		return ((Combo) source).getText();
+	protected String doGetValue(Combo source) {
+		return source.getText();
 	}
 
-	void doSetStringValue(Object source, String value) {
-		((Combo) source).setText(value != null ? value : ""); //$NON-NLS-1$
+	protected void doSetValue(Combo source, String value) {
+		source.setText(value != null ? value : ""); //$NON-NLS-1$
 	}
 
 	public String toString() {

@@ -116,8 +116,18 @@ public class SimplePropertyObservableList<S, E> extends
 		ObservableTracker.getterCalled(this);
 	}
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
 		return property.getElementType();
+	}
+
+	/**
+	 * @return the type of the elements
+	 */
+	public Class<E> getElementClass() {
+		return property.getElementClass();
 	}
 
 	// Queries

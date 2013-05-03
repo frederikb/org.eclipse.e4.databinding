@@ -48,26 +48,72 @@ public abstract class ObservableList<E> extends AbstractObservable implements
 	 */
 	private boolean stale = false;
 
-	private Object elementType;
+	private Object elementTypeAsObject;
 
+	private Class<E> elementType;
+
+	/**
+	 * 
+	 * @param wrappedList
+	 * @param elementType
+	 * @deprecated use instead the form of the constructor that takes Class as
+	 *             the parameter type for the element type
+	 */
 	protected ObservableList(List<E> wrappedList, Object elementType) {
 		this(Realm.getDefault(), wrappedList, elementType);
 	}
 
+	/**
+	 * @param wrappedList
+	 * @param elementType
+	 * @since 1.5
+	 */
+	protected ObservableList(List<E> wrappedList, Class<E> elementType) {
+		this(Realm.getDefault(), wrappedList, elementType);
+	}
+
+	/**
+	 * 
+	 * @param realm
+	 * @param wrappedList
+	 * @param elementType
+	 * @deprecated use instead the form of the constructor that takes Class as
+	 *             the parameter type for the element type
+	 */
 	protected ObservableList(Realm realm, List<E> wrappedList,
 			Object elementType) {
 		super(realm);
 		this.wrappedList = wrappedList;
+		this.elementTypeAsObject = elementType;
+		if (elementType instanceof Class) {
+			this.elementType = (Class<E>) elementType;
+		} else {
+			this.elementType = null;
+		}
+	}
+
+	/**
+	 * 
+	 * @param realm
+	 * @param wrappedList
+	 * @param elementType
+	 * @since 1.5
+	 */
+	protected ObservableList(Realm realm, List<E> wrappedList,
+			Class<E> elementType) {
+		super(realm);
+		this.wrappedList = wrappedList;
+		this.elementTypeAsObject = elementType;
 		this.elementType = elementType;
 	}
 
 	public synchronized void addListChangeListener(
-			IListChangeListener<E> listener) {
+			IListChangeListener<? super E> listener) {
 		addListener(ListChangeEvent.TYPE, listener);
 	}
 
 	public synchronized void removeListChangeListener(
-			IListChangeListener<E> listener) {
+			IListChangeListener<? super E> listener) {
 		removeListener(ListChangeEvent.TYPE, listener);
 	}
 
@@ -227,8 +273,15 @@ public abstract class ObservableList<E> extends AbstractObservable implements
 		}
 		return new AbstractObservableList<E>(getRealm()) {
 
+			/**
+			 * @deprecated use getElementClass instead
+			 */
 			public Object getElementType() {
 				return ObservableList.this.getElementType();
+			}
+
+			public Class<E> getElementClass() {
+				return ObservableList.this.getElementClass();
 			}
 
 			public E get(int location) {
@@ -360,7 +413,17 @@ public abstract class ObservableList<E> extends AbstractObservable implements
 		super.dispose();
 	}
 
+	/**
+	 * @deprecated use getElementClass instead
+	 */
 	public Object getElementType() {
+		return elementTypeAsObject;
+	}
+
+	/**
+	 * @since 1.5
+	 */
+	public Class<E> getElementClass() {
 		return elementType;
 	}
 

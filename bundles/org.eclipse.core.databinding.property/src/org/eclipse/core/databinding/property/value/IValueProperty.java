@@ -45,8 +45,19 @@ public interface IValueProperty<S, T> extends IProperty {
 	 * Returns the value type of the property, or <code>null</code> if untyped.
 	 * 
 	 * @return the value type of the property, or <code>null</code> if untyped.
+	 * @deprecated use getValueClass instead
 	 */
 	public Object getValueType();
+
+	/**
+	 * Returns the value type of the property, or <code>Object.class</code> if
+	 * untyped.
+	 * 
+	 * @return the value type of the property, or <code>Object.class</code> if
+	 *         untyped.
+	 * @since 1.5
+	 */
+	public Class<T> getValueClass();
 
 	/**
 	 * Returns the current value of this property on the specified property
@@ -172,8 +183,8 @@ public interface IValueProperty<S, T> extends IProperty {
 	 *         the current value of this property for the elements in the given
 	 *         map's values collection
 	 */
-	public <K, V extends S> IObservableMap<K, T> observeDetail(
-			IObservableMap<K, V> master);
+	public <K, M extends S> IObservableMap<K, T> observeDetail(
+			IObservableMap<K, M> master);
 
 	/**
 	 * Returns the nested combination of this property and the specified detail

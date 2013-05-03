@@ -22,8 +22,11 @@ import org.eclipse.swt.widgets.TreeColumn;
 
 /**
  * @since 3.3
- * 
+ * @deprecated use static methods in WidgetProperties instead (the method names
+ *             will start with 'tooltip')
  */
+// ok to ignore warnings in deprecated class
+@SuppressWarnings("rawtypes")
 public class WidgetTooltipTextProperty extends WidgetDelegatingValueProperty {
 	private IValueProperty cTabItem;
 	private IValueProperty control;

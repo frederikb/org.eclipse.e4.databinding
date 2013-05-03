@@ -39,7 +39,7 @@ public class ObservableSetContentProvider implements IStructuredContentProvider 
 	private ObservableCollectionContentProvider impl;
 
 	private static class Impl extends ObservableCollectionContentProvider
-			implements ISetChangeListener {
+			implements ISetChangeListener<Object> {
 		protected Impl(IViewerUpdater explicitViewerUpdater) {
 			super(explicitViewerUpdater);
 		}
@@ -50,21 +50,21 @@ public class ObservableSetContentProvider implements IStructuredContentProvider 
 		}
 
 		protected void addCollectionChangeListener(
-				IObservableCollection collection) {
-			((IObservableSet) collection).addSetChangeListener(this);
+				IObservableCollection<?> collection) {
+			((IObservableSet<?>) collection).addSetChangeListener(this);
 		}
 
 		protected void removeCollectionChangeListener(
-				IObservableCollection collection) {
-			((IObservableSet) collection).removeSetChangeListener(this);
+				IObservableCollection<?> collection) {
+			((IObservableSet<?>) collection).removeSetChangeListener(this);
 		}
 
-		public void handleSetChange(SetChangeEvent event) {
+		public void handleSetChange(SetChangeEvent<Object> event) {
 			if (isViewerDisposed())
 				return;
 
-			Set removals = event.diff.getRemovals();
-			Set additions = event.diff.getAdditions();
+			Set<Object> removals = event.diff.getRemovals();
+			Set<Object> additions = event.diff.getAdditions();
 
 			knownElements.addAll(additions);
 			if (realizedElements != null)
@@ -133,7 +133,7 @@ public class ObservableSetContentProvider implements IStructuredContentProvider 
 	 * 
 	 * @return unmodifiable set of items that will need labels
 	 */
-	public IObservableSet getKnownElements() {
+	public IObservableSet<Object> getKnownElements() {
 		return impl.getKnownElements();
 	}
 
@@ -145,7 +145,7 @@ public class ObservableSetContentProvider implements IStructuredContentProvider 
 	 * @return the set of known elements which have been realized in the viewer.
 	 * @since 1.3
 	 */
-	public IObservableSet getRealizedElements() {
+	public IObservableSet<Object> getRealizedElements() {
 		return impl.getRealizedElements();
 	}
 }

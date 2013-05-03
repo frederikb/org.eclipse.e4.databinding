@@ -156,15 +156,15 @@ public class DetailObservableListTest extends AbstractDefaultRealmTestCase {
 	}
 
 	public static Test suite() {
-		TestSuite suite = new TestSuite(DetailObservableListTest.class
-				.getName());
+		TestSuite suite = new TestSuite(
+				DetailObservableListTest.class.getName());
 		suite.addTestSuite(DetailObservableListTest.class);
 		suite.addTest(MutableObservableListContractTest.suite(new Delegate()));
 		return suite;
 	}
 
 	static class Delegate extends AbstractObservableCollectionContractDelegate {
-		Object elementType = Object.class;
+		Class elementType = Object.class;
 
 		public IObservableCollection createObservableCollection(
 				final Realm realm, final int elementCount) {
@@ -176,10 +176,15 @@ public class DetailObservableListTest extends AbstractDefaultRealmTestCase {
 		}
 
 		public Object createElement(IObservableCollection collection) {
-			return new Object();
+			Class elementType = getElementType(collection);
+			try {
+				return elementType.getConstructor().newInstance();
+			} catch (Exception e) {
+				return new Object();
+			}
 		}
 
-		public Object getElementType(IObservableCollection collection) {
+		public Class getElementType(IObservableCollection collection) {
 			return elementType;
 		}
 

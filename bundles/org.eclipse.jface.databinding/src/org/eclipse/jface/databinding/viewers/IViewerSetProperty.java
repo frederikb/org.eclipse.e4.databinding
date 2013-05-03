@@ -17,10 +17,14 @@ import org.eclipse.jface.viewers.Viewer;
 /**
  * {@link ISetProperty} for observing a JFace viewer
  * 
+ * @param <S>
+ * @param <E>
+ * 
  * @since 1.3
  * @noimplement This interface is not intended to be implemented by clients.
  */
-public interface IViewerSetProperty extends ISetProperty {
+public interface IViewerSetProperty<S extends Viewer, E> extends
+		ISetProperty<S, E> {
 	/**
 	 * Returns an {@link IViewerObservableSet} observing this set property on
 	 * the given viewer
@@ -29,5 +33,5 @@ public interface IViewerSetProperty extends ISetProperty {
 	 *            the source viewer
 	 * @return an observable set observing this set property on the given viewer
 	 */
-	public IViewerObservableSet observe(Viewer viewer);
+	public IViewerObservableSet<S, E> observe(S viewer);
 }

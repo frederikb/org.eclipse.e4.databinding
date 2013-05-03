@@ -18,6 +18,7 @@ import org.eclipse.core.databinding.observable.Observables;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.set.IObservableSet;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.jface.internal.databinding.viewers.ViewerMultipleSelectionProperty;
 import org.eclipse.jface.internal.databinding.viewers.ViewerObservableValueDecorator;
 import org.eclipse.jface.viewers.CheckboxTableViewer;
 import org.eclipse.jface.viewers.CheckboxTreeViewer;
@@ -27,6 +28,7 @@ import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.StructuredViewer;
 import org.eclipse.jface.viewers.Viewer;
+import org.eclipse.jface.viewers.ViewerFilter;
 
 /**
  * Factory methods for creating observables for JFace viewers
@@ -60,10 +62,11 @@ public class ViewersObservables {
 	 * 
 	 * @since 1.3
 	 */
-	public static IViewerObservableValue observeDelayedValue(int delay,
-			IViewerObservableValue observable) {
-		return new ViewerObservableValueDecorator(Observables
-				.observeDelayedValue(delay, observable), observable.getViewer());
+	public static <S extends Viewer> IViewerObservableValue<S> observeDelayedValue(
+			int delay, IViewerObservableValue<S> observable) {
+		return new ViewerObservableValueDecorator<S>(
+				Observables.observeDelayedValue(delay, observable),
+				observable.getViewer());
 	}
 
 	/**
@@ -77,10 +80,11 @@ public class ViewersObservables {
 	 * @return the observable value tracking the (single) selection of the given
 	 *         selection provider
 	 */
-	public static IObservableValue observeSingleSelection(
+	public static IObservableValue<Object> observeSingleSelection(
 			ISelectionProvider selectionProvider) {
 		checkNull(selectionProvider);
-		return ViewerProperties.singleSelection().observe(selectionProvider);
+		return SelectionProviderProperties.singleSelection().observe(
+				selectionProvider);
 	}
 
 	/**
@@ -98,11 +102,11 @@ public class ViewersObservables {
 	 * 
 	 * @since 1.4
 	 */
-	public static IObservableValue observeSinglePostSelection(
+	public static IObservableValue<Object> observeSinglePostSelection(
 			IPostSelectionProvider selectionProvider) {
 		checkNull(selectionProvider);
-		return ViewerProperties.singlePostSelection()
-				.observe(selectionProvider);
+		return SelectionProviderProperties.singlePostSelection().observe(
+				selectionProvider);
 	}
 
 	/**
@@ -123,10 +127,11 @@ public class ViewersObservables {
 	 * 
 	 * @since 1.2
 	 */
-	public static IObservableList observeMultiSelection(
+	public static IObservableList<Object> observeMultiSelection(
 			ISelectionProvider selectionProvider) {
 		checkNull(selectionProvider);
-		return ViewerProperties.multipleSelection().observe(selectionProvider);
+		return SelectionProviderProperties.multipleSelection().observe(
+				selectionProvider);
 	}
 
 	/**
@@ -149,10 +154,10 @@ public class ViewersObservables {
 	 * 
 	 * @since 1.4
 	 */
-	public static IObservableList observeMultiPostSelection(
+	public static IObservableList<Object> observeMultiPostSelection(
 			IPostSelectionProvider selectionProvider) {
 		checkNull(selectionProvider);
-		return ViewerProperties.multiplePostSelection().observe(
+		return SelectionProviderProperties.multiplePostSelection().observe(
 				selectionProvider);
 	}
 
@@ -169,7 +174,8 @@ public class ViewersObservables {
 	 *         viewer
 	 * @since 1.2
 	 */
-	public static IViewerObservableValue observeSingleSelection(Viewer viewer) {
+	public static IViewerObservableValue<Viewer> observeSingleSelection(
+			Viewer viewer) {
 		checkNull(viewer);
 		return ViewerProperties.singleSelection().observe(viewer);
 	}
@@ -188,7 +194,7 @@ public class ViewersObservables {
 	 * 
 	 * @since 1.4
 	 */
-	public static IViewerObservableValue observeSinglePostSelection(
+	public static IViewerObservableValue<Viewer> observeSinglePostSelection(
 			StructuredViewer viewer) {
 		checkNull(viewer);
 		return ViewerProperties.singlePostSelection().observe(viewer);
@@ -211,9 +217,10 @@ public class ViewersObservables {
 	 * 
 	 * @since 1.2
 	 */
-	public static IViewerObservableList observeMultiSelection(Viewer viewer) {
+	public static <S extends Viewer> IViewerObservableList<S> observeMultiSelection(
+			S viewer) {
 		checkNull(viewer);
-		return ViewerProperties.multipleSelection().observe(viewer);
+		return new ViewerMultipleSelectionProperty<S>(false).observe(viewer);
 	}
 
 	/**
@@ -234,10 +241,10 @@ public class ViewersObservables {
 	 * 
 	 * @since 1.4
 	 */
-	public static IViewerObservableList observeMultiPostSelection(
-			StructuredViewer viewer) {
+	public static <S extends StructuredViewer> IViewerObservableList<S> observeMultiPostSelection(
+			S viewer) {
 		checkNull(viewer);
-		return ViewerProperties.multiplePostSelection().observe(viewer);
+		return new ViewerMultipleSelectionProperty<S>(true).observe(viewer);
 	}
 
 	/**
@@ -251,7 +258,7 @@ public class ViewersObservables {
 	 * @return an observable value tracking the input of the given viewer
 	 * @since 1.2
 	 */
-	public static IObservableValue observeInput(Viewer viewer) {
+	public static IObservableValue<Object> observeInput(Viewer viewer) {
 		checkNull(viewer);
 		return ViewerProperties.input().observe(viewer);
 	}
@@ -268,8 +275,8 @@ public class ViewersObservables {
 	 *         checkable.
 	 * @since 1.2
 	 */
-	public static IObservableSet observeCheckedElements(ICheckable checkable,
-			Object elementType) {
+	public static IObservableSet<Object> observeCheckedElements(
+			ICheckable checkable, Object elementType) {
 		checkNull(checkable);
 		return ViewerProperties.checkedElements(elementType).observe(checkable);
 	}
@@ -287,10 +294,11 @@ public class ViewersObservables {
 	 *         viewer.
 	 * @since 1.2
 	 */
-	public static IViewerObservableSet observeCheckedElements(
+	public static IViewerObservableSet<CheckboxTableViewer, Object> observeCheckedElements(
 			CheckboxTableViewer viewer, Object elementType) {
 		checkNull(viewer);
-		return ViewerProperties.checkedElements(elementType).observe(viewer);
+		return ViewerProperties.checkboxTableElements(elementType).observe(
+				viewer);
 	}
 
 	/**
@@ -306,10 +314,11 @@ public class ViewersObservables {
 	 *         viewer.
 	 * @since 1.2
 	 */
-	public static IViewerObservableSet observeCheckedElements(
+	public static IViewerObservableSet<CheckboxTreeViewer, Object> observeCheckedElements(
 			CheckboxTreeViewer viewer, Object elementType) {
 		checkNull(viewer);
-		return ViewerProperties.checkedElements(elementType).observe(viewer);
+		return ViewerProperties.checkboxTreeElements(elementType).observe(
+				viewer);
 	}
 
 	/**
@@ -329,7 +338,8 @@ public class ViewersObservables {
 	 * @return an observable set that tracks the filters of the given viewer.
 	 * @since 1.3
 	 */
-	public static IViewerObservableSet observeFilters(StructuredViewer viewer) {
+	public static IViewerObservableSet<StructuredViewer, ViewerFilter> observeFilters(
+			StructuredViewer viewer) {
 		checkNull(viewer);
 		return ViewerProperties.filters().observe(viewer);
 	}

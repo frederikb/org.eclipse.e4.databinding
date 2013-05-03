@@ -57,6 +57,48 @@ public class Diffs {
 	}
 
 	/**
+	 * Returns a {@link ListDiff} describing the change between the specified
+	 * old and new list states.
+	 * <P>
+	 * This method does the same thing as computeListDiff but it accepts untyped
+	 * lists and casts them in a type safe manner returning a typed
+	 * {@link ListDiff}.
+	 * 
+	 * @param <E>
+	 * 
+	 * @param oldList
+	 *            the old list state
+	 * @param newList
+	 *            the new list state
+	 * @param elementType
+	 * @return the differences between oldList and newList
+	 * @since 1.5
+	 */
+	public static <E> ListDiff<E> computeAndCastListDiff(List<?> oldList,
+			List<?> newList, Class<E> elementType) {
+		List<ListDiffEntry<E>> diffEntries = new ArrayList<ListDiffEntry<E>>();
+
+		/*
+		 * We copy both lists into typed lists. createListDiffs will alter the
+		 * oldList (though not newList), so that one has to be copied anyway.
+		 */
+
+		List<E> oldListTyped = new ArrayList<E>();
+		for (Object oldElement : oldList) {
+			oldListTyped.add(elementType.cast(oldElement));
+		}
+
+		List<E> newListTyped = new ArrayList<E>();
+		for (Object newElement : newList) {
+			newListTyped.add(elementType.cast(newElement));
+		}
+
+		createListDiffs(oldListTyped, newListTyped, diffEntries);
+		ListDiff<E> listDiff = createListDiff(diffEntries);
+		return listDiff;
+	}
+
+	/**
 	 * Returns a lazily computed {@link ListDiff} describing the change between
 	 * the specified old and new list states.
 	 * 
@@ -213,12 +255,52 @@ public class Diffs {
 	 *            the new set state
 	 * @return a {@link SetDiff} describing the change between the specified old
 	 *         and new set states.
+	 * @since 1.5
 	 */
 	public static <E> SetDiff<E> computeSetDiff(Set<E> oldSet, Set<E> newSet) {
 		Set<E> additions = new HashSet<E>(newSet);
 		additions.removeAll(oldSet);
 		Set<E> removals = new HashSet<E>(oldSet);
 		removals.removeAll(newSet);
+		return createSetDiff(additions, removals);
+	}
+
+	/**
+	 * Returns a {@link SetDiff} describing the change between the specified old
+	 * and new set states.
+	 * <P>
+	 * This method does the same thing as computeSetDiff but it accepts untyped
+	 * sets and casts them in a type safe manner returning a typed
+	 * {@link SetDiff}.
+	 * 
+	 * @param <E>
+	 * 
+	 * @param oldSet
+	 *            the old set state
+	 * @param newSet
+	 *            the new set state
+	 * @param elementType
+	 *            the type of the elements in the sets
+	 * @return a {@link SetDiff} describing the change between the specified old
+	 *         and new set states.
+	 * @since 1.5
+	 */
+	public static <E> SetDiff<E> computeAndCastSetDiff(Set<?> oldSet,
+			Set<?> newSet, Class<E> elementType) {
+		Set<E> additions = new HashSet<E>();
+		for (Object newElement : newSet) {
+			if (!oldSet.contains(newElement)) {
+				additions.add(elementType.cast(newElement));
+			}
+		}
+
+		Set<E> removals = new HashSet<E>();
+		for (Object oldElement : oldSet) {
+			if (!newSet.contains(oldElement)) {
+				removals.add(elementType.cast(oldElement));
+			}
+		}
+
 		return createSetDiff(additions, removals);
 	}
 
@@ -305,6 +387,85 @@ public class Diffs {
 		for (Iterator<K> it = addedKeys.iterator(); it.hasNext();) {
 			K newKey = it.next();
 			newValues.put(newKey, newMap.get(newKey));
+		}
+		return new MapDiff<K, V>() {
+			public Set<K> getAddedKeys() {
+				return addedKeys;
+			}
+
+			public Set<K> getChangedKeys() {
+				return changedKeys;
+			}
+
+			public Set<K> getRemovedKeys() {
+				return removedKeys;
+			}
+
+			public V getNewValue(Object key) {
+				return newValues.get(key);
+			}
+
+			public V getOldValue(Object key) {
+				return oldValues.get(key);
+			}
+		};
+	}
+
+	/**
+	 * Returns a {@link MapDiff} describing the change between the specified old
+	 * and new map states.
+	 * <P>
+	 * This version also types the maps. This is useful when the maps have no
+	 * type information (for example they come from reflection) and we require
+	 * the MapDiff to be typed.
+	 * 
+	 * @param <K>
+	 *            the type of keys maintained by this map
+	 * @param <V>
+	 *            the type of mapped values
+	 * @param oldMap
+	 *            the old map state
+	 * @param newMap
+	 *            the new map state
+	 * @param keyType
+	 * @param valueType
+	 * @return a {@link MapDiff} describing the change between the specified old
+	 *         and new map states.
+	 * @since 1.5
+	 */
+	public static <K, V> MapDiff<K, V> computeAndCastMapDiff(Map<?, ?> oldMap,
+			Map<?, ?> newMap, Class<K> keyType, Class<V> valueType) {
+		// starts out with all keys from the new map, we will remove keys from
+		// the old map as we go
+		final Set<K> addedKeys = new HashSet<K>();
+		final Set<K> removedKeys = new HashSet<K>();
+		final Set<K> changedKeys = new HashSet<K>();
+		final Map<K, V> oldValues = new HashMap<K, V>();
+		final Map<K, V> newValues = new HashMap<K, V>();
+
+		for (Object newKey : newMap.keySet()) {
+			addedKeys.add(keyType.cast(newKey));
+		}
+
+		for (Map.Entry<?, ?> oldEntry : oldMap.entrySet()) {
+			K oldKey = keyType.cast(oldEntry.getKey());
+			V oldValue = valueType.cast(oldEntry.getValue());
+			if (addedKeys.remove(oldKey)) {
+				// potentially changed key since it is in oldMap and newMap
+				V newValue = valueType.cast(newMap.get(oldKey));
+				if (!Util.equals(oldValue, newValue)) {
+					changedKeys.add(oldKey);
+					oldValues.put(oldKey, oldValue);
+					newValues.put(oldKey, newValue);
+				}
+			} else {
+				removedKeys.add(oldKey);
+				oldValues.put(oldKey, oldValue);
+			}
+		}
+		for (Iterator<K> it = addedKeys.iterator(); it.hasNext();) {
+			K newKey = it.next();
+			newValues.put(newKey, valueType.cast(newMap.get(newKey)));
 		}
 		return new MapDiff<K, V>() {
 			public Set<K> getAddedKeys() {

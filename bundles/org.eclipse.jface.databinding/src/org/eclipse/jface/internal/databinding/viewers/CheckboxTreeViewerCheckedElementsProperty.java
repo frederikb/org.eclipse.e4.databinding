@@ -23,7 +23,7 @@ import org.eclipse.jface.viewers.CheckboxTreeViewer;
  * 
  */
 public class CheckboxTreeViewerCheckedElementsProperty extends
-		CheckboxViewerCheckedElementsProperty {
+		CheckboxViewerCheckedElementsProperty<CheckboxTreeViewer> {
 	/**
 	 * @param elementType
 	 */
@@ -31,20 +31,19 @@ public class CheckboxTreeViewerCheckedElementsProperty extends
 		super(elementType);
 	}
 
-	protected Set doGetSet(Object source) {
-		CheckboxTreeViewer viewer = (CheckboxTreeViewer) source;
-		Set set = createElementSet(viewer);
-		set.addAll(Arrays.asList(viewer.getCheckedElements()));
+	protected Set<Object> doGetSet(CheckboxTreeViewer source) {
+		Set<Object> set = createElementSet(source);
+		set.addAll(Arrays.asList(source.getCheckedElements()));
 		return set;
 	}
 
-	protected void doSetSet(Object source, Set set, SetDiff diff) {
+	protected void doSetSet(CheckboxTreeViewer source, Set<Object> set,
+			SetDiff<Object> diff) {
 		doSetSet(source, set);
 	}
 
-	protected void doSetSet(Object source, Set set) {
-		CheckboxTreeViewer viewer = (CheckboxTreeViewer) source;
-		viewer.setCheckedElements(set.toArray());
+	protected void doSetSet(CheckboxTreeViewer source, Set<Object> set) {
+		source.setCheckedElements(set.toArray());
 	}
 
 	public String toString() {

@@ -18,13 +18,14 @@ import org.eclipse.swt.custom.CTabItem;
  * @since 3.3
  * 
  */
-public class CTabItemTooltipTextProperty extends WidgetStringValueProperty {
-	String doGetStringValue(Object source) {
-		return ((CTabItem) source).getToolTipText();
+public class CTabItemTooltipTextProperty extends
+		WidgetStringValueProperty<CTabItem> {
+	protected String doGetValue(CTabItem source) {
+		return source.getToolTipText();
 	}
 
-	void doSetStringValue(Object source, String value) {
-		((CTabItem) source).setToolTipText(value);
+	protected void doSetValue(CTabItem source, String value) {
+		source.setToolTipText(value);
 	}
 
 	public String toString() {

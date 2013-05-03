@@ -132,9 +132,29 @@ public class Observables {
 	 *            the observable's value type
 	 * @return an immutable observable value with the given constant value
 	 * @since 1.1
+	 * @deprecated use constantObservableValue(Realm, T, Class<T>) instead
 	 */
 	public static <T> IObservableValue<T> constantObservableValue(Realm realm,
 			T value, Object valueType) {
+		return new ConstantObservableValue<T>(realm, value, valueType);
+	}
+
+	/**
+	 * Returns an observable value with the given constant value.
+	 * 
+	 * @param <T>
+	 * 
+	 * @param realm
+	 *            the observable's realm
+	 * @param value
+	 *            the observable's constant value
+	 * @param valueType
+	 *            the observable's value type
+	 * @return an immutable observable value with the given constant value
+	 * @since 1.5
+	 */
+	public static <T> IObservableValue<T> constantObservableValue(Realm realm,
+			T value, Class<T> valueType) {
 		return new ConstantObservableValue<T>(realm, value, valueType);
 	}
 
@@ -575,7 +595,7 @@ public class Observables {
 			}
 
 			public synchronized void addListChangeListener(
-					IListChangeListener<E> listener) {
+					IListChangeListener<? super E> listener) {
 			}
 		};
 	}

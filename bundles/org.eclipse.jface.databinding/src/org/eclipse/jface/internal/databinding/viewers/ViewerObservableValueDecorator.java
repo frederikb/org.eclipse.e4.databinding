@@ -21,22 +21,24 @@ import org.eclipse.swt.widgets.Event;
 import org.eclipse.swt.widgets.Listener;
 
 /**
+ * @param <S>
  * @since 3.3
  * 
  */
-public class ViewerObservableValueDecorator extends DecoratingObservableValue
-		implements IViewerObservableValue, Listener {
-	private Viewer viewer;
+public class ViewerObservableValueDecorator<S extends Viewer> extends
+		DecoratingObservableValue<Object> implements IViewerObservableValue<S>,
+		Listener {
+	private S viewer;
 
 	/**
 	 * @param decorated
 	 * @param viewer
 	 */
-	public ViewerObservableValueDecorator(IObservableValue decorated,
-			Viewer viewer) {
+	public ViewerObservableValueDecorator(IObservableValue<Object> decorated,
+			S viewer) {
 		super(decorated, true);
 		this.viewer = viewer;
-		viewer.getControl().addListener(SWT.Dispose, this);
+		((Viewer) viewer).getControl().addListener(SWT.Dispose, this);
 	}
 
 	public void handleEvent(Event event) {
@@ -44,13 +46,13 @@ public class ViewerObservableValueDecorator extends DecoratingObservableValue
 			dispose();
 	}
 
-	public Viewer getViewer() {
+	public S getViewer() {
 		return viewer;
 	}
 
 	public synchronized void dispose() {
 		if (viewer != null) {
-			Control control = viewer.getControl();
+			Control control = ((Viewer) viewer).getControl();
 			if (control != null && !control.isDisposed()) {
 				control.removeListener(SWT.Dispose, this);
 			}

@@ -19,7 +19,7 @@ import org.eclipse.swt.widgets.Combo;
  * 
  */
 public class ComboSingleSelectionIndexProperty extends
-		SingleSelectionIndexProperty {
+		WidgetIntValueProperty<Combo> {
 	/**
 	 * 
 	 */
@@ -27,15 +27,18 @@ public class ComboSingleSelectionIndexProperty extends
 		super(new int[] { SWT.Selection, SWT.DefaultSelection });
 	}
 
-	int doGetIntValue(Object source) {
-		return ((Combo) source).getSelectionIndex();
+	protected Integer doGetValue(Combo source) {
+		// Ideally we would return null when no selection but
+		// that might break existing users so we stick with -1
+		return source.getSelectionIndex();
 	}
 
-	void doSetIntValue(Object source, int value) {
-		if (value == -1)
-			((Combo) source).deselectAll();
-		else
-			((Combo) source).select(value);
+	protected void doSetValue(Combo source, Integer value) {
+		if (value == null || value.intValue() == -1) {
+			source.deselectAll();
+		} else {
+			source.select(value);
+		}
 	}
 
 	public String toString() {

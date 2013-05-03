@@ -127,8 +127,14 @@ public class DataBindingContext {
 	 * @since 1.2
 	 */
 	public final <T> Binding<?, ?> bindValue(
-			IObservableValue<T> targetObservableValue,
-			IObservableValue<T> modelObservableValue) {
+			IObservableValue<?> targetObservableValue,
+			IObservableValue<?> modelObservableValue) {
+		/*
+		 * The observable values should be parameterized with T. However that
+		 * would require a little work as consumer code would have to be updated
+		 * to make the types match, and it does not cope with the default
+		 * conversions correctly.
+		 */
 		return bindValue(targetObservableValue, modelObservableValue, null,
 				null);
 	}
