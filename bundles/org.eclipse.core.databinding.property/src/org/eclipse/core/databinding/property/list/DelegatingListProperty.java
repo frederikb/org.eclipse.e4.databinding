@@ -44,10 +44,8 @@ public abstract class DelegatingListProperty<S, E> extends ListProperty<S, E> {
 	 * @deprecated use the constructor which takes Class as a parameter. This is
 	 *             safer because code in this plug-in fails anyway if a Class is
 	 *             not passed.
-	 * 
 	 */
 	protected DelegatingListProperty(Object elementType) {
-		//		throw new IllegalArgumentException("elementType must be a Class object"); //$NON-NLS-1$
 		this.elementType = null;
 		this.elementTypeAsObject = elementType;
 		this.nullProperty = new NullListProperty();

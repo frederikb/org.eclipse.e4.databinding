@@ -17,7 +17,7 @@ import java.util.List;
 import org.eclipse.core.databinding.observable.Observables;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.list.ObservableList;
-import org.eclipse.core.internal.databinding.observable.UnmodifiableObservableList;
+import org.eclipse.core.databinding.observable.list.UnmodifiableObservableList;
 import org.eclipse.jface.tests.databinding.AbstractDefaultRealmTestCase;
 
 public class ObservablesTest extends AbstractDefaultRealmTestCase {	

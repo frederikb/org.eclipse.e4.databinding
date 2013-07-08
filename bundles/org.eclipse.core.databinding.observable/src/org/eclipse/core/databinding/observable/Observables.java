@@ -22,6 +22,7 @@ import org.eclipse.core.databinding.observable.list.DecoratingObservableList;
 import org.eclipse.core.databinding.observable.list.IListChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.list.ObservableList;
+import org.eclipse.core.databinding.observable.list.UnmodifiableObservableList;
 import org.eclipse.core.databinding.observable.map.DecoratingObservableMap;
 import org.eclipse.core.databinding.observable.map.IObservableMap;
 import org.eclipse.core.databinding.observable.masterdetail.IObservableFactory;
@@ -42,7 +43,6 @@ import org.eclipse.core.internal.databinding.observable.EmptyObservableList;
 import org.eclipse.core.internal.databinding.observable.EmptyObservableSet;
 import org.eclipse.core.internal.databinding.observable.MapEntryObservableValue;
 import org.eclipse.core.internal.databinding.observable.StalenessObservableValue;
-import org.eclipse.core.internal.databinding.observable.UnmodifiableObservableList;
 import org.eclipse.core.internal.databinding.observable.UnmodifiableObservableMap;
 import org.eclipse.core.internal.databinding.observable.UnmodifiableObservableSet;
 import org.eclipse.core.internal.databinding.observable.UnmodifiableObservableValue;
@@ -223,7 +223,35 @@ public class Observables {
 			throw new IllegalArgumentException("List parameter cannot be null."); //$NON-NLS-1$
 		}
 
-		return new UnmodifiableObservableList<E>(list);
+		return new UnmodifiableObservableList<E>(list, list.getElementClass());
+	}
+
+	/**
+	 * Returns an unmodifiable observable list backed by the given observable
+	 * list.
+	 * <P>
+	 * Note that the underlying list may be typed to have elements restricted to
+	 * a sub-type. Because elements of type <E> will not be written to the
+	 * underlying list this is okay.
+	 * 
+	 * @param <E>
+	 * 
+	 * @param list
+	 *            the list to wrap in an unmodifiable list
+	 * @param elementType
+	 *            the type of the elements in the returned list which may be a
+	 *            super class of the type of the elements in the underlying list
+	 * @return an unmodifiable observable list backed by the given observable
+	 *         list
+	 * @since 1.5
+	 */
+	public static <E> IObservableList<E> unmodifiableObservableList(
+			IObservableList<? extends E> list, Class<E> elementType) {
+		if (list == null) {
+			throw new IllegalArgumentException("List parameter cannot be null."); //$NON-NLS-1$
+		}
+
+		return new UnmodifiableObservableList<E>(list, elementType);
 	}
 
 	/**
