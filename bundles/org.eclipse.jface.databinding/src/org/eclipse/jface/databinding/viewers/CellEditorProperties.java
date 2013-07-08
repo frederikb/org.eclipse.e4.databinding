@@ -14,6 +14,7 @@ package org.eclipse.jface.databinding.viewers;
 import org.eclipse.core.databinding.property.value.IValueProperty;
 import org.eclipse.jface.internal.databinding.viewers.CellEditorControlProperty;
 import org.eclipse.jface.viewers.CellEditor;
+import org.eclipse.swt.widgets.Control;
 
 /**
  * A factory for creating properties of JFace {@link CellEditor cell editors}.
@@ -28,7 +29,7 @@ public class CellEditorProperties {
 	 * @return a value property for observing the control of a
 	 *         {@link CellEditor}.
 	 */
-	public static IValueProperty control() {
+	public static IValueProperty<CellEditor, Control> control() {
 		return new CellEditorControlProperty();
 	}
 }

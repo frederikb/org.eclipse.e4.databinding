@@ -93,7 +93,6 @@ public class ObservableMapLabelProvider<T, E> extends LabelProvider implements
 	 * @param attributeMapsList
 	 * @since 1.7
 	 */
-	@SuppressWarnings("deprecation")
 	// This class must initialize the deprecated field
 	public ObservableMapLabelProvider(
 			List<IObservableMap<T, E>> attributeMapsList) {

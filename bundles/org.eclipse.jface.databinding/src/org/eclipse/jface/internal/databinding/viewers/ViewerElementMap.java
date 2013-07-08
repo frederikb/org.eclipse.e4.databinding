@@ -20,7 +20,6 @@ import java.util.Set;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.databinding.util.Util;
-import org.eclipse.jface.internal.databinding.viewers.ObservableCollectionTreeContentProvider.TreeNode;
 import org.eclipse.jface.viewers.IElementComparer;
 import org.eclipse.jface.viewers.StructuredViewer;
 
@@ -445,9 +444,9 @@ public class ViewerElementMap<K, V> implements Map<K, V> {
 	 * @return a Map for mapping viewer elements as keys to values, using the
 	 *         given {@link IElementComparer} for key comparisons.
 	 */
-	public static <K> Map<K, TreeNode> withComparer(IElementComparer comparer) {
+	public static <K, V> Map<K, V> withComparer(IElementComparer comparer) {
 		if (comparer == null)
-			return new HashMap<K, TreeNode>();
-		return new ViewerElementMap<K, TreeNode>(comparer);
+			return new HashMap<K, V>();
+		return new ViewerElementMap<K, V>(comparer);
 	}
 }

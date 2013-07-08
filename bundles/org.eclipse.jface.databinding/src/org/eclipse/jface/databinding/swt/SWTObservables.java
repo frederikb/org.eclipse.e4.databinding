@@ -29,17 +29,37 @@ import org.eclipse.core.databinding.observable.value.ValueChangingEvent;
 import org.eclipse.jface.internal.databinding.swt.SWTDelayedObservableValueDecorator;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.CCombo;
+import org.eclipse.swt.custom.CLabel;
+import org.eclipse.swt.custom.CTabItem;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Color;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Item;
+import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Link;
 import org.eclipse.swt.widgets.List;
+import org.eclipse.swt.widgets.Menu;
 import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Scale;
+import org.eclipse.swt.widgets.ScrollBar;
+import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Slider;
 import org.eclipse.swt.widgets.Spinner;
+import org.eclipse.swt.widgets.TabItem;
+import org.eclipse.swt.widgets.Table;
+import org.eclipse.swt.widgets.TableColumn;
 import org.eclipse.swt.widgets.Text;
+import org.eclipse.swt.widgets.ToolItem;
+import org.eclipse.swt.widgets.ToolTip;
+import org.eclipse.swt.widgets.TrayItem;
+import org.eclipse.swt.widgets.TreeColumn;
 import org.eclipse.swt.widgets.Widget;
 
 /**
@@ -124,8 +144,12 @@ public class SWTObservables {
 	 * @return an observable value tracking the enabled state of the given
 	 *         widget.
 	 * @since 1.5
+	 * @deprecated use instead one of the more specific methods
+	 *             observeEnabled(Control), observeEnabled(Menu),
+	 *             observeEnabled(MenuItem), observeEnabled(ScrollBar),
+	 *             observeEnabled(ToolItem)
 	 */
-	public static ISWTObservableValue observeEnabled(Widget widget) {
+	public static ISWTObservableValue<Boolean> observeEnabled(Widget widget) {
 		return WidgetProperties.enabled().observe(widget);
 	}
 
@@ -138,8 +162,65 @@ public class SWTObservables {
 	 * @return an observable value tracking the enabled state of the given
 	 *         control
 	 */
-	public static ISWTObservableValue observeEnabled(Control control) {
-		return observeEnabled((Widget) control);
+	public static ISWTObservableValue<Boolean> observeEnabled(Control control) {
+		return WidgetProperties.enabledControl().observe(control);
+	}
+
+	/**
+	 * Returns an observable value tracking the enabled state of the given
+	 * control
+	 * 
+	 * @param menu
+	 *            the control to observe
+	 * @return an observable value tracking the enabled state of the given
+	 *         control
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Boolean> observeEnabled(Menu menu) {
+		return WidgetProperties.enabledMenu().observe(menu);
+	}
+
+	/**
+	 * Returns an observable value tracking the enabled state of the given
+	 * control
+	 * 
+	 * @param menuItem
+	 *            the menu item to observe
+	 * @return an observable value tracking the enabled state of the given menu
+	 *         item
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Boolean> observeEnabled(MenuItem menuItem) {
+		return WidgetProperties.enabledMenuItem().observe(menuItem);
+	}
+
+	/**
+	 * Returns an observable value tracking the enabled state of the given
+	 * control
+	 * 
+	 * @param scrollBar
+	 *            the scroll bar to observe
+	 * @return an observable value tracking the enabled state of the given
+	 *         scroll bar
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Boolean> observeEnabled(
+			ScrollBar scrollBar) {
+		return WidgetProperties.enabledScrollBar().observe(scrollBar);
+	}
+
+	/**
+	 * Returns an observable value tracking the enabled state of the given tool
+	 * item
+	 * 
+	 * @param toolItem
+	 *            the control to observe
+	 * @return an observable value tracking the enabled state of the given tool
+	 *         item
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Boolean> observeEnabled(ToolItem toolItem) {
+		return WidgetProperties.enabledToolItem().observe(toolItem);
 	}
 
 	/**
@@ -151,7 +232,7 @@ public class SWTObservables {
 	 * @return an observable value tracking the visible state of the given
 	 *         control
 	 */
-	public static ISWTObservableValue observeVisible(Control control) {
+	public static ISWTObservableValue<Boolean> observeVisible(Control control) {
 		return WidgetProperties.visible().observe(control);
 	}
 
@@ -170,24 +251,117 @@ public class SWTObservables {
 	 * 
 	 * @param widget
 	 * @return an observable value tracking the tooltip text of the given item
-	 * 
 	 * @since 1.3
+	 * @deprecated use instead one of the more specific methods
+	 *             observeTooltipText(Control), observeTooltipText(CTabItem),
+	 *             observeTooltipText(TabItem), observeTooltipText(TableColumn),
+	 *             observeTooltipText(ToolItem), observeTooltipText(TrayItem),
+	 *             observeTooltipText(TreeColumn)
 	 */
-	public static ISWTObservableValue observeTooltipText(Widget widget) {
+	public static ISWTObservableValue<Boolean> observeTooltipText(Widget widget) {
 		return WidgetProperties.tooltipText().observe(widget);
 	}
 
 	/**
-	 * Returns an observable value tracking the tooltip text of the given
+	 * Returns an observable value tracking the tool-tip text of the given
 	 * control
 	 * 
 	 * @param control
 	 *            the control to observe
-	 * @return an observable value tracking the tooltip text of the given
+	 * @return an observable value tracking the tool-tip text of the given
 	 *         control
 	 */
-	public static ISWTObservableValue observeTooltipText(Control control) {
-		return observeTooltipText((Widget) control);
+	public static ISWTObservableValue<String> observeTooltipText(Control control) {
+		return WidgetProperties.tooltipControl().observe(control);
+	}
+
+	/**
+	 * Returns an observable value tracking the tool-tip text of the given
+	 * custom tab item
+	 * 
+	 * @param cTabItem
+	 *            the control to observe
+	 * @return an observable value tracking the tool-tip text of the given
+	 *         custom tab item
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeTooltipText(
+			CTabItem cTabItem) {
+		return WidgetProperties.tooltipCTabItem().observe(cTabItem);
+	}
+
+	/**
+	 * Returns an observable value tracking the tool-tip text of the given tab
+	 * item
+	 * 
+	 * @param tabItem
+	 *            the control to observe
+	 * @return an observable value tracking the tool-tip text of the given tab
+	 *         item
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeTooltipText(TabItem tabItem) {
+		return WidgetProperties.tooltipTabItem().observe(tabItem);
+	}
+
+	/**
+	 * Returns an observable value tracking the tool-tip text of the given table
+	 * column
+	 * 
+	 * @param tableColumn
+	 *            the control to observe
+	 * @return an observable value tracking the tool-tip text of the given table
+	 *         column
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeTooltipText(
+			TableColumn tableColumn) {
+		return WidgetProperties.tooltipTableColumn().observe(tableColumn);
+	}
+
+	/**
+	 * Returns an observable value tracking the tool-tip text of the given tool
+	 * item
+	 * 
+	 * @param toolItem
+	 *            the control to observe
+	 * @return an observable value tracking the tool-tip text of the given tool
+	 *         item
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeTooltipText(
+			ToolItem toolItem) {
+		return WidgetProperties.tooltipToolItem().observe(toolItem);
+	}
+
+	/**
+	 * Returns an observable value tracking the tool-tip text of the given tray
+	 * item
+	 * 
+	 * @param trayItem
+	 *            the control to observe
+	 * @return an observable value tracking the tool-tip text of the given tray
+	 *         item
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeTooltipText(
+			TrayItem trayItem) {
+		return WidgetProperties.tooltipTrayItem().observe(trayItem);
+	}
+
+	/**
+	 * Returns an observable value tracking the tool-tip text of the given tree
+	 * column
+	 * 
+	 * @param treeColumn
+	 *            the control to observe
+	 * @return an observable value tracking the tool-tip text of the given tree
+	 *         column
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeTooltipText(
+			TreeColumn treeColumn) {
+		return WidgetProperties.tooltipTreeColumn().observe(treeColumn);
 	}
 
 	/**
@@ -207,10 +381,11 @@ public class SWTObservables {
 	 * @return observable value
 	 * @throws IllegalArgumentException
 	 *             if <code>control</code> type is unsupported
-	 * 
 	 * @deprecated use instead one of the more specific methods
 	 *             (observeSelection(Button), observeSelection(Combo) etc)
 	 */
+	// It's ok to supress warnings on deprecated methods
+	@SuppressWarnings("unchecked")
 	public static ISWTObservableValue<?> observeSelection(Widget control) {
 		return WidgetProperties.selection().observe(control);
 	}
@@ -235,6 +410,8 @@ public class SWTObservables {
 	 * @deprecated use instead one of the more specific methods
 	 *             (observeSelection(Button), observeSelection(Combo) etc)
 	 */
+	// It's ok to supress warnings on deprecated methods
+	@SuppressWarnings("unchecked")
 	public static ISWTObservableValue<?> observeSelection(Control control) {
 		return WidgetProperties.selection().observe(control);
 	}
@@ -513,10 +690,44 @@ public class SWTObservables {
 	 * @return observable value
 	 * @throws IllegalArgumentException
 	 *             if <code>control</code> type is unsupported
+	 * @deprecated use instead one of the more specific methods
+	 *             observeText(Text), observeText(Styled)
 	 */
+	// It's ok to suppress warnings on deprecated methods
+	@SuppressWarnings("unchecked")
 	public static ISWTObservableValue<String> observeText(Control control,
 			int event) {
 		return WidgetProperties.text(event).observe(control);
+	}
+
+	/**
+	 * Returns an observable observing the text attribute of the provided
+	 * <code>org.eclipse.swt.widgets.Text</code>.
+	 * 
+	 * @param control
+	 * @param event
+	 *            event type to register for change events
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeText(Text control,
+			int event) {
+		return WidgetProperties.textText(event).observe(control);
+	}
+
+	/**
+	 * Returns an observable observing the text attribute of the provided
+	 * <code>org.eclipse.swt.custom.StyledText</code>.
+	 * 
+	 * @param control
+	 * @param event
+	 *            event type to register for change events
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeText(StyledText control,
+			int event) {
+		return WidgetProperties.textStyledText(event).observe(control);
 	}
 
 	/**
@@ -539,11 +750,134 @@ public class SWTObservables {
 	 * @return observable value
 	 * @throws IllegalArgumentException
 	 *             if the type of <code>widget</code> is unsupported
-	 * 
 	 * @since 1.3
+	 * @deprecated use instead one of the more specific methods
+	 *             observeText(Button), observeText(CCombo) etc
 	 */
+	// It's ok to suppress warnings on deprecated methods
+	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public static ISWTObservableValue observeText(Widget widget) {
 		return WidgetProperties.text().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the text attribute of the provided
+	 * <code>Button</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeText(Button widget) {
+		return WidgetProperties.textButton().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the text attribute of the provided
+	 * <code>CCombo</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeText(CCombo widget) {
+		return WidgetProperties.textCCombo().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the text attribute of the provided
+	 * <code>CLabel</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeText(CLabel widget) {
+		return WidgetProperties.textCLabel().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the text attribute of the provided
+	 * <code>Combo</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeText(Combo widget) {
+		return WidgetProperties.textCombo().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the text attribute of the provided
+	 * <code>Item</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeText(Item widget) {
+		return WidgetProperties.textItem().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the text attribute of the provided
+	 * <code>Label</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeText(Label widget) {
+		return WidgetProperties.textLabel().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the text attribute of the provided
+	 * <code>Link</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeText(Link widget) {
+		return WidgetProperties.textLink().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the text attribute of the provided
+	 * <code>Shell</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeText(Shell widget) {
+		return WidgetProperties.textShell().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the text attribute of the provided
+	 * <code>StyledText</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeText(StyledText widget) {
+		return WidgetProperties.textStyledText().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the text attribute of the provided
+	 * <code>Text</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeText(Text widget) {
+		return WidgetProperties.textText().observe(widget);
 	}
 
 	/**
@@ -565,8 +899,12 @@ public class SWTObservables {
 	 * @return observable value
 	 * @throws IllegalArgumentException
 	 *             if <code>control</code> type is unsupported
+	 * @deprecated use instead one of the more specific methods
+	 *             observeText(Button), observeText(CCombo) etc
 	 */
-	public static ISWTObservableValue<String> observeText(Control control) {
+	// It's ok to suppress warnings on deprecated methods
+	@SuppressWarnings({ "rawtypes" })
+	public static ISWTObservableValue observeText(Control control) {
 		return observeText((Widget) control);
 	}
 
@@ -582,9 +920,37 @@ public class SWTObservables {
 	 * @return an observable observing the message attribute of the provided
 	 *         <code>widget</code>.
 	 * @since 1.3
+	 * @deprecated use instead one of the more specific methods
+	 *             observeMessage(Text), observeMessage(ToolTip)
 	 */
+	// It's ok to suppress warnings on deprecated methods
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static ISWTObservableValue observeMessage(Widget widget) {
 		return WidgetProperties.message().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the message attribute of the provided
+	 * <code>Text</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeMessage(Text widget) {
+		return WidgetProperties.messageText().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the message attribute of the provided
+	 * <code>Text</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<String> observeMessage(ToolTip widget) {
+		return WidgetProperties.messageToolTip().observe(widget);
 	}
 
 	/**
@@ -602,9 +968,62 @@ public class SWTObservables {
 	 * @throws IllegalArgumentException
 	 *             if <code>widget</code> type is unsupported
 	 * @since 1.3
+	 * @deprecated use instead one of the more specific methods
+	 *             observeImage(Button), observeImage(CLabel),
+	 *             observeImage(Item), observeImage(Label)
 	 */
+	// It's ok to suppress warnings on deprecated methods
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static ISWTObservableValue observeImage(Widget widget) {
 		return WidgetProperties.image().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the image attribute of the provided
+	 * <code>Button</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Image> observeImage(Button widget) {
+		return WidgetProperties.imageButton().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the image attribute of the provided
+	 * <code>CLabel</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Image> observeImage(CLabel widget) {
+		return WidgetProperties.imageCLabel().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the image attribute of the provided
+	 * <code>Item</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Image> observeImage(Item widget) {
+		return WidgetProperties.imageItem().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the image attribute of the provided
+	 * <code>Label</code>.
+	 * 
+	 * @param widget
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Image> observeImage(Label widget) {
+		return WidgetProperties.imageLabel().observe(widget);
 	}
 
 	/**
@@ -620,9 +1039,49 @@ public class SWTObservables {
 	 * @return observable list
 	 * @throws IllegalArgumentException
 	 *             if <code>control</code> type is unsupported
+	 * @deprecated use instead one of the more specific methods
+	 *             observeItems(CCombo), observeItems(Combo), observeItems(List)
 	 */
+	// It's ok to suppress warnings on deprecated methods
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static IObservableList observeItems(Control control) {
 		return WidgetProperties.items().observe(control);
+	}
+
+	/**
+	 * Returns an observable observing the items attribute of the provided
+	 * <code>CCombo</code>.
+	 * 
+	 * @param widget
+	 * @return observable list of items
+	 * @since 1.7
+	 */
+	public static ISWTObservableList<String> observeItems(CCombo widget) {
+		return WidgetProperties.itemsCCombo().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the items attribute of the provided
+	 * <code>Combo</code>.
+	 * 
+	 * @param widget
+	 * @return observable list of items
+	 * @since 1.7
+	 */
+	public static ISWTObservableList<String> observeItems(Combo widget) {
+		return WidgetProperties.itemsCombo().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the items attribute of the provided
+	 * <code>List</code>.
+	 * 
+	 * @param widget
+	 * @return observable list of items
+	 * @since 1.7
+	 */
+	public static ISWTObservableList<String> observeItems(List widget) {
+		return WidgetProperties.itemsList().observe(widget);
 	}
 
 	/**
@@ -639,10 +1098,68 @@ public class SWTObservables {
 	 * @return observable value
 	 * @throws IllegalArgumentException
 	 *             if <code>control</code> type is unsupported
+	 * @deprecated use instead one of the more specific methods
+	 *             observeSingleSelection(CCombo),
+	 *             observeSingleSelection(Combo), observeSingleSelection(List),
+	 *             observeSingleSelection(Table)
 	 */
+	// It's ok to suppress warnings on deprecated methods
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static ISWTObservableValue observeSingleSelectionIndex(
 			Control control) {
 		return WidgetProperties.singleSelectionIndex().observe(control);
+	}
+
+	/**
+	 * Returns an observable observing the selection index of the provided
+	 * <code>CCombo</code>.
+	 * 
+	 * @param widget
+	 * @return observable value of the integer index
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Integer> observeSingleSelection(
+			CCombo widget) {
+		return WidgetProperties.singleSelectionIndexCCombo().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the selection index of the provided
+	 * <code>Combo</code>.
+	 * 
+	 * @param widget
+	 * @return observable value of the integer index
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Integer> observeSingleSelection(
+			Combo widget) {
+		return WidgetProperties.singleSelectionIndexCombo().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the selection index of the provided
+	 * <code>List</code>.
+	 * 
+	 * @param widget
+	 * @return observable value of the integer index
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Integer> observeSingleSelection(
+			List widget) {
+		return WidgetProperties.singleSelectionIndexList().observe(widget);
+	}
+
+	/**
+	 * Returns an observable observing the selection index of the provided
+	 * <code>Table</code>.
+	 * 
+	 * @param widget
+	 * @return observable value of the integer index
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Integer> observeSingleSelection(
+			Table widget) {
+		return WidgetProperties.singleSelectionIndexTable().observe(widget);
 	}
 
 	/**
@@ -654,7 +1171,7 @@ public class SWTObservables {
 	 * @return an observable value tracking the foreground color of the given
 	 *         control
 	 */
-	public static ISWTObservableValue observeForeground(Control control) {
+	public static ISWTObservableValue<Color> observeForeground(Control control) {
 		return WidgetProperties.foreground().observe(control);
 	}
 
@@ -667,7 +1184,7 @@ public class SWTObservables {
 	 * @return an observable value tracking the background color of the given
 	 *         control
 	 */
-	public static ISWTObservableValue observeBackground(Control control) {
+	public static ISWTObservableValue<Color> observeBackground(Control control) {
 		return WidgetProperties.background().observe(control);
 	}
 
@@ -678,7 +1195,7 @@ public class SWTObservables {
 	 *            the control to observe
 	 * @return an observable value tracking the font of the given control
 	 */
-	public static ISWTObservableValue observeFont(Control control) {
+	public static ISWTObservableValue<Font> observeFont(Control control) {
 		return WidgetProperties.font().observe(control);
 	}
 
@@ -690,7 +1207,7 @@ public class SWTObservables {
 	 * @return an observable value tracking the size of the given control
 	 * @since 1.3
 	 */
-	public static ISWTObservableValue observeSize(Control control) {
+	public static ISWTObservableValue<Point> observeSize(Control control) {
 		return WidgetProperties.size().observe(control);
 	}
 
@@ -702,7 +1219,7 @@ public class SWTObservables {
 	 * @return an observable value tracking the location of the given control
 	 * @since 1.3
 	 */
-	public static ISWTObservableValue observeLocation(Control control) {
+	public static ISWTObservableValue<Point> observeLocation(Control control) {
 		return WidgetProperties.location().observe(control);
 	}
 
@@ -714,7 +1231,7 @@ public class SWTObservables {
 	 * @return an observable value tracking the focus of the given control
 	 * @since 1.3
 	 */
-	public static ISWTObservableValue observeFocus(Control control) {
+	public static ISWTObservableValue<Boolean> observeFocus(Control control) {
 		return WidgetProperties.focused().observe(control);
 	}
 
@@ -726,7 +1243,7 @@ public class SWTObservables {
 	 * @return an observable value tracking the bounds of the given control
 	 * @since 1.3
 	 */
-	public static ISWTObservableValue observeBounds(Control control) {
+	public static ISWTObservableValue<Rectangle> observeBounds(Control control) {
 		return WidgetProperties.bounds().observe(control);
 	}
 
@@ -743,9 +1260,51 @@ public class SWTObservables {
 	 * @return observable value
 	 * @throws IllegalArgumentException
 	 *             if <code>control</code> type is unsupported
+	 * @deprecated use instead one of the more specific methods
+	 *             observeEditable(CCombo), observeEditable(StyledText),
+	 *             observeEditable(Text)
 	 */
+	// It's ok to suppress warnings on deprecated methods
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static ISWTObservableValue observeEditable(Control control) {
 		return WidgetProperties.editable().observe(control);
+	}
+
+	/**
+	 * Returns an observable observing the editable attribute of the provided
+	 * <code>CCombo</code>.
+	 * 
+	 * @param control
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Boolean> observeEditable(CCombo control) {
+		return WidgetProperties.editableCCombo().observe(control);
+	}
+
+	/**
+	 * Returns an observable observing the editable attribute of the provided
+	 * <code>StyledText</code>.
+	 * 
+	 * @param control
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Boolean> observeEditable(
+			StyledText control) {
+		return WidgetProperties.editableStyledText().observe(control);
+	}
+
+	/**
+	 * Returns an observable observing the editable attribute of the provided
+	 * <code>Text</code>.
+	 * 
+	 * @param control
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Boolean> observeEditable(Text control) {
+		return WidgetProperties.editableText().observe(control);
 	}
 
 	private static class DisplayRealm extends Realm {

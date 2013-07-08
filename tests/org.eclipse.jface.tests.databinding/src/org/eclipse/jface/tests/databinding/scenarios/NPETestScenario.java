@@ -44,7 +44,7 @@ public class NPETestScenario extends ScenariosTestCase {
 		System.out
 				.println("Expecting message about not being able to attach a listener");
 		getDbc().bindValue(SWTObservables.observeText(text, SWT.Modify),
-				BeansObservables.observeValue(person, "name"));
+				BeansObservables.observeValue(person, "name", String.class));
 
 		text.setText("Brad");
 		text.notifyListeners(SWT.FocusOut, null);

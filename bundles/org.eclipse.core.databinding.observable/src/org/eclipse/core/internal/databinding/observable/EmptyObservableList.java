@@ -71,6 +71,8 @@ public class EmptyObservableList<E> implements IObservableList<E> {
 	 * @deprecated use instead the form of the constructor that takes Class as
 	 *             the parameter type for the element type
 	 */
+	// OK to ignore warnings in deprecated methods
+	@SuppressWarnings("unchecked")
 	public EmptyObservableList(Realm realm, Object elementType) {
 		this.realm = realm;
 		this.elementType = elementType;
@@ -92,8 +94,6 @@ public class EmptyObservableList<E> implements IObservableList<E> {
 	 *            the element type of the constructed list
 	 * @since 1.1
 	 */
-	// We must set deprecated fields in case any one uses them
-	@SuppressWarnings("deprecation")
 	public EmptyObservableList(Realm realm, Class<E> elementType) {
 		this.realm = realm;
 		this.elementType = elementType;

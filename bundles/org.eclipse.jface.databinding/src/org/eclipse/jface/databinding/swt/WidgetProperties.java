@@ -1421,8 +1421,8 @@ public class WidgetProperties {
 	 *             tooltipCTabItem(), tooltipControl() etc
 	 */
 	// ok to ignore warnings in deprecated method
-	@SuppressWarnings("rawtypes")
-	public static IWidgetValueProperty tooltipText() {
+	@SuppressWarnings({ "unchecked" })
+	public static IWidgetValueProperty<Widget, Boolean> tooltipText() {
 		return new org.eclipse.jface.internal.databinding.swt.WidgetTooltipTextProperty();
 	}
 

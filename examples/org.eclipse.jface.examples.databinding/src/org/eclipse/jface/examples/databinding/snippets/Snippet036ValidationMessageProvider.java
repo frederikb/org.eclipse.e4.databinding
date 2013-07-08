@@ -110,12 +110,12 @@ public class Snippet036ValidationMessageProvider {
 			setControl(container);
 
 			// Create the input fields.
-			createTextLine(container, "Name", WritableValue
-					.withValueType(String.class));
-			createTextLine(container, "Age", WritableValue
-					.withValueType(Integer.class));
-			createTextLine(container, "Birthday", WritableValue
-					.withValueType(Date.class));
+			createTextLine(container, "Name",
+					WritableValue.withValueType(String.class));
+			createTextLine(container, "Age",
+					WritableValue.withValueType(Integer.class));
+			createTextLine(container, "Birthday",
+					WritableValue.withValueType(Date.class));
 
 			// Attach the DBC's validation to the wizard.
 			WizardPageSupport wps = WizardPageSupport.create(this, dbc);
@@ -130,8 +130,8 @@ public class Snippet036ValidationMessageProvider {
 			// Create the Label.
 			Label label = new Label(parent, SWT.LEFT);
 			label.setText(labelText);
-			GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.CENTER).applyTo(
-					label);
+			GridDataFactory.fillDefaults().align(SWT.LEFT, SWT.CENTER)
+					.applyTo(label);
 
 			// Create the Text.
 			final Text text = new Text(parent, SWT.BORDER);
@@ -206,8 +206,7 @@ public class Snippet036ValidationMessageProvider {
 		public int getMessageType(ValidationStatusProvider statusProvider) {
 			if (statusProvider instanceof Binding) {
 				Binding binding = (Binding) statusProvider;
-				IStatus status = (IStatus) binding.getValidationStatus()
-						.getValue();
+				IStatus status = binding.getValidationStatus().getValue();
 
 				// For required validations, we do not want to display an error
 				// icon since the user has not done anything wrong.

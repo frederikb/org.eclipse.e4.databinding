@@ -23,7 +23,8 @@ import org.eclipse.swt.widgets.DateTime;
  * @since 3.2
  * 
  */
-public class DateTimeSelectionProperty extends WidgetValueProperty {
+public class DateTimeSelectionProperty extends
+		WidgetValueProperty<DateTime, Date> {
 	/**
 	 * 
 	 */
@@ -36,16 +37,14 @@ public class DateTimeSelectionProperty extends WidgetValueProperty {
 	}
 
 	// One calendar per thread to preserve thread-safety
-	private static final ThreadLocal calendar = new ThreadLocal() {
-		protected Object initialValue() {
+	private static final ThreadLocal<Calendar> calendar = new ThreadLocal<Calendar>() {
+		protected Calendar initialValue() {
 			return Calendar.getInstance();
 		}
 	};
 
-	protected Object doGetValue(Object source) {
-		DateTime dateTime = (DateTime) source;
-
-		Calendar cal = (Calendar) calendar.get();
+	protected Date doGetValue(DateTime dateTime) {
+		Calendar cal = calendar.get();
 		cal.clear();
 		if ((dateTime.getStyle() & SWT.TIME) != 0) {
 			cal.set(Calendar.HOUR_OF_DAY, dateTime.getHours());
@@ -59,18 +58,16 @@ public class DateTimeSelectionProperty extends WidgetValueProperty {
 		return cal.getTime();
 	}
 
-	protected void doSetValue(Object source, Object value) {
-		DateTime dateTime = (DateTime) source;
-
+	protected void doSetValue(DateTime dateTime, Date value) {
 		if (value == null)
 			throw new IllegalArgumentException(
 					"Cannot set null selection on DateTime"); //$NON-NLS-1$
 
-		Calendar cal = (Calendar) calendar.get();
-		cal.setTime((Date) value);
+		Calendar cal = calendar.get();
+		cal.setTime(value);
 		if ((dateTime.getStyle() & SWT.TIME) != 0) {
-			dateTime.setTime(cal.get(Calendar.HOUR_OF_DAY), cal
-					.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
+			dateTime.setTime(cal.get(Calendar.HOUR_OF_DAY),
+					cal.get(Calendar.MINUTE), cal.get(Calendar.SECOND));
 		} else {
 			dateTime.setDate(cal.get(Calendar.YEAR), cal.get(Calendar.MONTH),
 					cal.get(Calendar.DAY_OF_MONTH));

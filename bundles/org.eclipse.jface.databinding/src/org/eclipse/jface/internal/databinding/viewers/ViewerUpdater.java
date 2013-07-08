@@ -71,7 +71,7 @@ public abstract class ViewerUpdater implements IViewerUpdater {
 			Object element) {
 		if (!selection.isEmpty()) {
 			IElementComparer comparer = viewer.getComparer();
-			for (Iterator iter = selection.iterator(); iter.hasNext();) {
+			for (Iterator<?> iter = selection.iterator(); iter.hasNext();) {
 				Object selectionElement = iter.next();
 				if (comparer == null ? Util.equals(element, selectionElement)
 						: comparer.equals(element, selectionElement)) {

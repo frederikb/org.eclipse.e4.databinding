@@ -31,8 +31,7 @@ public class ValidationMessageProvider implements IValidationMessageProvider {
 	 */
 	public String getMessage(ValidationStatusProvider statusProvider) {
 		if (statusProvider != null) {
-			IStatus status = (IStatus) statusProvider.getValidationStatus()
-					.getValue();
+			IStatus status = statusProvider.getValidationStatus().getValue();
 			return status.getMessage();
 		}
 		return null;
@@ -49,8 +48,7 @@ public class ValidationMessageProvider implements IValidationMessageProvider {
 			return IMessageProvider.NONE;
 		}
 
-		IStatus status = (IStatus) statusProvider.getValidationStatus()
-				.getValue();
+		IStatus status = statusProvider.getValidationStatus().getValue();
 		int severity = status.getSeverity();
 		switch (severity) {
 		case IStatus.OK:

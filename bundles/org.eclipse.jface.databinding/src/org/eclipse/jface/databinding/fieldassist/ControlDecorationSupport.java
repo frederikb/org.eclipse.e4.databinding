@@ -230,7 +230,7 @@ public class ControlDecorationSupport {
 		}
 
 		if (target instanceof IViewerObservable) {
-			Viewer viewer = ((IViewerObservable) target).getViewer();
+			Viewer viewer = ((IViewerObservable<?>) target).getViewer();
 			return viewer.getControl();
 		}
 

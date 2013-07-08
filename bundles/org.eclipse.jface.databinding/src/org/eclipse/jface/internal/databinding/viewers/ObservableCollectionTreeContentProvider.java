@@ -146,7 +146,8 @@ public abstract class ObservableCollectionTreeContentProvider implements
 	private void setViewer(Viewer viewer) {
 		viewerUpdater = createViewerUpdater(viewer);
 		comparer = getElementComparer(viewer);
-		elementNodes = ViewerElementMap.<Object> withComparer(comparer);
+		elementNodes = ViewerElementMap
+				.<Object, TreeNode> withComparer(comparer);
 		viewerObservable.setValue(viewer); // (clears knownElements)
 	}
 

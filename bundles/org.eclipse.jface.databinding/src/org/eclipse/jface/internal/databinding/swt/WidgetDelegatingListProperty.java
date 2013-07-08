@@ -24,12 +24,23 @@ public abstract class WidgetDelegatingListProperty<S extends Widget, E> extends
 				"Widget [" + source.getClass().getName() + "] is not supported."); //$NON-NLS-1$//$NON-NLS-2$
 	}
 
+	/**
+	 * 
+	 * @param elementType
+	 * @deprecated use the form which takes Class as a parameter. This is safer
+	 *             because code in this plug-in fails anyway if a Class is not
+	 *             passed.
+	 */
 	public WidgetDelegatingListProperty(Object elementType) {
 		super(elementType);
 	}
 
+	public WidgetDelegatingListProperty(Class<E> elementType) {
+		super(elementType);
+	}
+
 	public ISWTObservableList<E> observe(S widget) {
-		return (ISWTObservableList) observe(
+		return (ISWTObservableList<E>) observe(
 				SWTObservables.getRealm(widget.getDisplay()), widget);
 	}
 }

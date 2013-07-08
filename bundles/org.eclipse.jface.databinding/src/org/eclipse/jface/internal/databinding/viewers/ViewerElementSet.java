@@ -159,7 +159,7 @@ public class ViewerElementSet<E> implements Set<E> {
 
 	public Object[] toArray(Object[] a) {
 		int size = wrappedSet.size();
-		ViewerElementWrapper[] wrappedArray = (ViewerElementWrapper[]) wrappedSet
+		ViewerElementWrapper[] wrappedArray = wrappedSet
 				.toArray(new ViewerElementWrapper[size]);
 		Object[] result = a;
 		if (a.length < size) {
@@ -200,9 +200,9 @@ public class ViewerElementSet<E> implements Set<E> {
 	 * @return a Set for holding viewer elements, using the given
 	 *         {@link IElementComparer} for comparisons.
 	 */
-	public static Set<Object> withComparer(IElementComparer comparer) {
+	public static <E> Set<E> withComparer(IElementComparer comparer) {
 		if (comparer == null)
-			return new HashSet<Object>();
-		return new ViewerElementSet(comparer);
+			return new HashSet<E>();
+		return new ViewerElementSet<E>(comparer);
 	}
 }
