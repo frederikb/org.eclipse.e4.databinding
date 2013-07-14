@@ -20,8 +20,10 @@ import org.eclipse.jface.viewers.StructuredViewer;
  * serves as a universal adapter for updating the elements in a viewer
  * 
  * @since 1.3
- * @see ObservableListContentProvider#ObservableListContentProvider(IViewerUpdater)
- * @see ObservableSetContentProvider#ObservableSetContentProvider(IViewerUpdater)
+ * @see ObservableListContentProvider#ObservableListContentProvider(Class,
+ *      IViewerUpdater)
+ * @see ObservableSetContentProvider#ObservableSetContentProvider(Class,
+ *      IViewerUpdater)
  */
 public interface IViewerUpdater {
 	/**

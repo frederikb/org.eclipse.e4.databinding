@@ -34,38 +34,40 @@ import org.eclipse.jface.viewers.Viewer;
  * {@link IObservableSet} created by the factory, and will insert and remove
  * viewer elements to reflect the observed changes.
  * 
+ * @param <E>
  * @noextend This class is not intended to be subclassed by clients.
  * @since 1.2
  */
-public class ObservableSetTreeContentProvider implements ITreeContentProvider {
-	private final ObservableCollectionTreeContentProvider impl;
+public class ObservableSetTreeContentProvider<E> implements
+		ITreeContentProvider {
+	private final ObservableCollectionTreeContentProvider<E> impl;
 
-	private static class Impl extends ObservableCollectionTreeContentProvider {
-		Impl(IObservableFactory<Object, IObservableSet<Object>> setFactory,
+	private class Impl extends ObservableCollectionTreeContentProvider<E> {
+		Impl(IObservableFactory<?, IObservableSet<E>> setFactory,
 				TreeStructureAdvisor structureAdvisor) {
 			super(setFactory, structureAdvisor);
 		}
 
-		private class SetChangeListener implements ISetChangeListener<Object> {
+		private class SetChangeListener implements ISetChangeListener<E> {
 			final Object parentElement;
 
 			public SetChangeListener(Object parentElement) {
 				this.parentElement = parentElement;
 			}
 
-			public void handleSetChange(SetChangeEvent<Object> event) {
+			public void handleSetChange(SetChangeEvent<E> event) {
 				if (isViewerDisposed())
 					return;
 
-				Set<Object> localAdditions = event.diff.getAdditions();
-				Set<Object> localRemovals = event.diff.getRemovals();
+				Set<E> localAdditions = event.diff.getAdditions();
+				Set<E> localRemovals = event.diff.getRemovals();
 
-				Set<Object> knownElementAdditions = ViewerElementSet
+				Set<E> knownElementAdditions = ViewerElementSet
 						.withComparer(comparer);
 				knownElementAdditions.addAll(localAdditions);
 				knownElementAdditions.removeAll(knownElements);
 
-				Set<Object> knownElementRemovals = findPendingRemovals(
+				Set<E> knownElementRemovals = findPendingRemovals(
 						parentElement, localRemovals);
 				knownElementRemovals.retainAll(knownElements);
 
@@ -74,16 +76,16 @@ public class ObservableSetTreeContentProvider implements ITreeContentProvider {
 					realizedElements.removeAll(knownElementRemovals);
 				}
 
-				for (Iterator<Object> iterator = localAdditions.iterator(); iterator
+				for (Iterator<E> iterator = localAdditions.iterator(); iterator
 						.hasNext();) {
-					Object child = iterator.next();
+					E child = iterator.next();
 					getOrCreateNode(child).addParent(parentElement);
 				}
 
 				viewerUpdater.add(parentElement, localAdditions.toArray());
 				viewerUpdater.remove(parentElement, localRemovals.toArray());
 
-				for (Iterator<Object> iterator = localRemovals.iterator(); iterator
+				for (Iterator<E> iterator = localRemovals.iterator(); iterator
 						.hasNext();) {
 					Object child = iterator.next();
 					TreeNode childNode = getExistingNode(child);
@@ -104,17 +106,18 @@ public class ObservableSetTreeContentProvider implements ITreeContentProvider {
 		}
 
 		protected void addCollectionChangeListener(
-				IObservableCollection<Object> collection,
+				IObservableCollection<E> collection,
 				IObservablesListener listener) {
-			IObservableSet<Object> set = (IObservableSet<Object>) collection;
-			ISetChangeListener<Object> setListener = (ISetChangeListener<Object>) listener;
+			IObservableSet<E> set = (IObservableSet<E>) collection;
+			ISetChangeListener<E> setListener = (ISetChangeListener<E>) listener;
 			set.addSetChangeListener(setListener);
 		}
 
 		protected void removeCollectionChangeListener(
-				IObservableCollection<Object> collection, IObservablesListener listener) {
-			IObservableSet<Object> set = (IObservableSet<Object>) collection;
-			ISetChangeListener<Object> setListener = (ISetChangeListener) listener;
+				IObservableCollection<E> collection,
+				IObservablesListener listener) {
+			IObservableSet<E> set = (IObservableSet<E>) collection;
+			ISetChangeListener<E> setListener = (ISetChangeListener<E>) listener;
 			set.removeSetChangeListener(setListener);
 		}
 	}
@@ -135,7 +138,8 @@ public class ObservableSetTreeContentProvider implements ITreeContentProvider {
 	 *            non-null advisor if they can provide additional structural
 	 *            information about the tree.
 	 */
-	public ObservableSetTreeContentProvider(IObservableFactory<Object, IObservableSet<Object>> setFactory,
+	public ObservableSetTreeContentProvider(
+			IObservableFactory<?, IObservableSet<E>> setFactory,
 			TreeStructureAdvisor structureAdvisor) {
 		impl = new Impl(setFactory, structureAdvisor);
 	}
@@ -185,7 +189,7 @@ public class ObservableSetTreeContentProvider implements ITreeContentProvider {
 	 * 
 	 * @return readableSet of items that will need labels
 	 */
-	public IObservableSet<Object> getKnownElements() {
+	public IObservableSet<E> getKnownElements() {
 		return impl.getKnownElements();
 	}
 
@@ -197,7 +201,7 @@ public class ObservableSetTreeContentProvider implements ITreeContentProvider {
 	 * @return the set of known elements which have been realized in the viewer.
 	 * @since 1.3
 	 */
-	public IObservableSet<Object> getRealizedElements() {
+	public IObservableSet<E> getRealizedElements() {
 		return impl.getRealizedElements();
 	}
 }

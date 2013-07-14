@@ -26,7 +26,7 @@ import org.eclipse.swt.widgets.TreeColumn;
  *             will start with 'tooltip')
  */
 // ok to ignore warnings in deprecated class
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class WidgetTooltipTextProperty extends WidgetDelegatingValueProperty {
 	private IValueProperty cTabItem;
 	private IValueProperty control;

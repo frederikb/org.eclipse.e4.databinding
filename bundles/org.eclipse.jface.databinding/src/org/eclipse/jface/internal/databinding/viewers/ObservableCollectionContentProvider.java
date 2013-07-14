@@ -36,9 +36,10 @@ import org.eclipse.swt.widgets.Display;
  * NON-API - Abstract base class for content providers where the viewer input is
  * expected to be an {@link IObservableCollection}.
  * 
+ * @param <E>
  * @since 1.2
  */
-public abstract class ObservableCollectionContentProvider implements
+public abstract class ObservableCollectionContentProvider<E> implements
 		IStructuredContentProvider {
 	private Display display;
 
@@ -49,7 +50,9 @@ public abstract class ObservableCollectionContentProvider implements
 	 */
 	protected IElementComparer comparer;
 
-	private IObservableFactory<Viewer, IObservableSet<Object>> elementSetFactory;
+	private IObservableFactory<Viewer, IObservableSet<E>> elementSetFactory;
+
+	private Class<E> elementType;
 
 	private final IViewerUpdater explicitViewerUpdater;
 
@@ -64,8 +67,8 @@ public abstract class ObservableCollectionContentProvider implements
 	 * viewer, and must remove old elements from this set <b>after</b> removing
 	 * them from the viewer.
 	 */
-	protected IObservableSet<Object> knownElements;
-	private IObservableSet<Object> unmodifiableKnownElements;
+	protected IObservableSet<E> knownElements;
+	private IObservableSet<E> unmodifiableKnownElements;
 
 	/**
 	 * Observable set of known elements which have been realized in the viewer.
@@ -73,18 +76,20 @@ public abstract class ObservableCollectionContentProvider implements
 	 * the viewer, and must remove old elements from this set <b>before</b>
 	 * removing them from the viewer.
 	 */
-	protected IObservableSet<Object> realizedElements;
-	private IObservableSet<Object> unmodifiableRealizedElements;
+	protected IObservableSet<E> realizedElements;
+	private IObservableSet<E> unmodifiableRealizedElements;
 
 	private IObservableCollection<?> observableCollection;
 
 	/**
 	 * Constructs an ObservableCollectionContentProvider
 	 * 
+	 * @param elementType
 	 * @param explicitViewerUpdater
 	 */
-	protected ObservableCollectionContentProvider(
+	protected ObservableCollectionContentProvider(Class<E> elementType,
 			IViewerUpdater explicitViewerUpdater) {
+		this.elementType = elementType;
 		this.explicitViewerUpdater = explicitViewerUpdater;
 
 		display = Display.getDefault();
@@ -92,12 +97,12 @@ public abstract class ObservableCollectionContentProvider implements
 				SWTObservables.getRealm(display));
 		viewerUpdater = null;
 
-		elementSetFactory = new IObservableFactory<Viewer, IObservableSet<Object>>() {
-			public IObservableSet<Object> createObservable(Viewer target) {
+		elementSetFactory = new IObservableFactory<Viewer, IObservableSet<E>>() {
+			public IObservableSet<E> createObservable(Viewer target) {
 				IElementComparer comparer = null;
 				if (target instanceof StructuredViewer)
 					comparer = ((StructuredViewer) target).getComparer();
-				return ObservableViewerElementSet.<Object> withComparer(
+				return ObservableViewerElementSet.<E> withComparer(
 						SWTObservables.getRealm(display), null, comparer);
 			}
 		};
@@ -113,7 +118,9 @@ public abstract class ObservableCollectionContentProvider implements
 		if (observableCollection == null)
 			return new Object[0];
 
-		knownElements.addAll(observableCollection);
+		for (Object element : observableCollection) {
+			knownElements.add(elementType.cast(element));
+		}
 		if (realizedElements != null) {
 			if (!realizedElements.equals(knownElements)) {
 				asyncUpdateRealizedElements();
@@ -248,7 +255,7 @@ public abstract class ObservableCollectionContentProvider implements
 	 * 
 	 * @return unmodifiable observable set of items that will need labels
 	 */
-	public IObservableSet<Object> getKnownElements() {
+	public IObservableSet<E> getKnownElements() {
 		return unmodifiableKnownElements;
 	}
 
@@ -260,7 +267,7 @@ public abstract class ObservableCollectionContentProvider implements
 	 * @return the set of known elements which have been realized in the viewer.
 	 * @since 1.3
 	 */
-	public IObservableSet<Object> getRealizedElements() {
+	public IObservableSet<E> getRealizedElements() {
 		if (realizedElements == null) {
 			realizedElements = MasterDetailObservables.detailSet(
 					viewerObservable, elementSetFactory, null);

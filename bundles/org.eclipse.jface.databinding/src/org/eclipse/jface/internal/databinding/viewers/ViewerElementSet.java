@@ -12,10 +12,11 @@
 
 package org.eclipse.jface.internal.databinding.viewers;
 
-import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.core.runtime.Assert;
@@ -157,18 +158,12 @@ public class ViewerElementSet<E> implements Set<E> {
 		return toArray(new Object[wrappedSet.size()]);
 	}
 
-	public Object[] toArray(Object[] a) {
-		int size = wrappedSet.size();
-		ViewerElementWrapper[] wrappedArray = wrappedSet
-				.toArray(new ViewerElementWrapper[size]);
-		Object[] result = a;
-		if (a.length < size) {
-			result = (Object[]) Array.newInstance(a.getClass()
-					.getComponentType(), size);
+	public <T> T[] toArray(T[] a) {
+		List<E> unwrappedElements = new ArrayList<E>(wrappedSet.size());
+		for (ViewerElementWrapper<E> wrappedElement : wrappedSet) {
+			unwrappedElements.add(wrappedElement.unwrap());
 		}
-		for (int i = 0; i < size; i++)
-			result[i] = wrappedArray[i].unwrap();
-		return result;
+		return unwrappedElements.toArray(a);
 	}
 
 	public boolean equals(Object obj) {

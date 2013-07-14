@@ -32,16 +32,19 @@ import org.eclipse.jface.viewers.Viewer;
  * of this class listen for changes to the observable set, and will insert and
  * remove viewer elements to reflect observed changes.
  * 
+ * @param <E>
  * @noextend This class is not intended to be subclassed by clients.
  * @since 1.1
  */
-public class ObservableSetContentProvider implements IStructuredContentProvider {
-	private ObservableCollectionContentProvider impl;
+public class ObservableSetContentProvider<E> implements
+		IStructuredContentProvider {
+	private ObservableCollectionContentProvider<E> impl;
 
-	private static class Impl extends ObservableCollectionContentProvider
-			implements ISetChangeListener<Object> {
-		protected Impl(IViewerUpdater explicitViewerUpdater) {
-			super(explicitViewerUpdater);
+	private class Impl extends ObservableCollectionContentProvider<E> implements
+			ISetChangeListener<E> {
+		protected Impl(Class<E> elementType,
+				IViewerUpdater explicitViewerUpdater) {
+			super(elementType, explicitViewerUpdater);
 		}
 
 		protected void checkInput(Object input) {
@@ -51,20 +54,20 @@ public class ObservableSetContentProvider implements IStructuredContentProvider 
 
 		protected void addCollectionChangeListener(
 				IObservableCollection<?> collection) {
-			((IObservableSet<?>) collection).addSetChangeListener(this);
+			((IObservableSet<E>) collection).addSetChangeListener(this);
 		}
 
 		protected void removeCollectionChangeListener(
 				IObservableCollection<?> collection) {
-			((IObservableSet<?>) collection).removeSetChangeListener(this);
+			((IObservableSet<E>) collection).removeSetChangeListener(this);
 		}
 
-		public void handleSetChange(SetChangeEvent<Object> event) {
+		public void handleSetChange(SetChangeEvent<E> event) {
 			if (isViewerDisposed())
 				return;
 
-			Set<Object> removals = event.diff.getRemovals();
-			Set<Object> additions = event.diff.getAdditions();
+			Set<E> removals = event.diff.getRemovals();
+			Set<E> additions = event.diff.getAdditions();
 
 			knownElements.addAll(additions);
 			if (realizedElements != null)
@@ -82,9 +85,28 @@ public class ObservableSetContentProvider implements IStructuredContentProvider 
 	/**
 	 * Constructs an ObservableSetContentProvider. Must be called from the
 	 * display thread.
+	 * 
+	 * @deprecated use the form that takes the class of the elements provided by
+	 *             the content provider
 	 */
+	// OK to ignore warnings in deprecated method
+	@SuppressWarnings("unchecked")
 	public ObservableSetContentProvider() {
-		this(null);
+		// We are not passed the element type class so we can't safely
+		// cast the type. We do the best we can which is to set Object.class
+		// so at least the cast won't fail.
+		this((Class<E>) Object.class, null);
+	}
+
+	/**
+	 * Constructs an ObservableSetContentProvider. Must be called from the
+	 * display thread.
+	 * 
+	 * @param elementType
+	 * @since 1.7
+	 */
+	public ObservableSetContentProvider(Class<E> elementType) {
+		this(elementType, null);
 	}
 
 	/**
@@ -95,9 +117,31 @@ public class ObservableSetContentProvider implements IStructuredContentProvider 
 	 *            the viewer updater to use when elements are added or removed
 	 *            from the input observable set.
 	 * @since 1.3
+	 * @deprecated use the form that takes the class of the elements provided by
+	 *             the content provider
 	 */
+	// OK to ignore warnings in deprecated method
+	@SuppressWarnings("unchecked")
 	public ObservableSetContentProvider(IViewerUpdater viewerUpdater) {
-		impl = new Impl(viewerUpdater);
+		// We are not passed the element type class so we can't safely
+		// cast the type. We do the best we can which is to set Object.class
+		// so at least the cast won't fail.
+		impl = new Impl((Class<E>) Object.class, viewerUpdater);
+	}
+
+	/**
+	 * Constructs an ObservableSetContentProvider with the given viewer updater.
+	 * Must be called from the display thread.
+	 * 
+	 * @param elementType
+	 * @param viewerUpdater
+	 *            the viewer updater to use when elements are added or removed
+	 *            from the input observable set.
+	 * @since 1.7
+	 */
+	public ObservableSetContentProvider(Class<E> elementType,
+			IViewerUpdater viewerUpdater) {
+		impl = new Impl(elementType, viewerUpdater);
 	}
 
 	public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
@@ -133,7 +177,7 @@ public class ObservableSetContentProvider implements IStructuredContentProvider 
 	 * 
 	 * @return unmodifiable set of items that will need labels
 	 */
-	public IObservableSet<Object> getKnownElements() {
+	public IObservableSet<E> getKnownElements() {
 		return impl.getKnownElements();
 	}
 
@@ -145,7 +189,7 @@ public class ObservableSetContentProvider implements IStructuredContentProvider 
 	 * @return the set of known elements which have been realized in the viewer.
 	 * @since 1.3
 	 */
-	public IObservableSet<Object> getRealizedElements() {
+	public IObservableSet<E> getRealizedElements() {
 		return impl.getRealizedElements();
 	}
 }

@@ -28,7 +28,16 @@ public abstract class WidgetDelegatingValueProperty<S extends Widget, T>
 	public WidgetDelegatingValueProperty() {
 	}
 
+	/**
+	 * 
+	 * @param valueType
+	 * @deprecated use the constructor that takes a Class object instead
+	 */
 	public WidgetDelegatingValueProperty(Object valueType) {
+		super(valueType);
+	}
+
+	public WidgetDelegatingValueProperty(Class<T> valueType) {
 		super(valueType);
 	}
 

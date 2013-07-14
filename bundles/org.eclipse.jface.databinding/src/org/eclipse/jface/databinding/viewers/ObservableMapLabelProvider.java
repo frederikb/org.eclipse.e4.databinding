@@ -15,7 +15,6 @@ package org.eclipse.jface.databinding.viewers;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -37,15 +36,11 @@ import org.eclipse.swt.graphics.Image;
  * 
  * @param <T>
  *            the basemost class of all elements expected
- * @param <E>
- *            the basemost class of all label values, which will often be
- *            <String> but no always because values are converted using
- *            toString() method
  * 
  * @since 1.1
  * 
  */
-public class ObservableMapLabelProvider<T, E> extends LabelProvider implements
+public class ObservableMapLabelProvider<T> extends LabelProvider implements
 		ILabelProvider, ITableLabelProvider {
 
 	/**
@@ -63,58 +58,120 @@ public class ObservableMapLabelProvider<T, E> extends LabelProvider implements
 	 * 
 	 * @since 1.7
 	 */
-	protected List<IObservableMap<T, E>> attributeMapsList;
+	// protected List<IObservableMap<T, ?>> attributeMapsList;
 
-	private IMapChangeListener<T, E> mapChangeListener = new IMapChangeListener<T, E>() {
-		public void handleMapChange(MapChangeEvent<T, E> event) {
-			Set<T> affectedElements = event.diff.getChangedKeys();
-			LabelProviderChangedEvent newEvent = new LabelProviderChangedEvent(
-					ObservableMapLabelProvider.this, affectedElements.toArray());
-			fireLabelProviderChanged(newEvent);
+	class MapWrapper<E> {
+
+		IObservableMap<T, E> attributeMap;
+
+		/**
+		 * @param map
+		 */
+		public MapWrapper(IObservableMap<T, E> map) {
+			this.attributeMap = map;
 		}
-	};
+
+		private IMapChangeListener<T, E> mapChangeListener = new IMapChangeListener<T, E>() {
+			public void handleMapChange(MapChangeEvent<T, E> event) {
+				Set<T> affectedElements = event.diff.getChangedKeys();
+				LabelProviderChangedEvent newEvent = new LabelProviderChangedEvent(
+						ObservableMapLabelProvider.this,
+						affectedElements.toArray());
+				fireLabelProviderChanged(newEvent);
+			}
+		};
+
+		/**
+		 * 
+		 */
+		public void removeListener() {
+			attributeMap.removeMapChangeListener(mapChangeListener);
+		}
+	}
+
+	List<MapWrapper<?>> attributeMapsList;
+
+	// private IMapChangeListener<T, ?> mapChangeListener = new
+	// IMapChangeListener<T, ?>() {
+	// public void handleMapChange(MapChangeEvent<T, ?> event) {
+	// Set<T> affectedElements = event.diff.getChangedKeys();
+	// LabelProviderChangedEvent newEvent = new LabelProviderChangedEvent(
+	// ObservableMapLabelProvider.this, affectedElements.toArray());
+	// fireLabelProviderChanged(newEvent);
+	// }
+	// };
 
 	/**
 	 * @param attributeMap
 	 */
-	public ObservableMapLabelProvider(IObservableMap<T, E> attributeMap) {
-		this(Collections.singletonList(attributeMap));
+	public <E> ObservableMapLabelProvider(IObservableMap<T, E> attributeMap) {
+		this(singletonList(attributeMap));
+	}
+
+	/**
+	 * @param attributeMap
+	 * @return a singleton list with the given attribute map
+	 */
+	private static <T2, E> List<IObservableMap<T2, ?>> singletonList(
+			IObservableMap<T2, E> attributeMap) {
+		List<IObservableMap<T2, ?>> singletonList = new ArrayList<IObservableMap<T2, ?>>();
+		singletonList.add(attributeMap);
+		return singletonList;
 	}
 
 	/**
 	 * @param attributeMaps
 	 * @deprecated use the constructor that takes a List instead
 	 */
-	public ObservableMapLabelProvider(IObservableMap<T, E>[] attributeMaps) {
-		this(Arrays.asList(attributeMaps));
+	// OK to supress warnings on deprecated method
+	@SuppressWarnings("unchecked")
+	public ObservableMapLabelProvider(IObservableMap<?, ?>[] attributeMaps) {
+		this(Arrays.asList((IObservableMap<T, ?>[]) attributeMaps));
 	}
 
 	/**
 	 * @param attributeMapsList
 	 * @since 1.7
 	 */
-	// This class must initialize the deprecated field
+	// This class must initialize the deprecated field, so ok to ignore
+	// the warning we get when setting the value of the deprecated field.
+	@SuppressWarnings("deprecation")
 	public ObservableMapLabelProvider(
-			List<IObservableMap<T, E>> attributeMapsList) {
-		this.attributeMapsList = new ArrayList<IObservableMap<T, E>>(
-				attributeMapsList);
+			List<IObservableMap<T, ?>> attributeMapsList) {
+		// this.attributeMapsList = new ArrayList<IObservableMap<T, ?>>(
+		// attributeMapsList);
+		this.attributeMapsList = new ArrayList<MapWrapper<?>>(
+				attributeMapsList.size());
 
-		// Also copy to the array for legacy reasons
+		// Also copy to the deprecated array for legacy reasons.
+		// There may be old code out there that reads from this array.
 		this.attributeMaps = attributeMapsList
 				.toArray(new IObservableMap<?, ?>[attributeMapsList.size()]);
 
-		for (IObservableMap<T, E> map : attributeMapsList) {
-			map.addMapChangeListener(mapChangeListener);
+		for (IObservableMap<T, ?> map : attributeMapsList) {
+			this.attributeMapsList.add(createMapWrapper(map));
 		}
 	}
 
+	/**
+	 * @param map
+	 * @return a wrapper around the given attribute map that manages its own
+	 *         listener
+	 */
+	private <E> MapWrapper<E> createMapWrapper(IObservableMap<T, E> map) {
+		return new MapWrapper<E>(map);
+	}
+
 	public void dispose() {
-		for (IObservableMap<T, E> map : attributeMapsList) {
-			map.removeMapChangeListener(mapChangeListener);
+		// for (IObservableMap<T, ?> map : attributeMapsList) {
+		// map.removeMapChangeListener(mapChangeListener);
+		// }
+		for (MapWrapper<?> wrapper : attributeMapsList) {
+			wrapper.removeListener();
 		}
 		super.dispose();
 		this.attributeMapsList = null;
-		this.mapChangeListener = null;
+		// this.mapChangeListener = null;
 	}
 
 	public Image getImage(Object element) {
@@ -131,7 +188,8 @@ public class ObservableMapLabelProvider<T, E> extends LabelProvider implements
 
 	public String getColumnText(Object element, int columnIndex) {
 		if (columnIndex < attributeMapsList.size()) {
-			Object result = attributeMapsList.get(columnIndex).get(element);
+			Object result = attributeMapsList.get(columnIndex).attributeMap
+					.get(element);
 			return result == null ? "" : result.toString(); //$NON-NLS-1$
 		}
 		return null;

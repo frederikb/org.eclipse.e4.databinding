@@ -44,6 +44,8 @@ public class Properties {
 	 * @param properties
 	 * @return an array of observable maps where each map observes the
 	 *         corresponding value property of the given domain set
+	 * @deprecated use the form which takes the properties parameter as a List
+	 *             instead of an array
 	 */
 	public static <S, E> IObservableMap<?, ?>[] observeEach(
 			IObservableSet<E> domainSet,
@@ -51,6 +53,31 @@ public class Properties {
 		IObservableMap<?, ?>[] maps = new IObservableMap[properties.length];
 		for (int i = 0; i < maps.length; i++) {
 			maps[i] = properties[i].observeDetail(domainSet);
+		}
+		return maps;
+	}
+
+	/**
+	 * Returns an array of observable maps where each map observes the
+	 * corresponding value property on all elements in the given domain set, for
+	 * each property in the given array.
+	 * 
+	 * @param domainSet
+	 *            the set of elements whose properties will be observed
+	 * @param properties
+	 *            array of value properties to observe on each element in the
+	 *            domain set
+	 * @return an list of observable maps where each map observes the
+	 *         corresponding value property of the given domain set
+	 * @since 1.5
+	 */
+	public static <S, E> List<IObservableMap<E, ? extends S>> observeEach(
+			IObservableSet<E> domainSet,
+			List<IValueProperty<? super E, ? extends S>> properties) {
+		List<IObservableMap<E, ? extends S>> maps = new ArrayList<IObservableMap<E, ? extends S>>(
+				properties.size());
+		for (IValueProperty<? super E, ? extends S> property : properties) {
+			maps.add(property.observeDetail(domainSet));
 		}
 		return maps;
 	}
@@ -78,31 +105,6 @@ public class Properties {
 		IObservableMap<?, ?>[] maps = new IObservableMap[properties.length];
 		for (int i = 0; i < maps.length; i++)
 			maps[i] = properties[i].observeDetail(domainMap);
-		return maps;
-	}
-
-	/**
-	 * Returns an array of observable maps where each map observes the
-	 * corresponding value property on all elements in the given domain set, for
-	 * each property in the given array.
-	 * 
-	 * @param domainSet
-	 *            the set of elements whose properties will be observed
-	 * @param properties
-	 *            array of value properties to observe on each element in the
-	 *            domain set
-	 * @return an list of observable maps where each map observes the
-	 *         corresponding value property of the given domain set
-	 * @since 1.5
-	 */
-	public static <S, E> List<IObservableMap<E, ?>> observeEach(
-			IObservableSet<E> domainSet,
-			List<IValueProperty<? super E, ?>> properties) {
-		List<IObservableMap<E, ?>> maps = new ArrayList<IObservableMap<E, ?>>(
-				properties.size());
-		for (IValueProperty<? super E, ?> property : properties) {
-			maps.add(property.observeDetail(domainSet));
-		}
 		return maps;
 	}
 

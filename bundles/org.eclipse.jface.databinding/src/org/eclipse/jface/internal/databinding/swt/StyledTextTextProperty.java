@@ -73,6 +73,7 @@ public class StyledTextTextProperty extends
 
 	protected ISWTObservableValue<String> wrapObservable(
 			IObservableValue<String> observable, StyledText widget) {
-		return new SWTVetoableValueDecorator(widget, this, observable);
+		return new SWTVetoableValueDecorator<StyledText>(widget, this,
+				observable);
 	}
 }

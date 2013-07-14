@@ -54,7 +54,7 @@ public class SWTDelayedObservableValueDecorator<T> extends
 	 * @throws IllegalArgumentException
 	 *             if <code>updateEventType</code> is an incorrect type.
 	 */
-	public SWTDelayedObservableValueDecorator(IObservableValue decorated,
+	public SWTDelayedObservableValueDecorator(IObservableValue<T> decorated,
 			Widget widget) {
 		super(decorated, widget);
 

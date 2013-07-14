@@ -502,7 +502,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetListProperty<CCombo, String> itemsCCombo() {
-		return new WidgetDelegatingListProperty<CCombo, String>(CCombo.class) {
+		return new WidgetDelegatingListProperty<CCombo, String>(String.class) {
 			IListProperty<CCombo, String> cCombo = null;
 
 			@Override
@@ -520,7 +520,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetListProperty<Combo, String> itemsCombo() {
-		return new WidgetDelegatingListProperty<Combo, String>(Combo.class) {
+		return new WidgetDelegatingListProperty<Combo, String>(String.class) {
 			IListProperty<Combo, String> combo = null;
 
 			@Override
@@ -538,7 +538,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetListProperty<List, String> itemsList() {
-		return new WidgetDelegatingListProperty<List, String>(List.class) {
+		return new WidgetDelegatingListProperty<List, String>(String.class) {
 			IListProperty<List, String> combo = null;
 
 			@Override
@@ -581,7 +581,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Scale, Integer> maximumScale() {
-		return new WidgetDelegatingValueProperty<Scale, Integer>(Scale.class) {
+		return new WidgetDelegatingValueProperty<Scale, Integer>(Integer.class) {
 
 			IValueProperty<Scale, Integer> scale = null;
 
@@ -601,7 +601,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Slider, Integer> maximumSlider() {
-		return new WidgetDelegatingValueProperty<Slider, Integer>(Slider.class) {
+		return new WidgetDelegatingValueProperty<Slider, Integer>(Integer.class) {
 
 			IValueProperty<Slider, Integer> slider = null;
 
@@ -623,7 +623,7 @@ public class WidgetProperties {
 	 */
 	public static IWidgetValueProperty<Spinner, Integer> maximumSpinner() {
 		return new WidgetDelegatingValueProperty<Spinner, Integer>(
-				Spinner.class) {
+				Integer.class) {
 
 			IValueProperty<Spinner, Integer> spinner = null;
 
@@ -659,7 +659,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Text, String> messageText() {
-		return new WidgetDelegatingValueProperty<Text, String>(Text.class) {
+		return new WidgetDelegatingValueProperty<Text, String>(String.class) {
 
 			IValueProperty<Text, String> property = null;
 
@@ -679,7 +679,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<ToolTip, String> messageToolTip() {
-		return new WidgetDelegatingValueProperty<ToolTip, String>(ToolTip.class) {
+		return new WidgetDelegatingValueProperty<ToolTip, String>(String.class) {
 
 			IValueProperty<ToolTip, String> property = null;
 
@@ -715,7 +715,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Scale, Integer> minimumScale() {
-		return new WidgetDelegatingValueProperty<Scale, Integer>(Scale.class) {
+		return new WidgetDelegatingValueProperty<Scale, Integer>(Integer.class) {
 
 			IValueProperty<Scale, Integer> scale = null;
 
@@ -735,7 +735,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Slider, Integer> minimumSlider() {
-		return new WidgetDelegatingValueProperty<Slider, Integer>(Slider.class) {
+		return new WidgetDelegatingValueProperty<Slider, Integer>(Integer.class) {
 
 			IValueProperty<Slider, Integer> slider = null;
 
@@ -757,7 +757,7 @@ public class WidgetProperties {
 	 */
 	public static IWidgetValueProperty<Spinner, Integer> minimumSpinner() {
 		return new WidgetDelegatingValueProperty<Spinner, Integer>(
-				Spinner.class) {
+				Integer.class) {
 
 			IValueProperty<Spinner, Integer> spinner = null;
 
@@ -797,7 +797,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Combo, String> selectionCombo() {
-		return new WidgetDelegatingValueProperty<Combo, String>(Combo.class) {
+		return new WidgetDelegatingValueProperty<Combo, String>(String.class) {
 
 			IValueProperty<Combo, String> combo = null;
 
@@ -817,7 +817,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Button, Boolean> selectionButton() {
-		return new WidgetDelegatingValueProperty<Button, Boolean>(Button.class) {
+		return new WidgetDelegatingValueProperty<Button, Boolean>(Boolean.class) {
 
 			IValueProperty<Button, Boolean> button = null;
 
@@ -838,7 +838,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<CCombo, String> selectionCCombo() {
-		return new WidgetDelegatingValueProperty<CCombo, String>(CCombo.class) {
+		return new WidgetDelegatingValueProperty<CCombo, String>(String.class) {
 
 			IValueProperty<CCombo, String> cCombo = null;
 
@@ -858,7 +858,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<List, String> selectionList() {
-		return new WidgetDelegatingValueProperty<List, String>(List.class) {
+		return new WidgetDelegatingValueProperty<List, String>(String.class) {
 
 			IValueProperty<List, String> listControl = null;
 
@@ -879,7 +879,7 @@ public class WidgetProperties {
 	 */
 	public static IWidgetValueProperty<MenuItem, Boolean> selectionMenuItem() {
 		return new WidgetDelegatingValueProperty<MenuItem, Boolean>(
-				MenuItem.class) {
+				Boolean.class) {
 
 			IValueProperty<MenuItem, Boolean> menuItem = null;
 
@@ -900,7 +900,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Scale, Integer> selectionScale() {
-		return new WidgetDelegatingValueProperty<Scale, Integer>(Scale.class) {
+		return new WidgetDelegatingValueProperty<Scale, Integer>(Integer.class) {
 
 			IValueProperty<Scale, Integer> scale = null;
 
@@ -921,7 +921,7 @@ public class WidgetProperties {
 	 */
 	public static IWidgetValueProperty<Spinner, Integer> selectionSpinner() {
 		return new WidgetDelegatingValueProperty<Spinner, Integer>(
-				Spinner.class) {
+				Integer.class) {
 
 			IValueProperty<Spinner, Integer> spinner = null;
 
@@ -958,7 +958,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<CCombo, Integer> singleSelectionIndexCCombo() {
-		return new WidgetDelegatingValueProperty<CCombo, Integer>(CCombo.class) {
+		return new WidgetDelegatingValueProperty<CCombo, Integer>(Integer.class) {
 
 			IValueProperty<CCombo, Integer> property = null;
 
@@ -980,7 +980,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Combo, Integer> singleSelectionIndexCombo() {
-		return new WidgetDelegatingValueProperty<Combo, Integer>(Combo.class) {
+		return new WidgetDelegatingValueProperty<Combo, Integer>(Integer.class) {
 
 			IValueProperty<Combo, Integer> property = null;
 
@@ -1001,7 +1001,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<List, Integer> singleSelectionIndexList() {
-		return new WidgetDelegatingValueProperty<List, Integer>(List.class) {
+		return new WidgetDelegatingValueProperty<List, Integer>(Integer.class) {
 
 			IValueProperty<List, Integer> property = null;
 
@@ -1022,7 +1022,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Table, Integer> singleSelectionIndexTable() {
-		return new WidgetDelegatingValueProperty<Table, Integer>(Table.class) {
+		return new WidgetDelegatingValueProperty<Table, Integer>(Integer.class) {
 
 			IValueProperty<Table, Integer> property = null;
 
@@ -1071,7 +1071,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Button, String> textButton() {
-		return new WidgetDelegatingValueProperty<Button, String>(Button.class) {
+		return new WidgetDelegatingValueProperty<Button, String>(String.class) {
 
 			IValueProperty<Button, String> property = null;
 
@@ -1091,7 +1091,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<CCombo, String> textCCombo() {
-		return new WidgetDelegatingValueProperty<CCombo, String>(CCombo.class) {
+		return new WidgetDelegatingValueProperty<CCombo, String>(String.class) {
 
 			IValueProperty<CCombo, String> property = null;
 
@@ -1111,7 +1111,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<CLabel, String> textCLabel() {
-		return new WidgetDelegatingValueProperty<CLabel, String>(CLabel.class) {
+		return new WidgetDelegatingValueProperty<CLabel, String>(String.class) {
 
 			IValueProperty<CLabel, String> property = null;
 
@@ -1131,7 +1131,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Combo, String> textCombo() {
-		return new WidgetDelegatingValueProperty<Combo, String>(Combo.class) {
+		return new WidgetDelegatingValueProperty<Combo, String>(String.class) {
 
 			IValueProperty<Combo, String> property = null;
 
@@ -1151,7 +1151,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Item, String> textItem() {
-		return new WidgetDelegatingValueProperty<Item, String>(Item.class) {
+		return new WidgetDelegatingValueProperty<Item, String>(String.class) {
 
 			IValueProperty<Item, String> property = null;
 
@@ -1171,7 +1171,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Label, String> textLabel() {
-		return new WidgetDelegatingValueProperty<Label, String>(Label.class) {
+		return new WidgetDelegatingValueProperty<Label, String>(String.class) {
 
 			IValueProperty<Label, String> property = null;
 
@@ -1191,7 +1191,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Link, String> textLink() {
-		return new WidgetDelegatingValueProperty<Link, String>(Link.class) {
+		return new WidgetDelegatingValueProperty<Link, String>(String.class) {
 
 			IValueProperty<Link, String> property = null;
 
@@ -1211,7 +1211,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Shell, String> textShell() {
-		return new WidgetDelegatingValueProperty<Shell, String>(Shell.class) {
+		return new WidgetDelegatingValueProperty<Shell, String>(String.class) {
 
 			IValueProperty<Shell, String> property = null;
 
@@ -1232,7 +1232,7 @@ public class WidgetProperties {
 	 */
 	public static IWidgetValueProperty<StyledText, String> textStyledText() {
 		return new WidgetDelegatingValueProperty<StyledText, String>(
-				StyledText.class) {
+				String.class) {
 
 			IValueProperty<StyledText, String> property = null;
 
@@ -1253,7 +1253,7 @@ public class WidgetProperties {
 	 * @since 1.7
 	 */
 	public static IWidgetValueProperty<Text, String> textText() {
-		return new WidgetDelegatingValueProperty<Text, String>(Text.class) {
+		return new WidgetDelegatingValueProperty<Text, String>(String.class) {
 
 			IValueProperty<Text, String> property = null;
 

@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Table;
  *             ViewerProperties instead
  */
 // ok to ignore warnings in deprecated class
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public final class WidgetSingleSelectionIndexProperty extends
 		WidgetDelegatingValueProperty {
 	private IValueProperty cCombo;

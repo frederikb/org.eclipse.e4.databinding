@@ -21,7 +21,7 @@ import org.eclipse.swt.widgets.ToolTip;
  *             will start with 'message')
  */
 // ok to ignore warnings in deprecated class
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class WidgetMessageProperty extends WidgetDelegatingValueProperty {
 	private IValueProperty text;
 	private IValueProperty toolTip;

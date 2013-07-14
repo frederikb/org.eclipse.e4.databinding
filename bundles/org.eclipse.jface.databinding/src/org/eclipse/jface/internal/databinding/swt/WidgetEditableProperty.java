@@ -23,7 +23,7 @@ import org.eclipse.swt.widgets.Text;
  *             will start with 'editable')
  */
 // ok to ignore warnings in deprecated class
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class WidgetEditableProperty extends WidgetDelegatingValueProperty {
 	IValueProperty text;
 	IValueProperty ccombo;

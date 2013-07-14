@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Spinner;
  *             will start with 'minimum')
  */
 // ok to ignore warnings in deprecated class
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class WidgetMinimumProperty extends WidgetDelegatingValueProperty {
 	private IValueProperty scale;
 	private IValueProperty slider;

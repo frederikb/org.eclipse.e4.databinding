@@ -29,7 +29,7 @@ import org.eclipse.swt.widgets.Text;
  *             will start with 'text')
  */
 // ok to ignore warnings in deprecated class
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public class WidgetTextProperty extends WidgetDelegatingValueProperty {
 	private IValueProperty button;
 	private IValueProperty cCombo;

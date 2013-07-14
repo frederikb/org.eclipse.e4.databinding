@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.List;
  *             will start with 'items')
  */
 // ok to ignore warnings in deprecated class
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({ "unchecked", "rawtypes" })
 public class WidgetItemsProperty extends WidgetDelegatingListProperty {
 	private IListProperty cCombo;
 	private IListProperty combo;

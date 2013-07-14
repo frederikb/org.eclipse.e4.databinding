@@ -383,8 +383,8 @@ public class Observables {
 	 *            the realm of the returned set
 	 * @return an empty observable set.
 	 */
-	public static IObservableSet<Object> emptyObservableSet(Realm realm) {
-		return emptyObservableSet(realm, null);
+	public static <E> IObservableSet<E> emptyObservableSet(Realm realm) {
+		return Observables.<E> emptyObservableSet(realm, null);
 	}
 
 	/**
@@ -399,9 +399,9 @@ public class Observables {
 	 * @return an empty observable set
 	 * @since 1.1
 	 */
-	public static IObservableSet<Object> emptyObservableSet(Realm realm,
+	public static <E> IObservableSet<E> emptyObservableSet(Realm realm,
 			Object elementType) {
-		return new EmptyObservableSet<Object>(realm, elementType);
+		return new EmptyObservableSet<E>(realm, elementType);
 	}
 
 	/**

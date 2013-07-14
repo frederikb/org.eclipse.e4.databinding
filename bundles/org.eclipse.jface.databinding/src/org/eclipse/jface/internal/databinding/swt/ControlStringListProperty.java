@@ -36,16 +36,12 @@ public abstract class ControlStringListProperty<S extends Control> extends
 		return String.class;
 	}
 
-	protected void doSetList(S source, List<String> list, ListDiff<String> diff) {
-		doUpdateList(source, diff);
-	}
-
 	protected List<String> doGetList(S source) {
 		String[] list = doGetStringList(source);
 		return Arrays.asList(list);
 	}
 
-	abstract String[] doGetStringList(Control control);
+	abstract String[] doGetStringList(S control);
 
 	public INativePropertyListener<S> adaptListener(
 			ISimplePropertyListener<ListDiff<String>> listener) {

@@ -12,8 +12,12 @@
 
 package org.eclipse.jface.databinding.viewers;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.core.databinding.observable.list.IObservableList;
+import org.eclipse.core.databinding.observable.masterdetail.IObservableFactory;
 import org.eclipse.core.databinding.observable.set.IObservableSet;
 import org.eclipse.core.databinding.property.Properties;
 import org.eclipse.core.databinding.property.list.IListProperty;
@@ -42,9 +46,11 @@ public class ViewerSupport {
 	 * @param labelProperty
 	 *            the property to use for labels
 	 */
-	public static void bind(StructuredViewer viewer, IObservableList input,
-			IValueProperty labelProperty) {
-		bind(viewer, input, new IValueProperty[] { labelProperty });
+	public static <E> void bind(StructuredViewer viewer,
+			IObservableList<E> input, IValueProperty<? super E, ?> labelProperty) {
+		List<IValueProperty<? super E, ?>> singletonList = new ArrayList<IValueProperty<? super E, ?>>();
+		singletonList.add(labelProperty);
+		bind(viewer, input, singletonList);
 	}
 
 	/**
@@ -58,15 +64,47 @@ public class ViewerSupport {
 	 * @param labelProperties
 	 *            the respective properties to use for labels in each of the
 	 *            viewer's columns
+	 * @deprecated use the form that takes labelProperties as a List rather than
+	 *             an array because List allows for better typing than using
+	 *             arrays
 	 */
-	public static void bind(StructuredViewer viewer, IObservableList input,
-			IValueProperty[] labelProperties) {
-		ObservableListContentProvider contentProvider = new ObservableListContentProvider();
+	// OK to suppress warnings in deprecated methods
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static <E> void bind(StructuredViewer viewer,
+			IObservableList<?> input, IValueProperty[] labelProperties) {
+		ObservableListContentProvider<E> contentProvider = new ObservableListContentProvider<E>();
 		if (viewer.getInput() != null)
 			viewer.setInput(null);
 		viewer.setContentProvider(contentProvider);
-		viewer.setLabelProvider(new ObservableMapLabelProvider(Properties
+		viewer.setLabelProvider(new ObservableMapLabelProvider<E>(Properties
 				.observeEach(contentProvider.getKnownElements(),
+						labelProperties)));
+		if (input != null)
+			viewer.setInput(input);
+	}
+
+	/**
+	 * Binds the viewer to the specified input, using the specified label
+	 * properties to generate labels.
+	 * 
+	 * @param viewer
+	 *            the viewer to set up
+	 * @param input
+	 *            the input to set on the viewer
+	 * @param labelProperties
+	 *            the respective properties to use for labels in each of the
+	 *            viewer's columns
+	 * @since 1.7
+	 */
+	public static <E> void bind(StructuredViewer viewer,
+			IObservableList<E> input,
+			List<IValueProperty<? super E, ?>> labelProperties) {
+		ObservableListContentProvider<E> contentProvider = new ObservableListContentProvider<E>();
+		if (viewer.getInput() != null)
+			viewer.setInput(null);
+		viewer.setContentProvider(contentProvider);
+		viewer.setLabelProvider(new ObservableMapLabelProvider<E>(Properties
+				.<Object, E> observeEach(contentProvider.getKnownElements(),
 						labelProperties)));
 		if (input != null)
 			viewer.setInput(input);
@@ -83,9 +121,43 @@ public class ViewerSupport {
 	 * @param labelProperty
 	 *            the property to use for labels
 	 */
-	public static void bind(StructuredViewer viewer, IObservableSet input,
-			IValueProperty labelProperty) {
-		bind(viewer, input, new IValueProperty[] { labelProperty });
+	public static <E> void bind(StructuredViewer viewer,
+			IObservableSet<E> input, IValueProperty<? super E, ?> labelProperty) {
+
+		List<IValueProperty<? super E, ?>> singletonList = new ArrayList<IValueProperty<? super E, ?>>();
+		singletonList.add(labelProperty);
+
+		bind(viewer, input, singletonList);
+	}
+
+	/**
+	 * Binds the viewer to the specified input, using the specified label
+	 * properties to generate labels.
+	 * 
+	 * @param viewer
+	 *            the viewer to set up
+	 * @param input
+	 *            the input to set on the viewer
+	 * @param labelProperties
+	 *            the respective properties to use for labels in each of the
+	 *            viewer's columns
+	 * @deprecated use the form that takes labelProperties as a List rather than
+	 *             an array because List allows for better typing than using
+	 *             arrays
+	 */
+	// OK to suppress warnings in deprecated methods
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static <E> void bind(StructuredViewer viewer,
+			IObservableSet<E> input, IValueProperty[] labelProperties) {
+		ObservableSetContentProvider<E> contentProvider = new ObservableSetContentProvider<E>();
+		if (viewer.getInput() != null)
+			viewer.setInput(null);
+		viewer.setContentProvider(contentProvider);
+		viewer.setLabelProvider(new ObservableMapLabelProvider<E>(Properties
+				.observeEach(contentProvider.getKnownElements(),
+						labelProperties)));
+		if (input != null)
+			viewer.setInput(input);
 	}
 
 	/**
@@ -100,13 +172,110 @@ public class ViewerSupport {
 	 *            the respective properties to use for labels in each of the
 	 *            viewer's columns
 	 */
-	public static void bind(StructuredViewer viewer, IObservableSet input,
+	public static <E> void bind(StructuredViewer viewer,
+			IObservableSet<E> input,
+			List<IValueProperty<? super E, ?>> labelProperties) {
+		ObservableSetContentProvider<E> contentProvider = new ObservableSetContentProvider<E>();
+		if (viewer.getInput() != null)
+			viewer.setInput(null);
+		viewer.setContentProvider(contentProvider);
+		viewer.setLabelProvider(new ObservableMapLabelProvider<E>(Properties
+				.observeEach(contentProvider.getKnownElements(),
+						labelProperties)));
+		if (input != null)
+			viewer.setInput(input);
+	}
+
+	/**
+	 * Binds the viewer to the specified input, using the specified children
+	 * property to generate child nodes, and the specified label property to
+	 * generate labels.
+	 * 
+	 * @param viewer
+	 *            the tree viewer to set up
+	 * @param input
+	 *            the input to set on the viewer
+	 * @param childrenProperty
+	 *            the property to use as the children of an element
+	 * @param labelProperty
+	 *            the property to use for labels
+	 */
+	public static <E> void bind(AbstractTreeViewer viewer, Object input,
+			IListProperty<?, E> childrenProperty,
+			IValueProperty<? super E, ?> labelProperty) {
+
+		List<IValueProperty<? super E, ?>> singletonList = new ArrayList<IValueProperty<? super E, ?>>();
+		singletonList.add(labelProperty);
+
+		bind(viewer, input, childrenProperty, singletonList);
+	}
+
+	/**
+	 * Binds the viewer to the specified input, using the specified children
+	 * property to generate child nodes, and the specified label properties to
+	 * generate labels.
+	 * 
+	 * @param viewer
+	 *            the tree viewer to set up
+	 * @param input
+	 *            the input to set on the viewer
+	 * @param childrenProperty
+	 *            the property to use as the children of an element
+	 * @param labelProperties
+	 *            the respective properties to use for labels in each of the
+	 *            viewer's columns
+	 * @deprecated use the form that takes labelProperties as a List rather than
+	 *             an array because List allows for better typing than using
+	 *             arrays
+	 */
+	// OK to suppress warnings in deprecated methods
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static <E> void bind(AbstractTreeViewer viewer, Object input,
+			IListProperty<?, E> childrenProperty,
 			IValueProperty[] labelProperties) {
-		ObservableSetContentProvider contentProvider = new ObservableSetContentProvider();
+		Realm realm = SWTObservables.getRealm(viewer.getControl().getDisplay());
+		IObservableFactory<?, IObservableList<E>> listFactory = childrenProperty
+				.listFactory(realm);
+		ObservableListTreeContentProvider<E> contentProvider = new ObservableListTreeContentProvider<E>(
+				listFactory, null);
 		if (viewer.getInput() != null)
 			viewer.setInput(null);
 		viewer.setContentProvider(contentProvider);
-		viewer.setLabelProvider(new ObservableMapLabelProvider(Properties
+		viewer.setLabelProvider(new ObservableMapLabelProvider<E>(Properties
+				.observeEach(contentProvider.getKnownElements(),
+						labelProperties)));
+		if (input != null)
+			viewer.setInput(input);
+	}
+
+	/**
+	 * Binds the viewer to the specified input, using the specified children
+	 * property to generate child nodes, and the specified label properties to
+	 * generate labels.
+	 * 
+	 * @param viewer
+	 *            the tree viewer to set up
+	 * @param input
+	 *            the input to set on the viewer
+	 * @param childrenProperty
+	 *            the property to use as the children of an element
+	 * @param labelProperties
+	 *            the respective properties to use for labels in each of the
+	 *            viewer's columns
+	 * @since 1.7
+	 */
+	public static <E> void bind(AbstractTreeViewer viewer, Object input,
+			IListProperty<?, E> childrenProperty,
+			List<IValueProperty<? super E, ?>> labelProperties) {
+		Realm realm = SWTObservables.getRealm(viewer.getControl().getDisplay());
+		IObservableFactory<?, IObservableList<E>> listFactory = childrenProperty
+				.listFactory(realm);
+		ObservableListTreeContentProvider<E> contentProvider = new ObservableListTreeContentProvider<E>(
+				listFactory, null);
+		if (viewer.getInput() != null)
+			viewer.setInput(null);
+		viewer.setContentProvider(contentProvider);
+		viewer.setLabelProvider(new ObservableMapLabelProvider<E>(Properties
 				.observeEach(contentProvider.getKnownElements(),
 						labelProperties)));
 		if (input != null)
@@ -127,10 +296,14 @@ public class ViewerSupport {
 	 * @param labelProperty
 	 *            the property to use for labels
 	 */
-	public static void bind(AbstractTreeViewer viewer, Object input,
-			IListProperty childrenProperty, IValueProperty labelProperty) {
-		bind(viewer, input, childrenProperty,
-				new IValueProperty[] { labelProperty });
+	public static <E> void bind(AbstractTreeViewer viewer, Object input,
+			ISetProperty<?, E> childrenProperty,
+			IValueProperty<? super E, ?> labelProperty) {
+
+		List<IValueProperty<? super E, ?>> singletonList = new ArrayList<IValueProperty<? super E, ?>>();
+		singletonList.add(labelProperty);
+
+		bind(viewer, input, childrenProperty, singletonList);
 	}
 
 	/**
@@ -147,16 +320,24 @@ public class ViewerSupport {
 	 * @param labelProperties
 	 *            the respective properties to use for labels in each of the
 	 *            viewer's columns
+	 * @deprecated use the form that takes labelProperties as a List rather than
+	 *             an array because List allows for better typing than using
+	 *             arrays
 	 */
-	public static void bind(AbstractTreeViewer viewer, Object input,
-			IListProperty childrenProperty, IValueProperty[] labelProperties) {
+	// OK to suppress warnings in deprecated methods
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public static <E> void bind(AbstractTreeViewer viewer, Object input,
+			ISetProperty<?, E> childrenProperty,
+			IValueProperty[] labelProperties) {
 		Realm realm = SWTObservables.getRealm(viewer.getControl().getDisplay());
-		ObservableListTreeContentProvider contentProvider = new ObservableListTreeContentProvider(
-				childrenProperty.listFactory(realm), null);
+		IObservableFactory<?, IObservableSet<E>> setFactory = childrenProperty
+				.setFactory(realm);
+		ObservableSetTreeContentProvider<E> contentProvider = new ObservableSetTreeContentProvider<E>(
+				setFactory, null);
 		if (viewer.getInput() != null)
 			viewer.setInput(null);
 		viewer.setContentProvider(contentProvider);
-		viewer.setLabelProvider(new ObservableMapLabelProvider(Properties
+		viewer.setLabelProvider(new ObservableMapLabelProvider<E>(Properties
 				.observeEach(contentProvider.getKnownElements(),
 						labelProperties)));
 		if (input != null)
@@ -165,26 +346,6 @@ public class ViewerSupport {
 
 	/**
 	 * Binds the viewer to the specified input, using the specified children
-	 * property to generate child nodes, and the specified label property to
-	 * generate labels.
-	 * 
-	 * @param viewer
-	 *            the tree viewer to set up
-	 * @param input
-	 *            the input to set on the viewer
-	 * @param childrenProperty
-	 *            the property to use as the children of an element
-	 * @param labelProperty
-	 *            the property to use for labels
-	 */
-	public static void bind(AbstractTreeViewer viewer, Object input,
-			ISetProperty childrenProperty, IValueProperty labelProperty) {
-		bind(viewer, input, childrenProperty,
-				new IValueProperty[] { labelProperty });
-	}
-
-	/**
-	 * Binds the viewer to the specified input, using the specified children
 	 * property to generate child nodes, and the specified label properties to
 	 * generate labels.
 	 * 
@@ -198,15 +359,18 @@ public class ViewerSupport {
 	 *            the respective properties to use for labels in each of the
 	 *            viewer's columns
 	 */
-	public static void bind(AbstractTreeViewer viewer, Object input,
-			ISetProperty childrenProperty, IValueProperty[] labelProperties) {
+	public static <E> void bind(AbstractTreeViewer viewer, Object input,
+			ISetProperty<?, E> childrenProperty,
+			List<IValueProperty<? super E, ?>> labelProperties) {
 		Realm realm = SWTObservables.getRealm(viewer.getControl().getDisplay());
-		ObservableSetTreeContentProvider contentProvider = new ObservableSetTreeContentProvider(
-				childrenProperty.setFactory(realm), null);
+		IObservableFactory<?, IObservableSet<E>> setFactory = childrenProperty
+				.setFactory(realm);
+		ObservableSetTreeContentProvider<E> contentProvider = new ObservableSetTreeContentProvider<E>(
+				setFactory, null);
 		if (viewer.getInput() != null)
 			viewer.setInput(null);
 		viewer.setContentProvider(contentProvider);
-		viewer.setLabelProvider(new ObservableMapLabelProvider(Properties
+		viewer.setLabelProvider(new ObservableMapLabelProvider<E>(Properties
 				.observeEach(contentProvider.getKnownElements(),
 						labelProperties)));
 		if (input != null)
