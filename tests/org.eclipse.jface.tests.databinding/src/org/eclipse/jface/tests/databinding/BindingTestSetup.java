@@ -13,12 +13,12 @@ package org.eclipse.jface.tests.databinding;
 
 import java.util.Locale;
 
+import junit.extensions.TestSetup;
+import junit.framework.Test;
+
 import org.eclipse.core.databinding.util.ILogger;
 import org.eclipse.core.databinding.util.Policy;
 import org.eclipse.core.runtime.IStatus;
-
-import junit.extensions.TestSetup;
-import junit.framework.Test;
 
 /**
  * @since 3.2
@@ -42,6 +42,19 @@ public class BindingTestSetup extends TestSetup {
 		Policy.setLog(new ILogger() {
 			public void log(IStatus status) {
 				// we are not expecting anything in the log while we test.
+
+				// except there are some tests that result in a warning being
+				// logged.
+				// We didn't want to change the tests when generics were added
+				// because
+				// we want to be sure that legacy code continues to run, so we
+				// log
+				// warnings when 'not recommended' API usage is found.
+				if (status.getException() != null
+						&& status.getSeverity() == IStatus.WARNING) {
+					return;
+				}
+
 				if (status.getException() != null) {
 					throw new RuntimeException(status.getException());
 				}
@@ -49,15 +62,17 @@ public class BindingTestSetup extends TestSetup {
 			}
 		});
 		oldJFaceLogger = org.eclipse.jface.util.Policy.getLog();
-		org.eclipse.jface.util.Policy.setLog(new org.eclipse.jface.util.ILogger(){
-			public void log(IStatus status) {
-				// we are not expecting anything in the log while we test.
-				if (status.getException() != null) {
-					throw new RuntimeException(status.getException());
-				}
-				fail();
-			}
-		});
+		org.eclipse.jface.util.Policy
+				.setLog(new org.eclipse.jface.util.ILogger() {
+					public void log(IStatus status) {
+						// we are not expecting anything in the log while we
+						// test.
+						if (status.getException() != null) {
+							throw new RuntimeException(status.getException());
+						}
+						fail();
+					}
+				});
 	}
 
 	protected void tearDown() throws Exception {
