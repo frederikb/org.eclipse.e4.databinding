@@ -19,10 +19,10 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
+import junit.framework.TestCase;
+
 import org.eclipse.jface.internal.databinding.viewers.ViewerElementMap;
 import org.eclipse.jface.viewers.IElementComparer;
-
-import junit.framework.TestCase;
 
 /**
  * @since 1.2
@@ -291,7 +291,14 @@ public class ViewerElementMapTest extends TestCase {
 
 	public void testEntrySet_Add() {
 		try {
-			map.entrySet().add(key);
+			// First get a Map.Entry instance. This can only
+			// be done by creating a non-empty map and getting the
+			// Entry.
+			Map x = new HashMap();
+			x.put(key, value);
+			Map.Entry entry = (Map.Entry) x.entrySet().iterator().next();
+
+			map.entrySet().add(entry);
 			fail("Expected UnsupportedOperationException");
 		} catch (UnsupportedOperationException expected) {
 		}
