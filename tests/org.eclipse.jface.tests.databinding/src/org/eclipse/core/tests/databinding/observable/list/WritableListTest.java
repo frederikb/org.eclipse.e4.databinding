@@ -9,6 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *     Brad Reynolds - bug 164653, 147515
  *     Matthew Hall - bug 213145
+ *     Nigel Westbury - bug 208434
  *******************************************************************************/
 
 package org.eclipse.core.tests.databinding.observable.list;
@@ -17,6 +18,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 
 import junit.framework.Test;
@@ -200,6 +202,23 @@ public class WritableListTest extends TestCase {
 		wlist.remove(1);
 		assertEquals(3, list.size());
 		list.add("d");
+		assertEquals(2, wlist.size());
+	}
+
+	public void testIteratorRemoval() {
+		RealmTester.setDefault(new CurrentRealm(true));
+		List<String> list = new ArrayList<String>(Arrays.asList(new String[] {
+				"a", "b", "c" }));
+		WritableList<String> wlist = new WritableList<String>(list,
+				String.class);
+		Iterator<String> iter = wlist.iterator();
+		String s1 = iter.next();
+		String s2 = iter.next();
+		iter.remove();
+		String s3 = iter.next();
+		assertEquals(s1, "a");
+		assertEquals(s2, "b");
+		assertEquals(s3, "c");
 		assertEquals(2, wlist.size());
 	}
 

@@ -8,13 +8,15 @@
  * Contributors:
  *     IBM Corporation - initial API and implementation
  *     Brad Reynolds - bug 147515
- *     Matthew Hall - bug 221351
+ *     Matthew Hall - bug 221351, 208434
+ *     Nigel Westbury - bug 335792
  *******************************************************************************/
 
 package org.eclipse.core.databinding.observable.set;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -169,6 +171,40 @@ public class WritableSet<E> extends ObservableSet<E> {
 		Set<E> additions = Collections.emptySet();
 		wrappedSet.clear();
 		fireSetChange(Diffs.createSetDiff(additions, removes));
+	}
+
+	public Iterator<E> iterator() {
+		getterCalled();
+		final Set<E> set = wrappedSet;
+		final Iterator<E> wrappedIterator = set.iterator();
+		return new Iterator<E>() {
+			E last;
+
+			public void remove() {
+				getterCalled();
+				checkForComodification();
+				wrappedIterator.remove();
+				fireSetChange(Diffs.createSetDiff(Collections.<E> emptySet(),
+						Collections.singleton(last)));
+			}
+
+			public boolean hasNext() {
+				getterCalled();
+				checkForComodification();
+				return wrappedIterator.hasNext();
+			}
+
+			public E next() {
+				getterCalled();
+				checkForComodification();
+				return last = wrappedIterator.next();
+			}
+
+			private void checkForComodification() {
+				if (set != wrappedSet)
+					throw new ConcurrentModificationException();
+			}
+		};
 	}
 
 	/**

@@ -11,13 +11,15 @@
  *     Gautam Saggar - bug 169529
  *     Brad Reynolds - bug 147515
  *     Sebastian Fuchs <spacehorst@gmail.com> - bug 243848
- *     Matthew Hall - bugs 208858, 213145, 243848
+ *     Matthew Hall - bugs 208858, 213145, 243848, 208434
  *     Ovidio Mallo - bug 332367
+ *     Nigel Westbury - bug 335792
  *******************************************************************************/
 package org.eclipse.core.databinding.observable.list;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.ConcurrentModificationException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
@@ -26,7 +28,7 @@ import org.eclipse.core.databinding.observable.Diffs;
 import org.eclipse.core.databinding.observable.Realm;
 
 /**
- * Mutable observable list backed by an ArrayList.
+ * Mutable observable list backed by a java.util.List.
  * 
  * <p>
  * This class is thread safe. All state accessing methods must be invoked from
@@ -63,15 +65,33 @@ public class WritableList<E> extends ObservableList<E> {
 	 * Constructs a new instance with the default realm. Note that for backwards
 	 * compatibility reasons, the contents of the created WritableList will
 	 * change with the contents of the given list. If this is not desired,
-	 * {@link #WritableList(Collection, Object)} should be used by casting the
+	 * {@link #WritableList(Collection, Class)} should be used by casting the
 	 * first argument to {@link Collection}.
 	 * 
 	 * @param toWrap
 	 *            The java.util.List to wrap
 	 * @param elementType
 	 *            can be <code>null</code>
+	 * @deprecated use the form that takes Class<E> as the elementType parameter
 	 */
 	public WritableList(List<E> toWrap, Object elementType) {
+		this(Realm.getDefault(), toWrap, elementType);
+	}
+
+	/**
+	 * Constructs a new instance with the default realm. Note that for backwards
+	 * compatibility reasons, the contents of the created WritableList will
+	 * change with the contents of the given list. If this is not desired,
+	 * {@link #WritableList(Collection, Class)} should be used by casting the
+	 * first argument to {@link Collection}.
+	 * 
+	 * @param toWrap
+	 *            The java.util.List to wrap
+	 * @param elementType
+	 *            can be <code>null</code>
+	 * @since 1.5
+	 */
+	public WritableList(List<E> toWrap, Class<E> elementType) {
 		this(Realm.getDefault(), toWrap, elementType);
 	}
 
@@ -84,9 +104,25 @@ public class WritableList<E> extends ObservableList<E> {
 	 *            the collection to copy
 	 * @param elementType
 	 *            can be <code>null</code>
+	 * @deprecated use the form that takes Class<E> as the elementType parameter
 	 * @since 1.2
 	 */
 	public WritableList(Collection<E> collection, Object elementType) {
+		this(Realm.getDefault(), new ArrayList<E>(collection), elementType);
+	}
+
+	/**
+	 * Constructs a new instance in the default realm containing the elements of
+	 * the given collection. Changes to the given collection after calling this
+	 * method do not affect the contents of the created WritableList.
+	 * 
+	 * @param collection
+	 *            the collection to copy
+	 * @param elementType
+	 *            can be <code>null</code>
+	 * @since 1.5
+	 */
+	public WritableList(Collection<E> collection, Class<E> elementType) {
 		this(Realm.getDefault(), new ArrayList<E>(collection), elementType);
 	}
 
@@ -104,8 +140,29 @@ public class WritableList<E> extends ObservableList<E> {
 	 *            The java.util.List to wrap
 	 * @param elementType
 	 *            can be <code>null</code>
+	 * @deprecated use the form that takes Class<E> as the elementType parameter
 	 */
 	public WritableList(Realm realm, List<E> toWrap, Object elementType) {
+		super(realm, toWrap, elementType);
+	}
+
+	/**
+	 * Creates a writable list containing elements of the given type, wrapping
+	 * an existing client-supplied list. Note that for backwards compatibility
+	 * reasons, the contents of the created WritableList will change with the
+	 * contents of the given list. If this is not desired,
+	 * {@link #WritableList(Realm, Collection, Class)} should be used by casting
+	 * the second argument to {@link Collection}.
+	 * 
+	 * @param realm
+	 *            the observable's realm
+	 * @param toWrap
+	 *            The java.util.List to wrap
+	 * @param elementType
+	 *            can be <code>null</code>
+	 * @since 1.5
+	 */
+	public WritableList(Realm realm, List<E> toWrap, Class<E> elementType) {
 		super(realm, toWrap, elementType);
 	}
 
@@ -120,10 +177,29 @@ public class WritableList<E> extends ObservableList<E> {
 	 *            the collection to copy
 	 * @param elementType
 	 *            can be <code>null</code>
+	 * @deprecated use the form that takes Class<E> as the elementType parameter
 	 * @since 1.2
 	 */
 	public WritableList(Realm realm, Collection<E> collection,
 			Object elementType) {
+		super(realm, new ArrayList<E>(collection), elementType);
+	}
+
+	/**
+	 * Constructs a new instance in the default realm containing the elements of
+	 * the given collection. Changes to the given collection after calling this
+	 * method do not affect the contents of the created WritableList.
+	 * 
+	 * @param realm
+	 *            the observable's realm
+	 * @param collection
+	 *            the collection to copy
+	 * @param elementType
+	 *            can be <code>null</code>
+	 * @since 1.5
+	 */
+	public WritableList(Realm realm, Collection<E> collection,
+			Class<E> elementType) {
 		super(realm, new ArrayList<E>(collection), elementType);
 	}
 
@@ -267,6 +343,9 @@ public class WritableList<E> extends ObservableList<E> {
 
 	public void clear() {
 		checkRealm();
+		if (wrappedList.isEmpty()) {
+			return;
+		}
 		// We remove the elements from back to front which is typically much
 		// faster on common list implementations like ArrayList.
 		List<ListDiffEntry<E>> entries = new ArrayList<ListDiffEntry<E>>(
@@ -281,13 +360,151 @@ public class WritableList<E> extends ObservableList<E> {
 		fireListChange(Diffs.createListDiff(entries));
 	}
 
+	public Iterator<E> iterator() {
+		getterCalled();
+		final List<E> list = wrappedList;
+		final ListIterator<E> wrappedIterator = list.listIterator();
+		return new Iterator<E>() {
+			E last = null;
+
+			public boolean hasNext() {
+				getterCalled();
+				checkForComodification();
+				return wrappedIterator.hasNext();
+			}
+
+			public E next() {
+				getterCalled();
+				checkForComodification();
+				return last = wrappedIterator.next();
+			}
+
+			public void remove() {
+				checkRealm();
+				checkForComodification();
+				int index = wrappedIterator.previousIndex();
+				wrappedIterator.remove();
+				ListDiff<E> diff = Diffs.createListDiff(Diffs
+						.createListDiffEntry(index, false, last));
+				fireListChange(diff);
+			}
+
+			private void checkForComodification() {
+				if (list != wrappedList)
+					throw new ConcurrentModificationException();
+			}
+		};
+	}
+
+	public ListIterator<E> listIterator() {
+		return listIterator(0);
+	}
+
+	public ListIterator<E> listIterator(int index) {
+		getterCalled();
+		final List<E> list = wrappedList;
+		final ListIterator<E> wrappedIterator = list.listIterator(index);
+		return new ListIterator<E>() {
+			int lastIndex = -1;
+			E last = null;
+
+			public void add(E o) {
+				checkRealm();
+				checkForComodification();
+				wrappedIterator.add(o);
+				lastIndex = previousIndex();
+				ListDiff<E> diff = Diffs.createListDiff(Diffs
+						.createListDiffEntry(lastIndex, true, o));
+				fireListChange(diff);
+			}
+
+			public boolean hasNext() {
+				getterCalled();
+				checkForComodification();
+				return wrappedIterator.hasNext();
+			}
+
+			public boolean hasPrevious() {
+				getterCalled();
+				checkForComodification();
+				return wrappedIterator.hasPrevious();
+			}
+
+			public E next() {
+				getterCalled();
+				checkForComodification();
+				last = wrappedIterator.next();
+				lastIndex = previousIndex();
+				return last;
+			}
+
+			public int nextIndex() {
+				getterCalled();
+				checkForComodification();
+				return wrappedIterator.nextIndex();
+			}
+
+			public E previous() {
+				getterCalled();
+				checkForComodification();
+				last = wrappedIterator.previous();
+				lastIndex = nextIndex();
+				return last;
+			}
+
+			public int previousIndex() {
+				getterCalled();
+				checkForComodification();
+				return wrappedIterator.previousIndex();
+			}
+
+			public void remove() {
+				checkRealm();
+				checkForComodification();
+				wrappedIterator.remove();
+				ListDiff<E> diff = Diffs.createListDiff(Diffs
+						.createListDiffEntry(lastIndex, false, last));
+				lastIndex = -1;
+				fireListChange(diff);
+			}
+
+			public void set(E o) {
+				checkRealm();
+				checkForComodification();
+				wrappedIterator.set(o);
+				ListDiff<E> diff = Diffs.createListDiff(
+						Diffs.createListDiffEntry(lastIndex, false, last),
+						Diffs.createListDiffEntry(lastIndex, true, o));
+				last = o;
+				fireListChange(diff);
+			}
+
+			private void checkForComodification() {
+				if (list != wrappedList)
+					throw new ConcurrentModificationException();
+			}
+		};
+	}
+
 	/**
 	 * @param elementType
 	 *            can be <code>null</code>
 	 * @return new list with the default realm.
+	 * @deprecated use the form that takes Class<E> as the elementType parameter
 	 */
 	public static WritableList<Object> withElementType(Object elementType) {
 		return new WritableList<Object>(Realm.getDefault(),
 				new ArrayList<Object>(), elementType);
+	}
+
+	/**
+	 * @param elementType
+	 *            can be <code>null</code>
+	 * @return new list with the default realm.
+	 * @since 1.5
+	 */
+	public static <E> WritableList<E> withElementType(Class<E> elementType) {
+		return new WritableList<E>(Realm.getDefault(), new ArrayList<E>(),
+				elementType);
 	}
 }
