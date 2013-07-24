@@ -13,7 +13,7 @@
  *     Sebastian Fuchs <spacehorst@gmail.com> - bug 243848
  *     Matthew Hall - bugs 208858, 213145, 243848, 208434
  *     Ovidio Mallo - bug 332367
- *     Nigel Westbury - bug 335792
+ *     Nigel Westbury - bug 335792, 389394
  *******************************************************************************/
 package org.eclipse.core.databinding.observable.list;
 
@@ -305,17 +305,29 @@ public class WritableList<E> extends ObservableList<E> {
 
 	public boolean removeAll(Collection<?> c) {
 		checkRealm();
+
+		/*
+		 * First build the list of diff entries. All diff entries must be built
+		 * before anything is removed from wrappedList, otherwise the indexes
+		 * are incorrect.
+		 */
 		List<ListDiffEntry<E>> entries = new ArrayList<ListDiffEntry<E>>();
 		for (Iterator<?> it = c.iterator(); it.hasNext();) {
 			Object element = it.next();
 			int removeIndex = wrappedList.indexOf(element);
 			if (removeIndex != -1) {
 				E removedElement = wrappedList.get(removeIndex);
-				wrappedList.remove(removeIndex);
 				entries.add(Diffs.createListDiffEntry(removeIndex, false,
 						removedElement));
 			}
 		}
+
+		/*
+		 * Now we have created all the diff entries with the correct indexes, we
+		 * can remove the elements from wrappedList.
+		 */
+		wrappedList.removeAll(c);
+
 		if (entries.size() > 0)
 			fireListChange(Diffs.createListDiff(entries));
 		return entries.size() > 0;

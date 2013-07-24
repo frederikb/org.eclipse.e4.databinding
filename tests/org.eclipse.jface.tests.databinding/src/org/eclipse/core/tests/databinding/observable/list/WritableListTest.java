@@ -9,7 +9,7 @@
  *     IBM Corporation - initial API and implementation
  *     Brad Reynolds - bug 164653, 147515
  *     Matthew Hall - bug 213145
- *     Nigel Westbury - bug 208434
+ *     Nigel Westbury - bug 208434, 389394
  *******************************************************************************/
 
 package org.eclipse.core.tests.databinding.observable.list;
@@ -28,6 +28,9 @@ import junit.framework.TestSuite;
 import org.eclipse.core.databinding.observable.IObservable;
 import org.eclipse.core.databinding.observable.IObservableCollection;
 import org.eclipse.core.databinding.observable.Realm;
+import org.eclipse.core.databinding.observable.list.IListChangeListener;
+import org.eclipse.core.databinding.observable.list.ListChangeEvent;
+import org.eclipse.core.databinding.observable.list.ListDiffEntry;
 import org.eclipse.core.databinding.observable.list.WritableList;
 import org.eclipse.jface.databinding.conformance.MutableObservableListContractTest;
 import org.eclipse.jface.databinding.conformance.delegate.AbstractObservableCollectionContractDelegate;
@@ -203,6 +206,39 @@ public class WritableListTest extends TestCase {
 		assertEquals(3, list.size());
 		list.add("d");
 		assertEquals(2, wlist.size());
+	}
+
+	public void testRemoveAll() {
+		RealmTester.setDefault(new CurrentRealm(true));
+		List<String> list = new ArrayList<String>(Arrays.asList(new String[] {
+				"a", "b", "c" }));
+		WritableList<String> wlist = new WritableList<String>(list,
+				String.class);
+
+		final boolean[] flags = new boolean[wlist.size()];
+
+		wlist.addListChangeListener(new IListChangeListener<String>() {
+			public void handleListChange(ListChangeEvent<String> event) {
+				for (ListDiffEntry<String> diffEntry : event.diff
+						.getDifferencesAsList()) {
+					if (flags[diffEntry.getPosition()]) {
+						throw new RuntimeException("duplicate index in diff");
+					}
+					flags[diffEntry.getPosition()] = true;
+				}
+
+			}
+		});
+
+		List<String> removalList = new ArrayList<String>(
+				Arrays.asList(new String[] { "a", "c" }));
+
+		wlist.removeAll(removalList);
+
+		assertEquals(true, flags[0]);
+		assertEquals(false, flags[1]);
+		assertEquals(true, flags[2]);
+		assertEquals(1, wlist.size());
 	}
 
 	public void testIteratorRemoval() {
