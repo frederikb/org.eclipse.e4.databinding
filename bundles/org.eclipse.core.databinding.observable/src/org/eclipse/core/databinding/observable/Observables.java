@@ -302,7 +302,7 @@ public class Observables {
 	 * 
 	 * @return an empty observable list.
 	 */
-	public static IObservableList<Object> emptyObservableList() {
+	public static <E> IObservableList<E> emptyObservableList() {
 		return emptyObservableList(Realm.getDefault(), null);
 	}
 
@@ -315,8 +315,24 @@ public class Observables {
 	 *            the element type of the returned list
 	 * @return an empty observable list
 	 * @since 1.1
+	 * @deprecated use instead the form of this method that takes Class as the
+	 *             parameter type for the element type
 	 */
-	public static IObservableList<Object> emptyObservableList(Object elementType) {
+	public static <E> IObservableList<E> emptyObservableList(Object elementType) {
+		return emptyObservableList(Realm.getDefault(), elementType);
+	}
+
+	/**
+	 * Returns an empty observable list of the given element type. The returned
+	 * list continues to work after it has been disposed of and can be disposed
+	 * of multiple times.
+	 * 
+	 * @param elementType
+	 *            the element type of the returned list
+	 * @return an empty observable list
+	 */
+	public static <E> IObservableList<E> emptyObservableList(
+			Class<E> elementType) {
 		return emptyObservableList(Realm.getDefault(), elementType);
 	}
 
@@ -344,9 +360,27 @@ public class Observables {
 	 *            the element type of the returned list
 	 * @return an empty observable list
 	 * @since 1.1
+	 * @deprecated use instead the form of this method that takes Class as the
+	 *             parameter type for the element type
 	 */
 	public static <E> IObservableList<E> emptyObservableList(Realm realm,
 			Object elementType) {
+		return new EmptyObservableList<E>(realm, elementType);
+	}
+
+	/**
+	 * Returns an empty observable list of the given element type and belonging
+	 * to the given realm. The returned list continues to work after it has been
+	 * disposed of and can be disposed of multiple times.
+	 * 
+	 * @param realm
+	 *            the realm of the returned list
+	 * @param elementType
+	 *            the element type of the returned list
+	 * @return an empty observable list
+	 */
+	public static <E> IObservableList<E> emptyObservableList(Realm realm,
+			Class<E> elementType) {
 		return new EmptyObservableList<E>(realm, elementType);
 	}
 
@@ -356,7 +390,7 @@ public class Observables {
 	 * 
 	 * @return an empty observable set.
 	 */
-	public static IObservableSet<Object> emptyObservableSet() {
+	public static <E> IObservableSet<E> emptyObservableSet() {
 		return emptyObservableSet(Realm.getDefault(), null);
 	}
 
@@ -369,8 +403,23 @@ public class Observables {
 	 *            the element type of the returned set
 	 * @return an empty observable set
 	 * @since 1.1
+	 * @deprecated use instead the form of this method that takes Class as the
+	 *             parameter type for the element type
 	 */
-	public static IObservableSet<Object> emptyObservableSet(Object elementType) {
+	public static <E> IObservableSet<E> emptyObservableSet(Object elementType) {
+		return emptyObservableSet(Realm.getDefault(), elementType);
+	}
+
+	/**
+	 * Returns an empty observable set of the given element type. The returned
+	 * set continues to work after it has been disposed of and can be disposed
+	 * of multiple times.
+	 * 
+	 * @param elementType
+	 *            the element type of the returned set
+	 * @return an empty observable set
+	 */
+	public static <E> IObservableSet<E> emptyObservableSet(Class<E> elementType) {
 		return emptyObservableSet(Realm.getDefault(), elementType);
 	}
 
@@ -398,9 +447,27 @@ public class Observables {
 	 *            the element type of the returned set
 	 * @return an empty observable set
 	 * @since 1.1
+	 * @deprecated use instead the form of this method that takes Class as the
+	 *             parameter type for the element type
 	 */
 	public static <E> IObservableSet<E> emptyObservableSet(Realm realm,
 			Object elementType) {
+		return new EmptyObservableSet<E>(realm, elementType);
+	}
+
+	/**
+	 * Returns an empty observable set of the given element type and belonging
+	 * to the given realm. The returned set continues to work after it has been
+	 * disposed of and can be disposed of multiple times.
+	 * 
+	 * @param realm
+	 *            the realm of the returned set
+	 * @param elementType
+	 *            the element type of the returned set
+	 * @return an empty observable set
+	 */
+	public static <E> IObservableSet<E> emptyObservableSet(Realm realm,
+			Class<E> elementType) {
 		return new EmptyObservableSet<E>(realm, elementType);
 	}
 
@@ -466,6 +533,8 @@ public class Observables {
 	 *            the element type of the returned set
 	 * @return an observable set backed by the given set
 	 * @since 1.1
+	 * @deprecated use instead the form of this method that takes Class as the
+	 *             parameter type for the element type
 	 */
 	public static <E> IObservableSet<E> staticObservableSet(Realm realm,
 			Set<E> set, Object elementType) {
@@ -478,6 +547,35 @@ public class Observables {
 
 			public synchronized void addSetChangeListener(
 					ISetChangeListener<? super E> listener) {
+			}
+		};
+	}
+
+	/**
+	 * Returns an observable set of the given element type and belonging to the
+	 * given realm, backed by the given set.
+	 * 
+	 * @param <E>
+	 * 
+	 * @param realm
+	 *            the realm of the returned set
+	 * @param set
+	 *            the set to wrap in an IObservableSet
+	 * @param elementType
+	 *            the element type of the returned set
+	 * @return an observable set backed by the given set
+	 */
+	public static <E> IObservableSet<E> staticObservableSet(Realm realm,
+			Set<E> set, Class<E> elementType) {
+		return new ObservableSet<E>(realm, set, elementType) {
+			public synchronized void addChangeListener(IChangeListener listener) {
+			}
+
+			public synchronized void addStaleListener(IStaleListener listener) {
+			}
+
+			public synchronized void addSetChangeListener(
+					ISetChangeListener<E> listener) {
 			}
 		};
 	}
@@ -612,6 +710,8 @@ public class Observables {
 	 *            the element type of the returned list
 	 * @return an observable list backed by the given unchanging list
 	 * @since 1.1
+	 * @deprecated use instead the form of this method that takes Class as the
+	 *             parameter type for the element type
 	 */
 	public static <E> IObservableList<E> staticObservableList(Realm realm,
 			List<E> list, Object elementType) {
@@ -624,6 +724,35 @@ public class Observables {
 
 			public synchronized void addListChangeListener(
 					IListChangeListener<? super E> listener) {
+			}
+		};
+	}
+
+	/**
+	 * Returns an observable list of the given element type and belonging to the
+	 * given realm, backed by the given list.
+	 * 
+	 * @param <E>
+	 * 
+	 * @param realm
+	 *            the realm of the returned list
+	 * @param list
+	 *            the list to wrap in an IObservableList
+	 * @param elementType
+	 *            the element type of the returned list
+	 * @return an observable list backed by the given unchanging list
+	 */
+	public static <E> IObservableList<E> staticObservableList(Realm realm,
+			List<E> list, Class<E> elementType) {
+		return new ObservableList<E>(realm, list, elementType) {
+			public synchronized void addChangeListener(IChangeListener listener) {
+			}
+
+			public synchronized void addStaleListener(IStaleListener listener) {
+			}
+
+			public synchronized void addListChangeListener(
+					IListChangeListener<E> listener) {
 			}
 		};
 	}

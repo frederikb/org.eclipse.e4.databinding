@@ -70,6 +70,8 @@ public class EmptyObservableSet<E> implements IObservableSet<E> {
 	 * @deprecated use instead the form of the constructor that takes Class as
 	 *             the parameter type for the element type
 	 */
+	// OK to suppress warnings in deprecated method
+	@SuppressWarnings("unchecked")
 	public EmptyObservableSet(Realm realm, Object elementType) {
 		this.realm = realm;
 		this.elementType = elementType;
@@ -91,8 +93,6 @@ public class EmptyObservableSet<E> implements IObservableSet<E> {
 	 *            the element type of the constructed set
 	 * @since 1.1
 	 */
-	// We must set deprecated fields in case any one uses them
-	@SuppressWarnings("deprecation")
 	public EmptyObservableSet(Realm realm, Class<E> elementType) {
 		this.realm = realm;
 		this.elementType = elementType;
