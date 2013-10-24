@@ -575,7 +575,7 @@ public class Observables {
 			}
 
 			public synchronized void addSetChangeListener(
-					ISetChangeListener<E> listener) {
+					ISetChangeListener<? super E> listener) {
 			}
 		};
 	}
@@ -752,7 +752,7 @@ public class Observables {
 			}
 
 			public synchronized void addListChangeListener(
-					IListChangeListener<E> listener) {
+					IListChangeListener<? super E> listener) {
 			}
 		};
 	}
