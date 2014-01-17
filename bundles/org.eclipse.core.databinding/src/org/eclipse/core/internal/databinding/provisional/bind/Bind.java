@@ -180,11 +180,30 @@ public class Bind {
 	 * 
 	 * @param modelProperty
 	 * @param source
+	 *            the source object
 	 * @return an object that can chain two-way bindings
 	 */
 	public static <S, V> ITwoWayBinding<V> twoWay(
 			IValueProperty<S, V> modelProperty, S source) {
 		IObservableValue<V> modelObservable = modelProperty.observe(source);
+		return new TwoWayModelBinding<V>(modelObservable, true);
+	}
+
+	/**
+	 * This is a convenience method that creates a master-detail observable for
+	 * the model from the given property and observable on the source object.
+	 * The observable will be disposed when the binding is disposed.
+	 * 
+	 * @param modelProperty
+	 * @param source
+	 *            master observable on the source object
+	 * @return an object that can chain two-way bindings
+	 */
+	public static <S, V> ITwoWayBinding<V> twoWay(
+			IValueProperty<S, V> modelProperty,
+			IObservableValue<? extends S> source) {
+		IObservableValue<V> modelObservable = modelProperty
+				.observeDetail(source);
 		return new TwoWayModelBinding<V>(modelObservable, true);
 	}
 
