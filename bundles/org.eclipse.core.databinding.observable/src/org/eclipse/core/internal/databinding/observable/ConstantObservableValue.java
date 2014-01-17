@@ -109,7 +109,7 @@ public class ConstantObservableValue<T> implements IObservableValue<T> {
 	}
 
 	public T getValue() {
-		ObservableTracker.getterCalled(this);
+		// Value never changes so no reason to track
 		return value;
 	}
 

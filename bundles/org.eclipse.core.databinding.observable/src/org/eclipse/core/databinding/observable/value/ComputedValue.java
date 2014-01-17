@@ -224,9 +224,7 @@ public abstract class ComputedValue<T> extends AbstractObservableValue<T> {
 	private void stopListening() {
 		// Stop listening for dependency changes.
 		if (dependencies != null) {
-			for (int i = 0; i < dependencies.length; i++) {
-				IObservable observable = dependencies[i];
-
+			for (IObservable observable : dependencies) {
 				observable.removeChangeListener(privateChangeInterface);
 				observable.removeStaleListener(privateStaleInterface);
 			}
