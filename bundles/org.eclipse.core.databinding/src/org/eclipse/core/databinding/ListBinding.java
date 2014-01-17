@@ -147,7 +147,8 @@ public class ListBinding<M, T> extends
 	 * need more control over how the two lists are kept in sync.
 	 */
 	private <S, D> void doUpdate(final IObservableList<S> source,
-			final IObservableList<D> destination, final ListDiff<S> diff,
+			final IObservableList<D> destination,
+			final ListDiff<? extends S> diff,
 			final UpdateListStrategy<S, D> updateListStrategy,
 			final boolean explicit, final boolean clearDestination) {
 		final int policy = updateListStrategy.getUpdatePolicy();

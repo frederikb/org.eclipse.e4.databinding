@@ -11,7 +11,6 @@
 
 package org.eclipse.core.databinding.observable.list;
 
-import org.eclipse.core.databinding.observable.IObservablesListener;
 import org.eclipse.core.databinding.observable.ObservableEvent;
 
 /**
@@ -19,10 +18,14 @@ import org.eclipse.core.databinding.observable.ObservableEvent;
  * {@link IObservableList} object.
  * 
  * @param <E>
+ *            type of the source. The diff itself might come from <? extends E>
+ *            (for example, if UnmodifiableList<E> wraps ObservableList<?
+ *            extends E>
  * 
  * @since 1.0
  */
-public class ListChangeEvent<E> extends ObservableEvent<ListChangeEvent<E>> {
+public class ListChangeEvent<E> extends
+		ObservableEvent<ListChangeEvent<E>, IListChangeListener<E>> {
 
 	/**
 	 * 
@@ -35,13 +38,13 @@ public class ListChangeEvent<E> extends ObservableEvent<ListChangeEvent<E>> {
 	 * Description of the change to the source observable list. Listeners must
 	 * not change this field.
 	 */
-	public ListDiff<E> diff;
+	public ListDiff<? extends E> diff;
 
 	/**
 	 * Always identical to <code>EventObject.source</code> but the type
 	 * information is maintained.
 	 */
-	private IObservableList<? extends E> typedSource;
+	private IObservableList<E> typedSource;
 
 	/**
 	 * Creates a new list change event.
@@ -51,7 +54,7 @@ public class ListChangeEvent<E> extends ObservableEvent<ListChangeEvent<E>> {
 	 * @param diff
 	 *            the list change
 	 */
-	public ListChangeEvent(IObservableList<E> source, ListDiff<E> diff) {
+	public ListChangeEvent(IObservableList<E> source, ListDiff<? extends E> diff) {
 		super(source);
 		this.typedSource = source;
 		this.diff = diff;
@@ -62,12 +65,12 @@ public class ListChangeEvent<E> extends ObservableEvent<ListChangeEvent<E>> {
 	 * 
 	 * @return the observable list from which this event originated
 	 */
-	public IObservableList<? extends E> getObservableList() {
+	public IObservableList<E> getObservableList() {
 		return typedSource;
 	}
 
-	protected void dispatch(IObservablesListener listener) {
-		((IListChangeListener<E>) listener).handleListChange(this);
+	protected void dispatch(IListChangeListener<E> listener) {
+		listener.handleListChange(this);
 	}
 
 	protected Object getListenerType() {

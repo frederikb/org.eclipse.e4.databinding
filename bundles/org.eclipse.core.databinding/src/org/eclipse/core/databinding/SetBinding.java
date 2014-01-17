@@ -147,7 +147,8 @@ public class SetBinding<M, T> extends
 	 * need more control over how the two sets are kept in sync.
 	 */
 	private <S, D> void doUpdate(final IObservableSet<S> source,
-			final IObservableSet<D> destination, final SetDiff<S> diff,
+			final IObservableSet<D> destination,
+			final SetDiff<? extends S> diff,
 			final UpdateSetStrategy<S, D> updateSetStrategy,
 			final boolean explicit, final boolean clearDestination) {
 		final int policy = updateSetStrategy.getUpdatePolicy();
@@ -169,8 +170,8 @@ public class SetBinding<M, T> extends
 						destination.clear();
 					}
 
-					for (Iterator<S> iterator = diff.getRemovals().iterator(); iterator
-							.hasNext();) {
+					for (Iterator<? extends S> iterator = diff.getRemovals()
+							.iterator(); iterator.hasNext();) {
 						IStatus setterStatus = updateSetStrategy.doRemove(
 								destination,
 								updateSetStrategy.convert(iterator.next()));
@@ -181,8 +182,8 @@ public class SetBinding<M, T> extends
 						// occurred...
 					}
 
-					for (Iterator<S> iterator = diff.getAdditions().iterator(); iterator
-							.hasNext();) {
+					for (Iterator<? extends S> iterator = diff.getAdditions()
+							.iterator(); iterator.hasNext();) {
 						IStatus setterStatus = updateSetStrategy.doAdd(
 								destination,
 								updateSetStrategy.convert(iterator.next()));

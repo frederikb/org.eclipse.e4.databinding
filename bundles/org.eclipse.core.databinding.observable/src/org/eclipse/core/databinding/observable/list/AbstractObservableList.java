@@ -24,6 +24,7 @@ import org.eclipse.core.databinding.observable.DisposeEvent;
 import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.IDisposeListener;
 import org.eclipse.core.databinding.observable.IStaleListener;
+import org.eclipse.core.databinding.observable.ListenerList;
 import org.eclipse.core.databinding.observable.ObservableTracker;
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.core.databinding.observable.StaleEvent;
@@ -46,10 +47,9 @@ import org.eclipse.core.runtime.AssertionFailedException;
  */
 public abstract class AbstractObservableList<E> extends AbstractList<E>
 		implements IObservableList<E> {
+
 	private final class PrivateChangeSupport extends ChangeSupport {
-		private PrivateChangeSupport(Realm realm) {
-			super(realm);
-		}
+		private ListenerList<IListChangeListener<E>> listChangeListenerList = null;
 
 		protected void firstListenerAdded() {
 			AbstractObservableList.this.firstListenerAdded();
@@ -59,8 +59,40 @@ public abstract class AbstractObservableList<E> extends AbstractList<E>
 			AbstractObservableList.this.lastListenerRemoved();
 		}
 
+		public synchronized void addListChangeListener(
+				IListChangeListener<E> listener) {
+			addListener(getListChangeListenerList(), listener);
+		}
+
+		/**
+		 * @param listener
+		 */
+		public synchronized void removeListChangeListener(
+				IListChangeListener<E> listener) {
+			if (listChangeListenerList != null) {
+				removeListener(listChangeListenerList, listener);
+			}
+		}
+
+		private ListenerList<IListChangeListener<E>> getListChangeListenerList() {
+			if (listChangeListenerList == null) {
+				listChangeListenerList = new ListenerList<IListChangeListener<E>>();
+			}
+			return listChangeListenerList;
+		}
+
 		protected boolean hasListeners() {
-			return super.hasListeners();
+			return (listChangeListenerList != null && listChangeListenerList
+					.hasListeners()) || super.hasListeners();
+		}
+
+		/**
+		 * @param listChangeEvent
+		 */
+		public void fireListChange(ListChangeEvent<E> listChangeEvent) {
+			if (listChangeListenerList != null) {
+				listChangeListenerList.fireEvent(listChangeEvent);
+			}
 		}
 	}
 
@@ -76,7 +108,7 @@ public abstract class AbstractObservableList<E> extends AbstractList<E>
 		Assert.isNotNull(realm, "Realm cannot be null"); //$NON-NLS-1$
 		ObservableTracker.observableCreated(this);
 		this.realm = realm;
-		changeSupport = new PrivateChangeSupport(realm);
+		changeSupport = new PrivateChangeSupport();
 	}
 
 	/**
@@ -102,23 +134,23 @@ public abstract class AbstractObservableList<E> extends AbstractList<E>
 	}
 
 	public synchronized void addListChangeListener(
-			IListChangeListener<? super E> listener) {
+			IListChangeListener<E> listener) {
 		if (!disposed) {
-			changeSupport.addListener(ListChangeEvent.TYPE, listener);
+			changeSupport.addListChangeListener(listener);
 		}
 	}
 
 	public synchronized void removeListChangeListener(
-			IListChangeListener<? super E> listener) {
+			IListChangeListener<E> listener) {
 		if (!disposed) {
-			changeSupport.removeListener(ListChangeEvent.TYPE, listener);
+			changeSupport.removeListChangeListener(listener);
 		}
 	}
 
-	protected void fireListChange(ListDiff<E> diff) {
+	protected void fireListChange(ListDiff<? extends E> diff) {
 		// fire general change event first
 		fireChange();
-		changeSupport.fireEvent(new ListChangeEvent<E>(this, diff));
+		changeSupport.fireListChange(new ListChangeEvent<E>(this, diff));
 	}
 
 	public synchronized void addChangeListener(IChangeListener listener) {
@@ -204,8 +236,8 @@ public abstract class AbstractObservableList<E> extends AbstractList<E>
 	public synchronized void dispose() {
 		if (!disposed) {
 			disposed = true;
-			changeSupport.fireEvent(new DisposeEvent(this));
-			changeSupport.dispose();
+			changeSupport.fireDispose(new DisposeEvent(this));
+			// Fastest way to release references to listeners
 			changeSupport = null;
 			lastListenerRemoved();
 		}

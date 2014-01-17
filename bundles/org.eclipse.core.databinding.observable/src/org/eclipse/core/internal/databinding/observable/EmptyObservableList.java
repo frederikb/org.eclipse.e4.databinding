@@ -101,11 +101,11 @@ public class EmptyObservableList<E> implements IObservableList<E> {
 		ObservableTracker.observableCreated(this);
 	}
 
-	public void addListChangeListener(IListChangeListener<? super E> listener) {
+	public void addListChangeListener(IListChangeListener<E> listener) {
 		// ignore
 	}
 
-	public void removeListChangeListener(IListChangeListener<? super E> listener) {
+	public void removeListChangeListener(IListChangeListener<E> listener) {
 		// ignore
 	}
 

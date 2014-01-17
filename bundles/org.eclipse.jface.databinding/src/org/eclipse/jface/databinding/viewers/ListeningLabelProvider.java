@@ -21,31 +21,33 @@ import org.eclipse.jface.internal.databinding.provisional.viewers.ViewerLabelPro
 /**
  * @since 1.1
  * 
+ * @param <T>
+ *            the base class of all elements expected
  */
-public abstract class ListeningLabelProvider extends ViewerLabelProvider {
+public abstract class ListeningLabelProvider<T> extends ViewerLabelProvider {
 
-	private ISetChangeListener<Object> listener = new ISetChangeListener<Object>() {
-		public void handleSetChange(SetChangeEvent<Object> event) {
-			for (Iterator<Object> it = event.diff.getAdditions().iterator(); it
-					.hasNext();) {
+	private ISetChangeListener<T> listener = new ISetChangeListener<T>() {
+		public void handleSetChange(SetChangeEvent<T> event) {
+			for (Iterator<? extends T> it = event.diff.getAdditions()
+					.iterator(); it.hasNext();) {
 				addListenerTo(it.next());
 			}
-			for (Iterator<Object> it = event.diff.getRemovals().iterator(); it
+			for (Iterator<? extends T> it = event.diff.getRemovals().iterator(); it
 					.hasNext();) {
 				removeListenerFrom(it.next());
 			}
 		}
 	};
 
-	private IObservableSet<Object> items;
+	private IObservableSet<T> items;
 
 	/**
 	 * @param itemsThatNeedLabels
 	 */
-	public ListeningLabelProvider(IObservableSet<Object> itemsThatNeedLabels) {
+	public ListeningLabelProvider(IObservableSet<T> itemsThatNeedLabels) {
 		this.items = itemsThatNeedLabels;
 		items.addSetChangeListener(listener);
-		for (Iterator<Object> it = items.iterator(); it.hasNext();) {
+		for (Iterator<T> it = items.iterator(); it.hasNext();) {
 			addListenerTo(it.next());
 		}
 	}
@@ -61,7 +63,7 @@ public abstract class ListeningLabelProvider extends ViewerLabelProvider {
 	protected abstract void addListenerTo(Object next);
 
 	public void dispose() {
-		for (Iterator<Object> iter = items.iterator(); iter.hasNext();) {
+		for (Iterator<T> iter = items.iterator(); iter.hasNext();) {
 			removeListenerFrom(iter.next());
 		}
 		items.removeSetChangeListener(listener);

@@ -64,7 +64,7 @@ public class ValidatedObservableList<E> extends ObservableList<E> {
 					stale = false;
 					updateWrappedList(new ArrayList<E>(target));
 				} else {
-					ListDiff<E> diff = event.diff;
+					ListDiff<? extends E> diff = event.diff;
 					if (computeNextDiff) {
 						diff = Diffs.computeListDiff(wrappedList, target);
 						computeNextDiff = false;
@@ -145,7 +145,7 @@ public class ValidatedObservableList<E> extends ObservableList<E> {
 		}
 	}
 
-	private void applyDiff(ListDiff<E> diff, final List<E> list) {
+	private void applyDiff(ListDiff<? extends E> diff, final List<E> list) {
 		diff.accept(new ListDiffVisitor<E>() {
 			public void handleAdd(int index, E element) {
 				list.add(index, element);

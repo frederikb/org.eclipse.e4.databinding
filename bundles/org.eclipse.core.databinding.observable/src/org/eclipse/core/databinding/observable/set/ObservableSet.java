@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.eclipse.core.databinding.observable.AbstractObservable;
+import org.eclipse.core.databinding.observable.ListenerList;
 import org.eclipse.core.databinding.observable.ObservableTracker;
 import org.eclipse.core.databinding.observable.Realm;
 
@@ -51,6 +52,8 @@ public abstract class ObservableSet<E> extends AbstractObservable implements
 	 * @since 1.5
 	 */
 	private Class<E> elementClass;
+
+	private ListenerList<ISetChangeListener<E>> setChangeListenerList = null;
 
 	/**
 	 * 
@@ -100,7 +103,7 @@ public abstract class ObservableSet<E> extends AbstractObservable implements
 	 * @since 1.5
 	 */
 	// We must set deprecated fields in case any one uses them
-	@SuppressWarnings("deprecation")
+	// @SuppressWarnings("deprecation")
 	protected ObservableSet(Realm realm, Set<E> wrappedSet, Class<E> elementType) {
 		super(realm);
 		this.wrappedSet = wrappedSet;
@@ -108,21 +111,43 @@ public abstract class ObservableSet<E> extends AbstractObservable implements
 		this.elementClass = elementType;
 	}
 
-	public synchronized void addSetChangeListener(
-			ISetChangeListener<? super E> listener) {
-		addListener(SetChangeEvent.TYPE, listener);
+	/**
+	 * @param listener
+	 */
+	public synchronized void addSetChangeListener(ISetChangeListener<E> listener) {
+		addListener(getSetChangeListenerList(), listener);
 	}
 
+	/**
+	 * @param listener
+	 */
 	public synchronized void removeSetChangeListener(
-			ISetChangeListener<? super E> listener) {
-		removeListener(SetChangeEvent.TYPE, listener);
+			ISetChangeListener<E> listener) {
+		if (setChangeListenerList != null) {
+			removeListener(setChangeListenerList, listener);
+		}
 	}
 
-	protected void fireSetChange(SetDiff<E> diff) {
+	private ListenerList<ISetChangeListener<E>> getSetChangeListenerList() {
+		if (setChangeListenerList == null) {
+			setChangeListenerList = new ListenerList<ISetChangeListener<E>>();
+		}
+		return setChangeListenerList;
+	}
+
+	@Override
+	protected boolean hasListeners() {
+		return (setChangeListenerList != null && setChangeListenerList
+				.hasListeners()) || super.hasListeners();
+	}
+
+	protected void fireSetChange(SetDiff<? extends E> diff) {
 		// fire general change event first
 		super.fireChange();
 
-		fireEvent(new SetChangeEvent<E>(this, diff));
+		if (setChangeListenerList != null) {
+			setChangeListenerList.fireEvent(new SetChangeEvent<E>(this, diff));
+		}
 	}
 
 	public boolean contains(Object o) {
@@ -256,6 +281,7 @@ public abstract class ObservableSet<E> extends AbstractObservable implements
 	}
 
 	public synchronized void dispose() {
+		setChangeListenerList = null;
 		super.dispose();
 	}
 

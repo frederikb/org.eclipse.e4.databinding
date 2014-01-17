@@ -13,6 +13,7 @@
 package org.eclipse.core.databinding.observable.value;
 
 import org.eclipse.core.databinding.observable.Diffs;
+import org.eclipse.core.databinding.observable.ListenerList;
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.core.internal.databinding.observable.Util;
 
@@ -30,6 +31,12 @@ import org.eclipse.core.internal.databinding.observable.Util;
  */
 public abstract class AbstractVetoableValue<T> extends
 		AbstractObservableValue<T> implements IVetoableValue<T> {
+
+	/**
+	 * In addition to the listener/event types supported by
+	 * AbstractObservableValue, we add support for one more type.
+	 */
+	protected ListenerList<IValueChangingListener<T>> valueChangingListenerList = null;
 
 	/**
 	 * Creates a new vetoable value.
@@ -69,12 +76,23 @@ public abstract class AbstractVetoableValue<T> extends
 
 	public synchronized void addValueChangingListener(
 			IValueChangingListener<T> listener) {
-		addListener(ValueChangingEvent.TYPE, listener);
+		if (valueChangingListenerList == null) {
+			valueChangingListenerList = new ListenerList<IValueChangingListener<T>>();
+		}
+		addListener(valueChangingListenerList, listener);
 	}
 
 	public synchronized void removeValueChangingListener(
 			IValueChangingListener<T> listener) {
-		removeListener(ValueChangingEvent.TYPE, listener);
+		if (valueChangingListenerList != null) {
+			removeListener(valueChangingListenerList, listener);
+		}
+	}
+
+	@Override
+	protected boolean hasListeners() {
+		return ((valueChangingListenerList != null && valueChangingListenerList
+				.hasListeners()) || super.hasListeners());
 	}
 
 	/**
@@ -88,7 +106,9 @@ public abstract class AbstractVetoableValue<T> extends
 		checkRealm();
 
 		ValueChangingEvent<T> event = new ValueChangingEvent<T>(this, diff);
-		fireEvent(event);
+		if (valueChangingListenerList != null) {
+			valueChangingListenerList.fireEvent(event);
+		}
 		return !event.veto;
 	}
 }

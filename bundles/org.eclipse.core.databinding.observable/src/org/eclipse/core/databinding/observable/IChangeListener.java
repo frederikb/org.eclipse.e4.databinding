@@ -28,7 +28,7 @@ import org.eclipse.core.databinding.observable.value.IValueChangeListener;
  * 
  * @since 1.0
  */
-public interface IChangeListener extends IObservablesListener {
+public interface IChangeListener extends IObservablesListener<IChangeListener> {
 
 	/**
 	 * Handle a generic change to the given observable. The given event object

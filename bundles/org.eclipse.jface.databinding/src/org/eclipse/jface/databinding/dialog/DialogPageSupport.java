@@ -80,10 +80,17 @@ public class DialogPageSupport {
 	private IListChangeListener<ValidationStatusProvider> validationStatusProvidersListener = new IListChangeListener<ValidationStatusProvider>() {
 		public void handleListChange(
 				ListChangeEvent<ValidationStatusProvider> event) {
-			ListDiff<ValidationStatusProvider> diff = event.diff;
-			List<ListDiffEntry<ValidationStatusProvider>> differences = diff
-					.getDifferencesAsList();
-			for (ListDiffEntry<ValidationStatusProvider> listDiffEntry : differences) {
+			ListDiff<? extends ValidationStatusProvider> diff = event.diff;
+			updateWithDiff(diff);
+		}
+
+		/**
+		 * @param diff
+		 */
+		private <T extends ValidationStatusProvider> void updateWithDiff(
+				ListDiff<T> diff) {
+			List<ListDiffEntry<T>> differences = diff.getDifferencesAsList();
+			for (ListDiffEntry<T> listDiffEntry : differences) {
 				ValidationStatusProvider validationStatusProvider = listDiffEntry
 						.getElement();
 				IObservableList<IObservable> targets = validationStatusProvider
@@ -106,10 +113,16 @@ public class DialogPageSupport {
 	};
 	private IListChangeListener<IObservable> validationStatusProviderTargetsListener = new IListChangeListener<IObservable>() {
 		public void handleListChange(ListChangeEvent<IObservable> event) {
-			ListDiff<IObservable> diff = event.diff;
-			List<ListDiffEntry<IObservable>> differences = diff
-					.getDifferencesAsList();
-			for (ListDiffEntry<IObservable> listDiffEntry : differences) {
+			ListDiff<? extends IObservable> diff = event.diff;
+			updateWithDiff(diff);
+		}
+
+		/**
+		 * @param diff
+		 */
+		private <T extends IObservable> void updateWithDiff(ListDiff<T> diff) {
+			List<ListDiffEntry<T>> differences = diff.getDifferencesAsList();
+			for (ListDiffEntry<T> listDiffEntry : differences) {
 				IObservable target = listDiffEntry.getElement();
 				if (listDiffEntry.isAddition()) {
 					target.addChangeListener(uiChangeListener);

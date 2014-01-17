@@ -12,6 +12,7 @@
 package org.eclipse.core.databinding.observable.value;
 
 import org.eclipse.core.databinding.observable.Diffs;
+import org.eclipse.core.databinding.observable.ListenerList;
 
 /**
  * An {@link IVetoableValue} decorator for an observable value.
@@ -21,6 +22,13 @@ import org.eclipse.core.databinding.observable.Diffs;
  */
 public class DecoratingVetoableValue<T> extends DecoratingObservableValue<T>
 		implements IVetoableValue<T> {
+
+	/**
+	 * In addition to the listener/event types supported by
+	 * AbstractObservableValue, we add support for one more type.
+	 */
+	protected ListenerList<IValueChangingListener<T>> valueChangingListListener = null;
+
 	/**
 	 * @param decorated
 	 * @param disposeDecoratedOnDispose
@@ -43,12 +51,23 @@ public class DecoratingVetoableValue<T> extends DecoratingObservableValue<T>
 
 	public synchronized void addValueChangingListener(
 			IValueChangingListener<T> listener) {
-		addListener(ValueChangingEvent.TYPE, listener);
+		if (valueChangingListListener == null) {
+			valueChangingListListener = new ListenerList<IValueChangingListener<T>>();
+		}
+		addListener(valueChangingListListener, listener);
 	}
 
 	public synchronized void removeValueChangingListener(
 			IValueChangingListener<T> listener) {
-		removeListener(ValueChangingEvent.TYPE, listener);
+		if (valueChangingListListener != null) {
+			removeListener(valueChangingListListener, listener);
+		}
+	}
+
+	@Override
+	protected boolean hasListeners() {
+		return ((valueChangingListListener != null && valueChangingListListener
+				.hasListeners()) || super.hasListeners());
 	}
 
 	/**
@@ -62,7 +81,9 @@ public class DecoratingVetoableValue<T> extends DecoratingObservableValue<T>
 		checkRealm();
 
 		ValueChangingEvent<T> event = new ValueChangingEvent<T>(this, diff);
-		fireEvent(event);
+		if (valueChangingListListener != null) {
+			valueChangingListListener.fireEvent(event);
+		}
 		return !event.veto;
 	}
 }

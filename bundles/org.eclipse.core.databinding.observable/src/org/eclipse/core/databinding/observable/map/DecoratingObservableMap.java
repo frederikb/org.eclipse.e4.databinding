@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.databinding.observable.DecoratingObservable;
+import org.eclipse.core.databinding.observable.ListenerList;
 
 /**
  * An observable map which decorates another observable map.
@@ -32,6 +33,8 @@ public class DecoratingObservableMap<K, V> extends DecoratingObservable
 	private IObservableMap<K, V> decorated;
 
 	private IMapChangeListener<K, V> mapChangeListener;
+
+	private ListenerList<IMapChangeListener<K, V>> mapListenerList = null;
 
 	/**
 	 * Constructs a DecoratingObservableMap which decorates the given
@@ -49,12 +52,30 @@ public class DecoratingObservableMap<K, V> extends DecoratingObservable
 
 	public synchronized void addMapChangeListener(
 			IMapChangeListener<K, V> listener) {
-		addListener(MapChangeEvent.TYPE, listener);
+		addListener(getMapListenerList(), listener);
 	}
 
+	/**
+	 * @param listener
+	 */
 	public synchronized void removeMapChangeListener(
 			IMapChangeListener<K, V> listener) {
-		removeListener(MapChangeEvent.TYPE, listener);
+		if (mapListenerList != null) {
+			removeListener(mapListenerList, listener);
+		}
+	}
+
+	private ListenerList<IMapChangeListener<K, V>> getMapListenerList() {
+		if (mapListenerList == null) {
+			mapListenerList = new ListenerList<IMapChangeListener<K, V>>();
+		}
+		return mapListenerList;
+	}
+
+	@Override
+	protected boolean hasListeners() {
+		return (mapListenerList != null && mapListenerList.hasListeners())
+				|| super.hasListeners();
 	}
 
 	public Object getKeyType() {
@@ -65,10 +86,11 @@ public class DecoratingObservableMap<K, V> extends DecoratingObservable
 		return decorated.getValueType();
 	}
 
-	protected void fireMapChange(MapDiff<K, V> diff) {
+	protected void fireMapChange(MapDiff<? extends K, ? extends V> diff) {
 		// fire general change event first
 		super.fireChange();
-		fireEvent(new MapChangeEvent<K, V>(this, diff));
+
+		mapListenerList.fireEvent(new MapChangeEvent<K, V>(this, diff));
 	}
 
 	protected void fireChange() {

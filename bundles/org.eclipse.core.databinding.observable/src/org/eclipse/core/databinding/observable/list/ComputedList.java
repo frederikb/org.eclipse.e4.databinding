@@ -311,7 +311,7 @@ public abstract class ComputedList<E> extends AbstractObservableList<E> {
 	}
 
 	public synchronized void addListChangeListener(
-			IListChangeListener<? super E> listener) {
+			IListChangeListener<E> listener) {
 		super.addListChangeListener(listener);
 		// If somebody is listening, we need to make sure we attach our own
 		// listeners

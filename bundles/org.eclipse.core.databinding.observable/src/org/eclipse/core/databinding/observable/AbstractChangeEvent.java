@@ -17,12 +17,13 @@ package org.eclipse.core.databinding.observable;
  * that occurred.
  * 
  * @param <EV>
+ * @param <L>
  * 
  * @since 1.5
  * 
  */
-public abstract class AbstractChangeEvent<EV extends AbstractChangeEvent<EV>>
-		extends ObservableEvent<EV> {
+public abstract class AbstractChangeEvent<EV extends AbstractChangeEvent<EV, L>, L extends IObservablesListener<L>>
+		extends ObservableEvent<EV, L> {
 
 	/**
 	 * 

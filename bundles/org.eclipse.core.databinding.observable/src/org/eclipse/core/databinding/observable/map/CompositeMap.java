@@ -64,7 +64,7 @@ public class CompositeMap<K, I, V> extends ObservableMap<K, V> {
 	private IMapChangeListener<K, I> firstMapListener = new IMapChangeListener<K, I>() {
 
 		public void handleMapChange(MapChangeEvent<K, I> event) {
-			MapDiff<K, I> diff = event.diff;
+			MapDiff<? extends K, ? extends I> diff = event.diff;
 			Set<I> rangeSetAdditions = new HashSet<I>();
 			Set<I> rangeSetRemovals = new HashSet<I>();
 			final Set<K> adds = new HashSet<K>();
@@ -72,7 +72,8 @@ public class CompositeMap<K, I, V> extends ObservableMap<K, V> {
 			final Set<K> removes = new HashSet<K>();
 			final Map<K, V> oldValues = new HashMap<K, V>();
 
-			for (Iterator<K> it = diff.getAddedKeys().iterator(); it.hasNext();) {
+			for (Iterator<? extends K> it = diff.getAddedKeys().iterator(); it
+					.hasNext();) {
 				K addedKey = it.next();
 				I newValue = diff.getNewValue(addedKey);
 				if (!rangeSet.contains(newValue)) {
@@ -83,7 +84,7 @@ public class CompositeMap<K, I, V> extends ObservableMap<K, V> {
 					wrappedMap.put(addedKey, secondMap.get(newValue));
 				}
 			}
-			for (Iterator<K> it = diff.getChangedKeys().iterator(); it
+			for (Iterator<? extends K> it = diff.getChangedKeys().iterator(); it
 					.hasNext();) {
 				K changedKey = it.next();
 				I oldValue = diff.getOldValue(changedKey);
@@ -107,7 +108,7 @@ public class CompositeMap<K, I, V> extends ObservableMap<K, V> {
 					wrappedMap.put(changedKey, secondMap.get(newValue));
 				}
 			}
-			for (Iterator<K> it = diff.getRemovedKeys().iterator(); it
+			for (Iterator<? extends K> it = diff.getRemovedKeys().iterator(); it
 					.hasNext();) {
 				K removedKey = it.next();
 				I oldValue = diff.getOldValue(removedKey);
@@ -155,7 +156,7 @@ public class CompositeMap<K, I, V> extends ObservableMap<K, V> {
 	private IMapChangeListener<I, V> secondMapListener = new IMapChangeListener<I, V>() {
 
 		public void handleMapChange(MapChangeEvent<I, V> event) {
-			MapDiff<I, V> diff = event.diff;
+			MapDiff<? extends I, ? extends V> diff = event.diff;
 			final Set<K> adds = new HashSet<K>();
 			final Set<K> changes = new HashSet<K>();
 			final Set<K> removes = new HashSet<K>();
@@ -197,7 +198,7 @@ public class CompositeMap<K, I, V> extends ObservableMap<K, V> {
 					Assert.isTrue(false, "unexpected case"); //$NON-NLS-1$
 				}
 			}
-			for (Iterator<I> it = diff.getChangedKeys().iterator(); it
+			for (Iterator<? extends I> it = diff.getChangedKeys().iterator(); it
 					.hasNext();) {
 				I changedKey = it.next();
 				Set<K> elements = firstMap.getKeys(changedKey);

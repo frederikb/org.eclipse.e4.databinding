@@ -13,6 +13,7 @@
 package org.eclipse.core.databinding.observable.set;
 
 import org.eclipse.core.databinding.observable.DecoratingObservableCollection;
+import org.eclipse.core.databinding.observable.ListenerList;
 
 /**
  * An observable set which decorates another observable set.
@@ -27,6 +28,8 @@ public class DecoratingObservableSet<E> extends
 	private IObservableSet<E> decorated;
 
 	private ISetChangeListener<E> setChangeListener;
+
+	protected ListenerList<ISetChangeListener<E>> setChangeListenerList = null;
 
 	/**
 	 * Constructs a DecoratingObservableSet which decorates the given
@@ -47,20 +50,35 @@ public class DecoratingObservableSet<E> extends
 		decorated.clear();
 	}
 
-	public synchronized void addSetChangeListener(
-			ISetChangeListener<? super E> listener) {
-		addListener(SetChangeEvent.TYPE, listener);
+	public synchronized void addSetChangeListener(ISetChangeListener<E> listener) {
+		addListener(getSetListenerList(), listener);
 	}
 
 	public synchronized void removeSetChangeListener(
-			ISetChangeListener<? super E> listener) {
-		removeListener(SetChangeEvent.TYPE, listener);
+			ISetChangeListener<E> listener) {
+		if (setChangeListenerList != null) {
+			removeListener(setChangeListenerList, listener);
+		}
 	}
 
-	protected void fireSetChange(SetDiff<E> diff) {
+	protected boolean hasListeners() {
+		return (setChangeListenerList != null && setChangeListenerList
+				.hasListeners()) || super.hasListeners();
+	}
+
+	private ListenerList<ISetChangeListener<E>> getSetListenerList() {
+		if (setChangeListenerList == null) {
+			setChangeListenerList = new ListenerList<ISetChangeListener<E>>();
+		}
+		return setChangeListenerList;
+	}
+
+	protected void fireSetChange(SetDiff<? extends E> diff) {
 		// fire general change event first
 		super.fireChange();
-		fireEvent(new SetChangeEvent<E>(this, diff));
+		if (setChangeListenerList != null) {
+			setChangeListenerList.fireEvent(new SetChangeEvent<E>(this, diff));
+		}
 	}
 
 	protected void fireChange() {

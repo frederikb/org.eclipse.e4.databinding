@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.eclipse.core.databinding.observable.DecoratingObservableCollection;
+import org.eclipse.core.databinding.observable.ListenerList;
 
 /**
  * An observable list which decorates another observable list.
@@ -31,6 +32,8 @@ public class DecoratingObservableList<E> extends
 	private IObservableList<E> decorated;
 
 	private IListChangeListener<E> listChangeListener;
+
+	private ListenerList<IListChangeListener<E>> listChangeListenerList = null;
 
 	/**
 	 * Constructs a DecoratingObservableList which decorates the given
@@ -47,19 +50,40 @@ public class DecoratingObservableList<E> extends
 	}
 
 	public synchronized void addListChangeListener(
-			IListChangeListener<? super E> listener) {
-		addListener(ListChangeEvent.TYPE, listener);
+			IListChangeListener<E> listener) {
+		addListener(getListChangeListenerList(), listener);
 	}
 
+	/**
+	 * @param listener
+	 */
 	public synchronized void removeListChangeListener(
-			IListChangeListener<? super E> listener) {
-		removeListener(ListChangeEvent.TYPE, listener);
+			IListChangeListener<E> listener) {
+		if (listChangeListenerList != null) {
+			removeListener(listChangeListenerList, listener);
+		}
 	}
 
-	protected void fireListChange(ListDiff<E> diff) {
+	private ListenerList<IListChangeListener<E>> getListChangeListenerList() {
+		if (listChangeListenerList == null) {
+			listChangeListenerList = new ListenerList<IListChangeListener<E>>();
+		}
+		return listChangeListenerList;
+	}
+
+	@Override
+	protected boolean hasListeners() {
+		return (listChangeListenerList != null && listChangeListenerList
+				.hasListeners()) || super.hasListeners();
+	}
+
+	protected void fireListChange(ListDiff<? extends E> diff) {
 		// fire general change event first
 		super.fireChange();
-		fireEvent(new ListChangeEvent<E>(this, diff));
+		if (listChangeListenerList != null) {
+			listChangeListenerList
+					.fireEvent(new ListChangeEvent<E>(this, diff));
+		}
 	}
 
 	protected void fireChange() {

@@ -35,7 +35,7 @@ import org.eclipse.swt.graphics.Image;
  * implementing additional mixin interfaces for colors, fonts etc.
  * 
  * @param <T>
- *            the basemost class of all elements expected
+ *            the base class of all elements expected
  * 
  * @since 1.1
  * 
@@ -73,7 +73,7 @@ public class ObservableMapLabelProvider<T> extends LabelProvider implements
 
 		private IMapChangeListener<T, E> mapChangeListener = new IMapChangeListener<T, E>() {
 			public void handleMapChange(MapChangeEvent<T, E> event) {
-				Set<T> affectedElements = event.diff.getChangedKeys();
+				Set<? extends T> affectedElements = event.diff.getChangedKeys();
 				LabelProviderChangedEvent newEvent = new LabelProviderChangedEvent(
 						ObservableMapLabelProvider.this,
 						affectedElements.toArray());

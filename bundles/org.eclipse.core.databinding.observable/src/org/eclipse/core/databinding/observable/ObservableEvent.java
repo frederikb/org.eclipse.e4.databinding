@@ -19,12 +19,13 @@ import java.util.EventObject;
  * of dispatching events can be improved in later versions of the framework.
  * 
  * @param <EV>
+ * @param <L>
  * 
  * @since 1.0
  * 
  */
-public abstract class ObservableEvent<EV extends ObservableEvent<EV>> extends
-		EventObject {
+public abstract class ObservableEvent<EV extends ObservableEvent<EV, L>, L extends IObservablesListener<L>>
+		extends EventObject {
 
 	/**
 	 * Creates a new observable event.
@@ -57,7 +58,7 @@ public abstract class ObservableEvent<EV extends ObservableEvent<EV>> extends
 	 * @param listener
 	 *            the listener that should handle the event
 	 */
-	protected abstract void dispatch(IObservablesListener listener);
+	protected abstract void dispatch(L listener);
 
 	/**
 	 * Returns a unique object used for distinguishing this event type from

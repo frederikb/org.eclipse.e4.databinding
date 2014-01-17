@@ -100,10 +100,10 @@ public class EmptyObservableSet<E> implements IObservableSet<E> {
 		ObservableTracker.observableCreated(this);
 	}
 
-	public void addSetChangeListener(ISetChangeListener<? super E> listener) {
+	public void addSetChangeListener(ISetChangeListener<E> listener) {
 	}
 
-	public void removeSetChangeListener(ISetChangeListener<? super E> listener) {
+	public void removeSetChangeListener(ISetChangeListener<E> listener) {
 	}
 
 	/**

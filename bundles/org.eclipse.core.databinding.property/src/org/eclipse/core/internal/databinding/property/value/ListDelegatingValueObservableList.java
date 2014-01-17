@@ -63,12 +63,12 @@ public class ListDelegatingValueObservableList<S, T extends S, E> extends
 			fireListChange(diff);
 		}
 
-		private ListDiff<E> convertDiff(ListDiff<T> diff) {
+		private <T2 extends T> ListDiff<E> convertDiff(ListDiff<T2> diff) {
 			// Convert diff to detail value
-			List<ListDiffEntry<T>> masterEntries = diff.getDifferencesAsList();
+			List<ListDiffEntry<T2>> masterEntries = diff.getDifferencesAsList();
 			List<ListDiffEntry<E>> detailEntries = new ArrayList<ListDiffEntry<E>>(
 					masterEntries.size());
-			for (ListDiffEntry<T> masterDifference : masterEntries) {
+			for (ListDiffEntry<? extends T> masterDifference : masterEntries) {
 				int index = masterDifference.getPosition();
 				boolean addition = masterDifference.isAddition();
 				T masterElement = masterDifference.getElement();

@@ -19,56 +19,41 @@ import org.eclipse.core.runtime.AssertionFailedException;
 /**
  * @since 1.0
  */
-public abstract class AbstractObservable extends ChangeManager implements
+public abstract class AbstractObservable extends ChangeSupport implements
 		IObservable {
+	private final Realm realm;
+
 	private boolean disposed = false;
 
 	/**
 	 * @param realm
 	 */
 	public AbstractObservable(Realm realm) {
-		super(realm);
+		Assert.isNotNull(realm, "Realm cannot be null"); //$NON-NLS-1$
+		this.realm = realm;
+
 		ObservableTracker.observableCreated(this);
 	}
 
-	public synchronized void addChangeListener(IChangeListener listener) {
-		addListener(AbstractChangeEvent.TYPE, listener);
-	}
-
-	public synchronized void removeChangeListener(IChangeListener listener) {
-		removeListener(AbstractChangeEvent.TYPE, listener);
-	}
-
-	public synchronized void addStaleListener(IStaleListener listener) {
-		addListener(StaleEvent.TYPE, listener);
-	}
-
-	public synchronized void removeStaleListener(IStaleListener listener) {
-		removeListener(StaleEvent.TYPE, listener);
-	}
-
 	/**
-	 * @since 1.2
+	 * @return Returns the realm.
 	 */
-	public synchronized void addDisposeListener(IDisposeListener listener) {
-		addListener(DisposeEvent.TYPE, listener);
-	}
-
-	/**
-	 * @since 1.2
-	 */
-	public synchronized void removeDisposeListener(IDisposeListener listener) {
-		removeListener(DisposeEvent.TYPE, listener);
+	public Realm getRealm() {
+		return realm;
 	}
 
 	protected void fireChange() {
 		checkRealm();
-		fireEvent(new ChangeEvent(this));
+		if (genericListenerList != null) {
+			genericListenerList.fireEvent(new ChangeEvent(this));
+		}
 	}
 
 	protected void fireStale() {
 		checkRealm();
-		fireEvent(new StaleEvent(this));
+		if (staleListenerList != null) {
+			staleListenerList.fireEvent(new StaleEvent(this));
+		}
 	}
 
 	/**
@@ -76,6 +61,7 @@ public abstract class AbstractObservable extends ChangeManager implements
 	 */
 	public synchronized boolean isDisposed() {
 		return disposed;
+
 	}
 
 	/**
@@ -84,8 +70,10 @@ public abstract class AbstractObservable extends ChangeManager implements
 	public synchronized void dispose() {
 		if (!disposed) {
 			disposed = true;
-			fireEvent(new DisposeEvent(this));
-			super.dispose();
+			fireDispose(new DisposeEvent(this));
+			genericListenerList = null;
+			staleListenerList = null;
+			disposeListenerList = null;
 		}
 	}
 

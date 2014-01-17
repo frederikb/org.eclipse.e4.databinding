@@ -24,7 +24,7 @@ package org.eclipse.core.databinding.observable;
  * @since 1.0
  * 
  */
-public class StaleEvent extends ObservableEvent<StaleEvent> {
+public class StaleEvent extends ObservableEvent<StaleEvent, IStaleListener> {
 
 	/**
 	 * Creates a new stale event.
@@ -43,8 +43,8 @@ public class StaleEvent extends ObservableEvent<StaleEvent> {
 
 	static final Object TYPE = new Object();
 
-	protected void dispatch(IObservablesListener listener) {
-		((IStaleListener) listener).handleStale(this);
+	protected void dispatch(IStaleListener listener) {
+		listener.handleStale(this);
 	}
 
 	protected Object getListenerType() {

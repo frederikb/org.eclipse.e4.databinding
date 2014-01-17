@@ -13,153 +13,65 @@
 
 package org.eclipse.core.databinding.observable;
 
-import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.ListenerList;
-
 /**
  * Listener management implementation. Exposed to subclasses in form of
  * {@link AbstractObservable} and {@link ChangeSupport}.
  * 
+ * @param <EV>
+ * @param <L>
+ * 
  * @since 1.0
  * 
+ * @deprecated Use ListenerList directly
+ * 
  */
-/* package */class ChangeManager {
+public/* package */class ChangeManager<EV extends ObservableEvent<EV, L>, L extends IObservablesListener<L>> {
 
-	ListenerList[] listenerLists = null;
-	Object listenerTypes[] = null;
-	private final Realm realm;
+	ListenerList<L> listenerList = null;
 
 	/**
-	 * @param realm
-	 * 
-	 */
-	/* package */ChangeManager(Realm realm) {
-		Assert.isNotNull(realm, "Realm cannot be null"); //$NON-NLS-1$
-		this.realm = realm;
-	}
-
-	/**
-	 * @param listenerType
 	 * @param listener
 	 */
-	protected void addListener(Object listenerType,
-			IObservablesListener listener) {
-		int listenerTypeIndex = findListenerTypeIndex(listenerType);
-		if (listenerTypeIndex == -1) {
-			int length;
-			if (listenerTypes == null) {
-				length = 0;
-				listenerTypes = new Object[1];
-				listenerLists = new ListenerList[1];
-			} else {
-				length = listenerTypes.length;
-				System.arraycopy(listenerTypes, 0,
-						listenerTypes = new Object[length + 1], 0, length);
-				System.arraycopy(listenerLists, 0,
-						listenerLists = new ListenerList[length + 1], 0, length);
-			}
-			listenerTypes[length] = listenerType;
-			listenerLists[length] = new ListenerList();
-			listenerTypeIndex = length;
-		}
-		boolean hadListeners = hasListeners();
-		listenerLists[listenerTypeIndex].add(listener);
-		if (!hadListeners && hasListeners()) {
-			firstListenerAdded();
-		}
+	public void addListener(L listener) {
+		listenerList.add(listener);
 	}
 
 	/**
-	 * @param listenerType
 	 * @param listener
 	 */
-	protected void removeListener(Object listenerType,
-			IObservablesListener listener) {
-		int listenerTypeIndex = findListenerTypeIndex(listenerType);
-		if (listenerTypeIndex != -1) {
-			boolean hadListeners = hasListeners();
-			listenerLists[listenerTypeIndex].remove(listener);
-			if (listenerLists[listenerTypeIndex].size() == 0) {
-				if (hadListeners && !hasListeners()) {
-					this.lastListenerRemoved();
-				}
-			}
-		}
-	}
-
-	protected boolean hasListeners() {
-		if (listenerTypes != null)
-			for (int i = 0; i < listenerTypes.length; i++)
-				if (listenerTypes[i] != DisposeEvent.TYPE)
-					if (listenerLists[i].size() > 0)
-						return true;
-		return false;
-	}
-
-	private int findListenerTypeIndex(Object listenerType) {
-		if (listenerTypes != null) {
-			for (int i = 0; i < listenerTypes.length; i++) {
-				if (listenerTypes[i] == listenerType) {
-					return i;
-				}
-			}
-		}
-		return -1;
-	}
-
-	protected void fireEvent(ObservableEvent<?> event) {
-		/*
-		 * Note: We have a type safety warning here because the compiler cannot
-		 * be sure that we are passing an event only to listeners that can
-		 * accept that event. We could do this in a type-safe manner by
-		 * separating listeners into different lists and keeping a map of
-		 * listenerType to listeners. However that would increase memory usage
-		 * and may not be worthwhile. We would also not be able to use the
-		 * ListenerList class because that is not parameterized.
-		 */
-
-		Object listenerType = event.getListenerType();
-		int listenerTypeIndex = findListenerTypeIndex(listenerType);
-		if (listenerTypeIndex != -1) {
-			Object[] listeners = listenerLists[listenerTypeIndex]
-					.getListeners();
-			for (int i = 0; i < listeners.length; i++) {
-				event.dispatch((IObservablesListener) listeners[i]);
-			}
+	public void removeListener(L listener) {
+		if (listenerList != null) {
+			listenerList.remove(listener);
 		}
 	}
 
 	/**
-	 * 
+	 * @return true if there any any listeners in the list, false if no
+	 *         listeners
 	 */
-	protected void firstListenerAdded() {
+	public boolean hasListeners() {
+		return (listenerList.size() > 0);
 	}
 
 	/**
-	 * 
+	 * @param event
 	 */
-	protected void lastListenerRemoved() {
+	public void fireEvent(ObservableEvent<EV, L> event) {
+		for (L listener : listenerList.getListeners()) {
+			event.dispatch(listener);
+		}
 	}
 
 	/**
 	 * 
 	 */
 	public void dispose() {
-		listenerLists = null;
-		listenerTypes = null;
-	}
-
-	/**
-	 * @return Returns the realm.
-	 */
-	public Realm getRealm() {
-		return realm;
+		listenerList = null;
 	}
 
 	protected Object clone() throws CloneNotSupportedException {
 		ChangeManager duplicate = (ChangeManager) super.clone();
-		duplicate.listenerLists = null;
-		duplicate.listenerTypes = null;
+		duplicate.listenerList = null;
 		return duplicate;
 	}
 }

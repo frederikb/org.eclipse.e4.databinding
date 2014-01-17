@@ -50,8 +50,8 @@ abstract class DelegatingCache<S, K extends S, V> {
 			this.delegate = delegate;
 			ObservableTracker.setIgnore(true);
 			try {
-				this.masterElements = new IdentityObservableSet<K>(realm, elements
-						.getElementType());
+				this.masterElements = new IdentityObservableSet<K>(realm,
+						elements.getElementType());
 				this.masterElementValues = delegate
 						.observeDetail(masterElements);
 			} finally {
@@ -66,8 +66,8 @@ abstract class DelegatingCache<S, K extends S, V> {
 			boolean wasEmpty = masterElements.isEmpty();
 
 			masterElements.add(masterElement);
-			cachedValues.put(masterElement, masterElementValues
-					.get(masterElement));
+			cachedValues.put(masterElement,
+					masterElementValues.get(masterElement));
 
 			if (wasEmpty)
 				delegateCaches.put(delegate, this);
@@ -95,8 +95,9 @@ abstract class DelegatingCache<S, K extends S, V> {
 		}
 
 		public void handleMapChange(MapChangeEvent<K, V> event) {
-			Set<K> changedKeys = event.diff.getChangedKeys();
-			for (Iterator<K> it = changedKeys.iterator(); it.hasNext();)
+			Set<? extends K> changedKeys = event.diff.getChangedKeys();
+			for (Iterator<? extends K> it = changedKeys.iterator(); it
+					.hasNext();)
 				notifyIfChanged(it.next());
 		}
 
@@ -137,14 +138,14 @@ abstract class DelegatingCache<S, K extends S, V> {
 
 		elements.addSetChangeListener(new ISetChangeListener<K>() {
 			public void handleSetChange(SetChangeEvent<K> event) {
-				for (Iterator<K> it = event.diff.getRemovals().iterator(); it
-						.hasNext();) {
+				for (Iterator<? extends K> it = event.diff.getRemovals()
+						.iterator(); it.hasNext();) {
 					K element = it.next();
 					getCache(element).remove(element);
 
 				}
-				for (Iterator<K> it = event.diff.getAdditions().iterator(); it
-						.hasNext();) {
+				for (Iterator<? extends K> it = event.diff.getAdditions()
+						.iterator(); it.hasNext();) {
 					K element = it.next();
 					getCache(element).add(element);
 				}
@@ -158,7 +159,8 @@ abstract class DelegatingCache<S, K extends S, V> {
 		// The likeliest problem is a ClassCastException in the ValueProperty.
 		// But this is what we would have gotten anyway without generics, only
 		// the cast would be explicit.
-		@SuppressWarnings("unchecked") IValueProperty<S, V> delegate = detailProperty
+		@SuppressWarnings("unchecked")
+		IValueProperty<S, V> delegate = detailProperty
 				.getDelegate((S) masterElement);
 		if (delegateCaches.containsKey(delegate)) {
 			return delegateCaches.get(delegate);

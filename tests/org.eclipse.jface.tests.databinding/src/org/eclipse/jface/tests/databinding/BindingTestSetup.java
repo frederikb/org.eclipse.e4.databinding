@@ -41,17 +41,15 @@ public class BindingTestSetup extends TestSetup {
 		oldLogger = Policy.getLog();
 		Policy.setLog(new ILogger() {
 			public void log(IStatus status) {
-				// we are not expecting anything in the log while we test.
-
-				// except there are some tests that result in a warning being
-				// logged.
-				// We didn't want to change the tests when generics were added
-				// because
-				// we want to be sure that legacy code continues to run, so we
-				// log
-				// warnings when 'not recommended' API usage is found.
-				if (status.getException() != null
-						&& status.getSeverity() == IStatus.WARNING) {
+				/*
+				 * We are not expecting anything in the log while we test.
+				 * However there are some tests that result in a warning being
+				 * logged. We didn't want to change the tests when generics were
+				 * added because we want to be sure that legacy code continues
+				 * to run, so we log warnings when 'not recommended' API usage
+				 * is found.
+				 */
+				if (status.getSeverity() == IStatus.WARNING) {
 					return;
 				}
 

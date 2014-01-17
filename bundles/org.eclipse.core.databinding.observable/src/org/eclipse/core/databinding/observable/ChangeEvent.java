@@ -19,7 +19,8 @@ package org.eclipse.core.databinding.observable;
  * @since 1.0
  * 
  */
-public class ChangeEvent extends AbstractChangeEvent<ChangeEvent> {
+public class ChangeEvent extends
+		AbstractChangeEvent<ChangeEvent, IChangeListener> {
 
 	/**
 	 * 
@@ -36,8 +37,8 @@ public class ChangeEvent extends AbstractChangeEvent<ChangeEvent> {
 		super(source);
 	}
 
-	protected void dispatch(IObservablesListener listener) {
-		((IChangeListener) listener).handleChange(this);
+	protected void dispatch(IChangeListener listener) {
+		listener.handleChange(this);
 	}
 
 	protected Object getListenerType() {

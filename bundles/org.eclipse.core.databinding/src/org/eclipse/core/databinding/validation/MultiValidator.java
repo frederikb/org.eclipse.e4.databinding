@@ -135,30 +135,30 @@ public abstract class MultiValidator extends ValidationStatusProvider {
 			event.diff.accept(new ListDiffVisitor<IObservable>() {
 				public void handleAdd(int index, IObservable element) {
 					IObservable dependency = element;
-					dependency.addChangeListener(dependencyListener);
-					dependency.addStaleListener(dependencyListener);
+					dependency.addChangeListener(dependencyValueListener);
+					dependency.addStaleListener(dependencyStaleListener);
 				}
 
 				public void handleRemove(int index, IObservable element) {
 					IObservable dependency = element;
-					dependency.removeChangeListener(dependencyListener);
-					dependency.removeStaleListener(dependencyListener);
+					dependency.removeChangeListener(dependencyValueListener);
+					dependency.removeStaleListener(dependencyStaleListener);
 				}
 			});
 		}
 	};
 
-	private class DependencyListener implements IChangeListener, IStaleListener {
+	private IChangeListener dependencyValueListener = new IChangeListener() {
 		public void handleChange(ChangeEvent event) {
 			revalidate();
 		}
+	};
 
+	private IStaleListener dependencyStaleListener = new IStaleListener() {
 		public void handleStale(StaleEvent staleEvent) {
 			validationStatus.makeStale();
 		}
-	}
-
-	private DependencyListener dependencyListener = new DependencyListener();
+	};
 
 	/**
 	 * Constructs a MultiValidator on the default realm.

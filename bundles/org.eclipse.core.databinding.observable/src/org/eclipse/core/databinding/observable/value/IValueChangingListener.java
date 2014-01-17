@@ -20,7 +20,8 @@ import org.eclipse.core.databinding.observable.IObservablesListener;
  * @since 1.0
  * 
  */
-public interface IValueChangingListener<T> extends IObservablesListener {
+public interface IValueChangingListener<T> extends
+		IObservablesListener<IValueChangingListener<T>> {
 
 	/**
 	 * This method is called when the value is about to change and provides an

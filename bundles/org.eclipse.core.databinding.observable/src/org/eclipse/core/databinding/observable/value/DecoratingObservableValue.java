@@ -13,6 +13,7 @@
 package org.eclipse.core.databinding.observable.value;
 
 import org.eclipse.core.databinding.observable.DecoratingObservable;
+import org.eclipse.core.databinding.observable.ListenerList;
 
 /**
  * An observable value which decorates another observable value.
@@ -26,6 +27,12 @@ public class DecoratingObservableValue<T> extends DecoratingObservable
 	private IObservableValue<T> decorated;
 
 	private IValueChangeListener<T> valueChangeListener;
+
+	/**
+	 * In addition to the three listener/event types supported by ChangeSupport,
+	 * we add support for one more type.
+	 */
+	protected ListenerList<IValueChangeListener<T>> valueChangeListenerList = null;
 
 	/**
 	 * Constructs a DecoratingObservableValue which decorates the given
@@ -42,19 +49,34 @@ public class DecoratingObservableValue<T> extends DecoratingObservable
 	}
 
 	public synchronized void addValueChangeListener(
-			IValueChangeListener<? super T> listener) {
-		addListener(ValueChangeEvent.TYPE, listener);
+			IValueChangeListener<T> listener) {
+		addListener(getValueChangeListenerList(), listener);
 	}
 
 	public synchronized void removeValueChangeListener(
-			IValueChangeListener<? super T> listener) {
-		removeListener(ValueChangeEvent.TYPE, listener);
+			IValueChangeListener<T> listener) {
+		removeListener(getValueChangeListenerList(), listener);
+	}
+
+	private ListenerList<IValueChangeListener<T>> getValueChangeListenerList() {
+		if (valueChangeListenerList == null) {
+			valueChangeListenerList = new ListenerList<IValueChangeListener<T>>();
+		}
+		return valueChangeListenerList;
+	}
+
+	protected boolean hasListeners() {
+		return (valueChangeListenerList != null && valueChangeListenerList
+				.hasListeners()) || super.hasListeners();
 	}
 
 	protected void fireValueChange(ValueDiff<T> diff) {
 		// fire general change event first
 		super.fireChange();
-		fireEvent(new ValueChangeEvent<T>(this, diff));
+		if (valueChangeListenerList != null) {
+			valueChangeListenerList.fireEvent(new ValueChangeEvent<T>(this,
+					diff));
+		}
 	}
 
 	protected void fireChange() {

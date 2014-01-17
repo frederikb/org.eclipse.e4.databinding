@@ -11,7 +11,6 @@
 
 package org.eclipse.core.databinding.observable.set;
 
-import org.eclipse.core.databinding.observable.IObservablesListener;
 import org.eclipse.core.databinding.observable.ObservableEvent;
 
 /**
@@ -23,7 +22,8 @@ import org.eclipse.core.databinding.observable.ObservableEvent;
  * @since 1.0
  * 
  */
-public class SetChangeEvent<E> extends ObservableEvent<SetChangeEvent<E>> {
+public class SetChangeEvent<E> extends
+		ObservableEvent<SetChangeEvent<E>, ISetChangeListener<E>> {
 
 	/**
 	 * 
@@ -35,7 +35,7 @@ public class SetChangeEvent<E> extends ObservableEvent<SetChangeEvent<E>> {
 	 * Description of the change to the source observable set. Listeners must
 	 * not change this field.
 	 */
-	public SetDiff<E> diff;
+	public SetDiff<? extends E> diff;
 
 	/**
 	 * Always identical to <code>EventObject.source</code> but the type
@@ -51,7 +51,7 @@ public class SetChangeEvent<E> extends ObservableEvent<SetChangeEvent<E>> {
 	 * @param diff
 	 *            the set change
 	 */
-	public SetChangeEvent(IObservableSet<E> source, SetDiff<E> diff) {
+	public SetChangeEvent(IObservableSet<E> source, SetDiff<? extends E> diff) {
 		super(source);
 		this.typedSource = source;
 		this.diff = diff;
@@ -66,8 +66,8 @@ public class SetChangeEvent<E> extends ObservableEvent<SetChangeEvent<E>> {
 		return typedSource;
 	}
 
-	protected void dispatch(IObservablesListener listener) {
-		((ISetChangeListener<E>) listener).handleSetChange(this);
+	protected void dispatch(ISetChangeListener<E> listener) {
+		listener.handleSetChange(this);
 	}
 
 	protected Object getListenerType() {

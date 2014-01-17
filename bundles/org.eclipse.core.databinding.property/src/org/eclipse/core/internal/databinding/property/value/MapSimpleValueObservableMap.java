@@ -15,6 +15,7 @@ package org.eclipse.core.internal.databinding.property.value;
 
 import java.util.AbstractSet;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -81,24 +82,28 @@ public class MapSimpleValueObservableMap<S, K, I extends S, V> extends
 			knownMasterValues.addAll(knownValues);
 		}
 
-		private MapDiff<K, V> convertDiff(MapDiff<K, I> diff) {
+		private MapDiff<K, V> convertDiff(MapDiff<? extends K, ? extends I> diff) {
 			Map<K, V> oldValues = new IdentityMap<K, V>();
 			Map<K, V> newValues = new IdentityMap<K, V>();
 
-			Set<K> addedKeys = diff.getAddedKeys();
-			for (Iterator<K> it = addedKeys.iterator(); it.hasNext();) {
+			Set<K> addedKeys = new HashSet<K>();
+			for (Iterator<? extends K> it = diff.getAddedKeys().iterator(); it
+					.hasNext();) {
 				K key = it.next();
 				I newSource = diff.getNewValue(key);
 				V newValue = detailProperty.getValue(newSource);
 				newValues.put(key, newValue);
+				addedKeys.add(key);
 			}
 
-			Set<K> removedKeys = diff.getRemovedKeys();
-			for (Iterator<K> it = removedKeys.iterator(); it.hasNext();) {
+			Set<K> removedKeys = new HashSet<K>();
+			for (Iterator<? extends K> it = diff.getRemovedKeys().iterator(); it
+					.hasNext();) {
 				K key = it.next();
 				I oldSource = diff.getOldValue(key);
 				V oldValue = detailProperty.getValue(oldSource);
 				oldValues.put(key, oldValue);
+				removedKeys.add(key);
 			}
 
 			Set<K> changedKeys = new IdentitySet<K>(diff.getChangedKeys());
@@ -187,16 +192,16 @@ public class MapSimpleValueObservableMap<S, K, I extends S, V> extends
 		staleMasterValues = new IdentitySet<I>();
 		knownMasterValues.addSetChangeListener(new ISetChangeListener<I>() {
 			public void handleSetChange(SetChangeEvent<I> event) {
-				for (Iterator<I> it = event.diff.getRemovals().iterator(); it
-						.hasNext();) {
+				for (Iterator<? extends I> it = event.diff.getRemovals()
+						.iterator(); it.hasNext();) {
 					I key = it.next();
 					if (detailListener != null)
 						detailListener.removeFrom(key);
 					cachedValues.remove(key);
 					staleMasterValues.remove(key);
 				}
-				for (Iterator<I> it = event.diff.getAdditions().iterator(); it
-						.hasNext();) {
+				for (Iterator<? extends I> it = event.diff.getAdditions()
+						.iterator(); it.hasNext();) {
 					I key = it.next();
 					cachedValues.put(key, detailProperty.getValue(key));
 					if (detailListener != null)

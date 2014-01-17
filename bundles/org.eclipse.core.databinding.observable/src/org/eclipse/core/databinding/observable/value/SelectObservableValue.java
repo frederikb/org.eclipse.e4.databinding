@@ -53,7 +53,7 @@ public class SelectObservableValue<T> extends AbstractObservableValue<T> {
 	private IValueChangeListener<Boolean> listener = new IValueChangeListener<Boolean>() {
 		public void handleValueChange(ValueChangeEvent<Boolean> event) {
 			if (!updating) {
-				IObservableValue<Boolean> observable = event
+				IObservableValue<? extends Boolean> observable = event
 						.getObservableValue();
 				if (Boolean.TRUE.equals(observable.getValue())) {
 					notifyIfChanged(indexOfObservable(observable));
@@ -198,7 +198,7 @@ public class SelectObservableValue<T> extends AbstractObservableValue<T> {
 		return -1;
 	}
 
-	private int indexOfObservable(IObservableValue<Boolean> observable) {
+	private int indexOfObservable(IObservableValue<? extends Boolean> observable) {
 		for (int i = 0; i < options.size(); i++)
 			if (options.get(i).observable == observable)
 				return i;

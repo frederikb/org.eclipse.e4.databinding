@@ -80,17 +80,20 @@ public class BidiObservableMap<K, V> extends DecoratingObservableMap<K, V> {
 	}
 
 	protected void handleMapChange(MapChangeEvent<K, V> event) {
-		MapDiff<K, V> diff = event.diff;
-		for (Iterator<K> it = diff.getAddedKeys().iterator(); it.hasNext();) {
+		MapDiff<? extends K, ? extends V> diff = event.diff;
+		for (Iterator<? extends K> it = diff.getAddedKeys().iterator(); it
+				.hasNext();) {
 			K addedKey = it.next();
 			addMapping(addedKey, diff.getNewValue(addedKey));
 		}
-		for (Iterator<K> it = diff.getChangedKeys().iterator(); it.hasNext();) {
+		for (Iterator<? extends K> it = diff.getChangedKeys().iterator(); it
+				.hasNext();) {
 			K changedKey = it.next();
 			removeMapping(changedKey, diff.getOldValue(changedKey));
 			addMapping(changedKey, diff.getNewValue(changedKey));
 		}
-		for (Iterator<K> it = diff.getRemovedKeys().iterator(); it.hasNext();) {
+		for (Iterator<? extends K> it = diff.getRemovedKeys().iterator(); it
+				.hasNext();) {
 			K removedKey = it.next();
 			removeMapping(removedKey, diff.getOldValue(removedKey));
 		}

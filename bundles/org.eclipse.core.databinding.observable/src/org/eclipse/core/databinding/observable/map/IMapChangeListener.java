@@ -23,7 +23,8 @@ import org.eclipse.core.databinding.observable.IObservablesListener;
  * @since 1.0
  * 
  */
-public interface IMapChangeListener<K, V> extends IObservablesListener {
+public interface IMapChangeListener<K, V> extends
+		IObservablesListener<IMapChangeListener<K, V>> {
 
 	/**
 	 * Handle a change an observable map. The given event object must only be

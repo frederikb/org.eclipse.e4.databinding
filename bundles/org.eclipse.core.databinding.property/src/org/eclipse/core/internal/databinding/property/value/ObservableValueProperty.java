@@ -80,35 +80,40 @@ public class ObservableValueProperty<T> extends
 
 	public INativePropertyListener<IObservableValue<T>> adaptListener(
 			ISimplePropertyListener<ValueDiff<T>> listener) {
-		return new Listener(this, listener);
+		return new NativeValueListener(this, listener);
 	}
 
-	private class Listener extends
-			NativePropertyListener<IObservableValue<T>, ValueDiff<T>> implements
-			IValueChangeListener<T>, IStaleListener {
-		Listener(IProperty property,
+	private class NativeValueListener extends
+			NativePropertyListener<IObservableValue<T>, ValueDiff<T>> {
+
+		private IValueChangeListener<T> valueChangeListener = new IValueChangeListener<T>() {
+			public void handleValueChange(ValueChangeEvent<T> event) {
+				fireChange(event.getObservableValue(), event.diff);
+			}
+
+		};
+
+		private IStaleListener staleListener = new IStaleListener() {
+			public void handleStale(StaleEvent event) {
+				fireStale(event.getObservable());
+			}
+		};
+
+		NativeValueListener(IProperty property,
 				ISimplePropertyListener<ValueDiff<T>> listener) {
 			super(property, listener);
 		}
 
-		public void handleValueChange(ValueChangeEvent<T> event) {
-			fireChange(event.getObservableValue(), event.diff);
-		}
-
-		public void handleStale(StaleEvent event) {
-			fireStale(event.getObservable());
-		}
-
 		protected void doAddTo(IObservableValue<T> source) {
 			IObservableValue<T> observable = source;
-			observable.addValueChangeListener(this);
-			observable.addStaleListener(this);
+			observable.addValueChangeListener(valueChangeListener);
+			observable.addStaleListener(staleListener);
 		}
 
 		protected void doRemoveFrom(IObservableValue<T> source) {
 			IObservableValue<T> observable = source;
-			observable.removeValueChangeListener(this);
-			observable.removeStaleListener(this);
+			observable.removeValueChangeListener(valueChangeListener);
+			observable.removeStaleListener(staleListener);
 		}
 	}
 

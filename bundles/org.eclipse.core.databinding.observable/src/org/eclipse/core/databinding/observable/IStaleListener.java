@@ -17,7 +17,7 @@ package org.eclipse.core.databinding.observable;
  * 
  * @since 1.0
  */
-public interface IStaleListener extends IObservablesListener {
+public interface IStaleListener extends IObservablesListener<IStaleListener> {
 
 	/**
 	 * Handle the event that the given observable object is now stale. The given

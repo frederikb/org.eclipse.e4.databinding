@@ -59,8 +59,8 @@ public class ObservableSetTreeContentProvider<E> implements
 				if (isViewerDisposed())
 					return;
 
-				Set<E> localAdditions = event.diff.getAdditions();
-				Set<E> localRemovals = event.diff.getRemovals();
+				Set<? extends E> localAdditions = event.diff.getAdditions();
+				Set<? extends E> localRemovals = event.diff.getRemovals();
 
 				Set<E> knownElementAdditions = ViewerElementSet
 						.withComparer(comparer);
@@ -76,7 +76,7 @@ public class ObservableSetTreeContentProvider<E> implements
 					realizedElements.removeAll(knownElementRemovals);
 				}
 
-				for (Iterator<E> iterator = localAdditions.iterator(); iterator
+				for (Iterator<? extends E> iterator = localAdditions.iterator(); iterator
 						.hasNext();) {
 					E child = iterator.next();
 					getOrCreateNode(child).addParent(parentElement);
@@ -85,7 +85,7 @@ public class ObservableSetTreeContentProvider<E> implements
 				viewerUpdater.add(parentElement, localAdditions.toArray());
 				viewerUpdater.remove(parentElement, localRemovals.toArray());
 
-				for (Iterator<E> iterator = localRemovals.iterator(); iterator
+				for (Iterator<? extends E> iterator = localRemovals.iterator(); iterator
 						.hasNext();) {
 					Object child = iterator.next();
 					TreeNode childNode = getExistingNode(child);

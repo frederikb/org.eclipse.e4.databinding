@@ -16,8 +16,9 @@ package org.eclipse.core.databinding.observable;
  * 
  * @noextend This interface is not intended to be extended by clients.
  * 
+ * @param <L>
  * @since 1.0
  */
-public interface IObservablesListener {
+public interface IObservablesListener<L extends IObservablesListener<L>> {
 
 }

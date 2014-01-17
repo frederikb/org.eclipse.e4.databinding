@@ -285,7 +285,7 @@ public abstract class ComputedValue<T> extends AbstractObservableValue<T> {
 	}
 
 	public synchronized void addValueChangeListener(
-			IValueChangeListener<? super T> listener) {
+			IValueChangeListener<T> listener) {
 		super.addValueChangeListener(listener);
 		// If somebody is listening, we need to make sure we attach our own
 		// listeners

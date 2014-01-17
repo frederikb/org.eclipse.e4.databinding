@@ -20,6 +20,7 @@ import java.util.ListIterator;
 
 import org.eclipse.core.databinding.observable.AbstractObservable;
 import org.eclipse.core.databinding.observable.Diffs;
+import org.eclipse.core.databinding.observable.ListenerList;
 import org.eclipse.core.databinding.observable.ObservableTracker;
 import org.eclipse.core.databinding.observable.Realm;
 
@@ -51,6 +52,8 @@ public abstract class ObservableList<E> extends AbstractObservable implements
 	private Object elementTypeAsObject;
 
 	private Class<E> elementType;
+
+	private ListenerList<IListChangeListener<E>> listChangeListenerList = null;
 
 	/**
 	 * 
@@ -108,19 +111,40 @@ public abstract class ObservableList<E> extends AbstractObservable implements
 	}
 
 	public synchronized void addListChangeListener(
-			IListChangeListener<? super E> listener) {
-		addListener(ListChangeEvent.TYPE, listener);
+			IListChangeListener<E> listener) {
+		addListener(getListChangeListenerList(), listener);
 	}
 
+	/**
+	 * @param listener
+	 */
 	public synchronized void removeListChangeListener(
-			IListChangeListener<? super E> listener) {
-		removeListener(ListChangeEvent.TYPE, listener);
+			IListChangeListener<E> listener) {
+		if (listChangeListenerList != null) {
+			removeListener(listChangeListenerList, listener);
+		}
 	}
 
-	protected void fireListChange(ListDiff<E> diff) {
+	private ListenerList<IListChangeListener<E>> getListChangeListenerList() {
+		if (listChangeListenerList == null) {
+			listChangeListenerList = new ListenerList<IListChangeListener<E>>();
+		}
+		return listChangeListenerList;
+	}
+
+	@Override
+	protected boolean hasListeners() {
+		return (listChangeListenerList != null && listChangeListenerList
+				.hasListeners()) || super.hasListeners();
+	}
+
+	protected void fireListChange(ListDiff<? extends E> diff) {
 		// fire general change event first
 		super.fireChange();
-		fireEvent(new ListChangeEvent<E>(this, diff));
+		if (listChangeListenerList != null) {
+			listChangeListenerList
+					.fireEvent(new ListChangeEvent<E>(this, diff));
+		}
 	}
 
 	public boolean contains(Object o) {
@@ -410,6 +434,7 @@ public abstract class ObservableList<E> extends AbstractObservable implements
 	}
 
 	public synchronized void dispose() {
+		listChangeListenerList = null;
 		super.dispose();
 	}
 

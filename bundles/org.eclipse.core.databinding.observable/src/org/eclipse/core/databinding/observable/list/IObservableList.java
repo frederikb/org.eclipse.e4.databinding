@@ -43,7 +43,7 @@ public interface IObservableList<E> extends List<E>, IObservableCollection<E> {
 	 * 
 	 * @param listener
 	 */
-	public void addListChangeListener(IListChangeListener<? super E> listener);
+	public void addListChangeListener(IListChangeListener<E> listener);
 
 	/**
 	 * Removes the given list change listener from the list of list change
@@ -52,7 +52,7 @@ public interface IObservableList<E> extends List<E>, IObservableCollection<E> {
 	 * 
 	 * @param listener
 	 */
-	public void removeListChangeListener(IListChangeListener<? super E> listener);
+	public void removeListChangeListener(IListChangeListener<E> listener);
 
 	/**
 	 * @TrackedGetter

@@ -219,7 +219,7 @@ public class WritableListTest extends TestCase {
 
 		wlist.addListChangeListener(new IListChangeListener<String>() {
 			public void handleListChange(ListChangeEvent<String> event) {
-				for (ListDiffEntry<String> diffEntry : event.diff
+				for (ListDiffEntry<? extends String> diffEntry : event.diff
 						.getDifferencesAsList()) {
 					if (flags[diffEntry.getPosition()]) {
 						throw new RuntimeException("duplicate index in diff");

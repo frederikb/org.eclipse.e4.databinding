@@ -11,7 +11,6 @@
 
 package org.eclipse.core.databinding.observable.value;
 
-import org.eclipse.core.databinding.observable.IObservablesListener;
 import org.eclipse.core.databinding.observable.ObservableEvent;
 
 /**
@@ -23,7 +22,8 @@ import org.eclipse.core.databinding.observable.ObservableEvent;
  * @since 1.0
  * 
  */
-public class ValueChangeEvent<T> extends ObservableEvent<ValueChangeEvent<T>> {
+public class ValueChangeEvent<T> extends
+		ObservableEvent<ValueChangeEvent<T>, IValueChangeListener<T>> {
 
 	/**
 	 * 
@@ -67,8 +67,8 @@ public class ValueChangeEvent<T> extends ObservableEvent<ValueChangeEvent<T>> {
 		return typedSource;
 	}
 
-	protected void dispatch(IObservablesListener listener) {
-		((IValueChangeListener<T>) listener).handleValueChange(this);
+	protected void dispatch(IValueChangeListener<T> listener) {
+		listener.handleValueChange(this);
 	}
 
 	protected Object getListenerType() {

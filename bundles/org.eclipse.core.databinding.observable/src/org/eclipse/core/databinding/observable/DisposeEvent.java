@@ -16,7 +16,8 @@ package org.eclipse.core.databinding.observable;
  * 
  * @since 1.2
  */
-public class DisposeEvent extends ObservableEvent<DisposeEvent> {
+public class DisposeEvent extends
+		ObservableEvent<DisposeEvent, IDisposeListener> {
 	/**
 	 * 
 	 */
@@ -34,8 +35,8 @@ public class DisposeEvent extends ObservableEvent<DisposeEvent> {
 		super(source);
 	}
 
-	protected void dispatch(IObservablesListener listener) {
-		((IDisposeListener) listener).handleDispose(this);
+	protected void dispatch(IDisposeListener listener) {
+		listener.handleDispose(this);
 	}
 
 	protected Object getListenerType() {

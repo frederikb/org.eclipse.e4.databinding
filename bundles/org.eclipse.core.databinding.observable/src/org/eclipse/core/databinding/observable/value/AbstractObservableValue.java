@@ -14,6 +14,7 @@
 package org.eclipse.core.databinding.observable.value;
 
 import org.eclipse.core.databinding.observable.AbstractObservable;
+import org.eclipse.core.databinding.observable.ListenerList;
 import org.eclipse.core.databinding.observable.ObservableTracker;
 import org.eclipse.core.databinding.observable.Realm;
 
@@ -31,6 +32,13 @@ import org.eclipse.core.databinding.observable.Realm;
  */
 abstract public class AbstractObservableValue<T> extends AbstractObservable
 		implements IObservableValue<T> {
+
+	/**
+	 * In addition to the three listener/event types supported by ChangeSupport,
+	 * we add support for one more type.
+	 */
+	protected ListenerList<IValueChangeListener<T>> valueListenerList = null;
+
 	/**
 	 * Constructs a new instance with the default realm.
 	 */
@@ -46,13 +54,28 @@ abstract public class AbstractObservableValue<T> extends AbstractObservable
 	}
 
 	public synchronized void addValueChangeListener(
-			IValueChangeListener<? super T> listener) {
-		addListener(ValueChangeEvent.TYPE, listener);
+			IValueChangeListener<T> listener) {
+		addListener(getValueChangesetListenerList(), listener);
 	}
 
 	public synchronized void removeValueChangeListener(
-			IValueChangeListener<? super T> listener) {
-		removeListener(ValueChangeEvent.TYPE, listener);
+			IValueChangeListener<T> listener) {
+		if (valueListenerList != null) {
+			removeListener(valueListenerList, listener);
+		}
+	}
+
+	private ListenerList<IValueChangeListener<T>> getValueChangesetListenerList() {
+		if (valueListenerList == null) {
+			valueListenerList = new ListenerList<IValueChangeListener<T>>();
+		}
+		return valueListenerList;
+	}
+
+	@Override
+	protected boolean hasListeners() {
+		return ((valueListenerList != null && valueListenerList.hasListeners()) || super
+				.hasListeners());
 	}
 
 	final public void setValue(T value) {
@@ -73,7 +96,9 @@ abstract public class AbstractObservableValue<T> extends AbstractObservable
 	protected void fireValueChange(ValueDiff<T> diff) {
 		// fire general change event first
 		super.fireChange();
-		fireEvent(new ValueChangeEvent<T>(this, diff));
+		if (valueListenerList != null) {
+			valueListenerList.fireEvent(new ValueChangeEvent<T>(this, diff));
+		}
 	}
 
 	public final T getValue() {
@@ -114,4 +139,10 @@ abstract public class AbstractObservableValue<T> extends AbstractObservable
 		}
 		return null;
 	}
+
+	public synchronized void dispose() {
+		valueListenerList = null;
+		super.dispose();
+	}
+
 }

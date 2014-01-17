@@ -17,6 +17,7 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.eclipse.core.databinding.observable.AbstractObservable;
+import org.eclipse.core.databinding.observable.ListenerList;
 import org.eclipse.core.databinding.observable.ObservableTracker;
 import org.eclipse.core.databinding.observable.Realm;
 
@@ -39,6 +40,8 @@ public abstract class AbstractObservableSet<E> extends AbstractObservable
 
 	private boolean stale = false;
 
+	protected ListenerList<ISetChangeListener<E>> setChangeListenerList = null;
+
 	protected AbstractObservableSet() {
 		this(Realm.getDefault());
 	}
@@ -55,14 +58,22 @@ public abstract class AbstractObservableSet<E> extends AbstractObservable
 		super(realm);
 	}
 
-	public synchronized void addSetChangeListener(
-			ISetChangeListener<? super E> listener) {
-		addListener(SetChangeEvent.TYPE, listener);
+	public synchronized void addSetChangeListener(ISetChangeListener<E> listener) {
+		addListener(getSetChangeListenerList(), listener);
 	}
 
 	public synchronized void removeSetChangeListener(
-			ISetChangeListener<? super E> listener) {
-		removeListener(SetChangeEvent.TYPE, listener);
+			ISetChangeListener<E> listener) {
+		if (setChangeListenerList != null) {
+			removeListener(setChangeListenerList, listener);
+		}
+	}
+
+	private ListenerList<ISetChangeListener<E>> getSetChangeListenerList() {
+		if (setChangeListenerList == null) {
+			setChangeListenerList = new ListenerList<ISetChangeListener<E>>();
+		}
+		return setChangeListenerList;
 	}
 
 	protected abstract Set<E> getWrappedSet();
@@ -71,7 +82,9 @@ public abstract class AbstractObservableSet<E> extends AbstractObservable
 		// fire general change event first
 		super.fireChange();
 
-		fireEvent(new SetChangeEvent<E>(this, diff));
+		if (setChangeListenerList != null) {
+			setChangeListenerList.fireEvent(new SetChangeEvent<E>(this, diff));
+		}
 	}
 
 	public boolean contains(Object o) {

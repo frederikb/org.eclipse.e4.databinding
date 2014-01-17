@@ -17,7 +17,8 @@ package org.eclipse.core.databinding.observable;
  * 
  * @since 1.2
  */
-public interface IDisposeListener extends IObservablesListener {
+public interface IDisposeListener extends
+		IObservablesListener<IDisposeListener> {
 	/**
 	 * Handle the event that the given observable object has been disposed. The
 	 * given event object must only be used locally in this method because it

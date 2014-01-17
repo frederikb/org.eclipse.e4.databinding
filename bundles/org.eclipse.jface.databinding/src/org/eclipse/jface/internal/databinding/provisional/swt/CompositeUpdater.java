@@ -23,6 +23,7 @@ import org.eclipse.core.databinding.observable.ObservableTracker;
 import org.eclipse.core.databinding.observable.list.IListChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.list.ListChangeEvent;
+import org.eclipse.core.databinding.observable.list.ListDiff;
 import org.eclipse.core.databinding.observable.list.ListDiffEntry;
 import org.eclipse.swt.events.DisposeEvent;
 import org.eclipse.swt.events.DisposeListener;
@@ -143,9 +144,15 @@ public abstract class CompositeUpdater {
 		}
 
 		public void handleListChange(ListChangeEvent<Object> event) {
-			List<ListDiffEntry<Object>> diffs = event.diff
-					.getDifferencesAsList();
-			for (ListDiffEntry<Object> listDiffEntry : diffs) {
+			updateWithDiff(event.diff);
+		}
+
+		/**
+		 * @param diff
+		 */
+		private <T extends Object> void updateWithDiff(ListDiff<T> diff) {
+			List<ListDiffEntry<T>> diffs = diff.getDifferencesAsList();
+			for (ListDiffEntry<T> listDiffEntry : diffs) {
 				if (listDiffEntry.isAddition()) {
 					createChild(listDiffEntry.getElement(),
 							listDiffEntry.getPosition());

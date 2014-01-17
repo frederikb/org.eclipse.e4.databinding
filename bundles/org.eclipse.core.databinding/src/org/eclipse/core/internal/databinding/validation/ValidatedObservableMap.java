@@ -61,7 +61,7 @@ public class ValidatedObservableMap<K, V> extends ObservableMap<K, V> {
 					stale = false;
 					updateWrappedMap(new HashMap<K, V>(target));
 				} else {
-					MapDiff<K, V> diff = event.diff;
+					MapDiff<? extends K, ? extends V> diff = event.diff;
 					if (computeNextDiff) {
 						diff = Diffs.computeMapDiff(wrappedMap, target);
 						computeNextDiff = false;
@@ -127,16 +127,16 @@ public class ValidatedObservableMap<K, V> extends ObservableMap<K, V> {
 		return status.isOK() || status.matches(IStatus.INFO | IStatus.WARNING);
 	}
 
-	private void applyDiff(MapDiff<K, V> diff, Map<K, V> map) {
-		for (Iterator<K> iterator = diff.getRemovedKeys().iterator(); iterator
+	private void applyDiff(MapDiff<? extends K, ? extends V> diff, Map<K, V> map) {
+		for (Iterator<? extends K> iterator = diff.getRemovedKeys().iterator(); iterator
 				.hasNext();)
 			map.remove(iterator.next());
-		for (Iterator<K> iterator = diff.getChangedKeys().iterator(); iterator
+		for (Iterator<? extends K> iterator = diff.getChangedKeys().iterator(); iterator
 				.hasNext();) {
 			K key = iterator.next();
 			map.put(key, diff.getNewValue(key));
 		}
-		for (Iterator<K> iterator = diff.getAddedKeys().iterator(); iterator
+		for (Iterator<? extends K> iterator = diff.getAddedKeys().iterator(); iterator
 				.hasNext();) {
 			K key = iterator.next();
 			map.put(key, diff.getNewValue(key));

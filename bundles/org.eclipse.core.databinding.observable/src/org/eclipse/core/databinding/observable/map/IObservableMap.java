@@ -23,7 +23,9 @@ import org.eclipse.core.databinding.observable.IObservable;
  * Observable Map.
  * 
  * @param <K>
+ *            type of the keys to the map
  * @param <V>
+ *            type of the values in the map
  * 
  * @noimplement This interface is not intended to be implemented by clients.
  *              Clients should instead subclass one of the classes that

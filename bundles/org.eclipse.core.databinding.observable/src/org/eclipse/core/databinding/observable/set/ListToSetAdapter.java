@@ -20,6 +20,7 @@ import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.core.databinding.observable.list.IListChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.list.ListChangeEvent;
+import org.eclipse.core.databinding.observable.list.ListDiff;
 import org.eclipse.core.databinding.observable.list.ListDiffEntry;
 
 /**
@@ -43,12 +44,16 @@ public class ListToSetAdapter<E> extends ObservableSet<E> {
 	private IListChangeListener<E> listener = new IListChangeListener<E>() {
 
 		public void handleListChange(ListChangeEvent<E> event) {
-			Set<E> added = new HashSet<E>();
-			Set<E> removed = new HashSet<E>();
-			List<ListDiffEntry<E>> differences = event.diff
-					.getDifferencesAsList();
-			for (ListDiffEntry<E> entry : differences) {
-				E element = entry.getElement();
+			SetDiff<? extends E> newDiff = createSetDiff(event.diff);
+			fireSetChange(newDiff);
+		}
+
+		private <E2 extends E> SetDiff<E2> createSetDiff(ListDiff<E2> diff) {
+			Set<E2> added = new HashSet<E2>();
+			Set<E2> removed = new HashSet<E2>();
+			List<ListDiffEntry<E2>> differences = diff.getDifferencesAsList();
+			for (ListDiffEntry<E2> entry : differences) {
+				E2 element = entry.getElement();
 				if (entry.isAddition()) {
 					if (wrappedSet.add(element)) {
 						if (!removed.remove(element))
@@ -61,7 +66,7 @@ public class ListToSetAdapter<E> extends ObservableSet<E> {
 					}
 				}
 			}
-			fireSetChange(Diffs.createSetDiff(added, removed));
+			return Diffs.createSetDiff(added, removed);
 		}
 	};
 

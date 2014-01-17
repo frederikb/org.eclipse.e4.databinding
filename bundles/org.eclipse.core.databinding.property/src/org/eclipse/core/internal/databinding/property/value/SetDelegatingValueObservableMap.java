@@ -14,6 +14,7 @@ package org.eclipse.core.internal.databinding.property.value;
 import java.util.AbstractSet;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -140,20 +141,26 @@ public class SetDelegatingValueObservableMap<S, K extends S, V> extends
 			fireMapChange(diff);
 		}
 
-		private MapDiff<K, V> convertDiff(SetDiff<K> diff) {
+		private MapDiff<K, V> convertDiff(SetDiff<? extends K> diff) {
 			// Convert diff to detail value
 			Map<K, V> oldValues = new HashMap<K, V>();
 			Map<K, V> newValues = new HashMap<K, V>();
 
-			for (Iterator<K> it = diff.getRemovals().iterator(); it.hasNext();) {
+			Set<K> removedKeys = new HashSet<K>();
+			for (Iterator<? extends K> it = diff.getRemovals().iterator(); it
+					.hasNext();) {
 				K masterElement = it.next();
 				oldValues.put(masterElement, cache.get(masterElement));
+				removedKeys.add(masterElement);
 			}
-			for (Iterator<K> it = diff.getAdditions().iterator(); it.hasNext();) {
+			Set<K> addedKeys = new HashSet<K>();
+			for (Iterator<? extends K> it = diff.getAdditions().iterator(); it
+					.hasNext();) {
 				K masterElement = it.next();
 				newValues.put(masterElement, cache.get(masterElement));
+				addedKeys.add(masterElement);
 			}
-			return Diffs.createMapDiff(diff.getAdditions(), diff.getRemovals(),
+			return Diffs.createMapDiff(addedKeys, removedKeys,
 					Collections.<K> emptySet(), oldValues, newValues);
 		}
 	};

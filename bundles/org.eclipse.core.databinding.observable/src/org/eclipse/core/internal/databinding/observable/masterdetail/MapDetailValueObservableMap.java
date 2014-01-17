@@ -115,15 +115,16 @@ public class MapDetailValueObservableMap<K, M, E> extends
 		handleMasterMapChange(initMasterDiff);
 	}
 
-	private void handleMasterMapChange(MapDiff<K, M> diff) {
+	private <K2 extends K, M2 extends M> void handleMasterMapChange(
+			MapDiff<K2, M2> diff) {
 		// Collect the detail values for the master values in the input diff.
-		IdentityMap<K, E> oldValues = new IdentityMap<K, E>();
-		IdentityMap<K, E> newValues = new IdentityMap<K, E>();
+		IdentityMap<K2, E> oldValues = new IdentityMap<K2, E>();
+		IdentityMap<K2, E> newValues = new IdentityMap<K2, E>();
 
 		// Handle added master values.
-		Set<K> addedKeys = diff.getAddedKeys();
-		for (Iterator<K> iter = addedKeys.iterator(); iter.hasNext();) {
-			K addedKey = iter.next();
+		Set<K2> addedKeys = diff.getAddedKeys();
+		for (Iterator<K2> iter = addedKeys.iterator(); iter.hasNext();) {
+			K2 addedKey = iter.next();
 
 			// For added master values, we set up a new detail observable.
 			addDetailObservable(addedKey);
@@ -134,9 +135,9 @@ public class MapDetailValueObservableMap<K, M, E> extends
 		}
 
 		// Handle removed master values.
-		Set<K> removedKeys = diff.getRemovedKeys();
-		for (Iterator<K> iter = removedKeys.iterator(); iter.hasNext();) {
-			K removedKey = iter.next();
+		Set<K2> removedKeys = diff.getRemovedKeys();
+		for (Iterator<K2> iter = removedKeys.iterator(); iter.hasNext();) {
+			K2 removedKey = iter.next();
 
 			// First of all, get the current detail value and add it to the set
 			// of old values of the new diff.
@@ -148,9 +149,9 @@ public class MapDetailValueObservableMap<K, M, E> extends
 		}
 
 		// Handle changed master values.
-		Set<K> changedKeys = diff.getChangedKeys();
-		for (Iterator<K> iter = changedKeys.iterator(); iter.hasNext();) {
-			K changedKey = iter.next();
+		Set<K2> changedKeys = diff.getChangedKeys();
+		for (Iterator<K2> iter = changedKeys.iterator(); iter.hasNext();) {
+			K2 changedKey = iter.next();
 
 			// Get the detail value prior to the change and add it to the set of
 			// old values of the new diff.

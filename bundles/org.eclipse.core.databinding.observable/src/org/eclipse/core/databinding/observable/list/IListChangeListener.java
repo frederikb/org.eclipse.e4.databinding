@@ -20,7 +20,8 @@ import org.eclipse.core.databinding.observable.IObservablesListener;
  * 
  * @since 1.0
  */
-public interface IListChangeListener<E> extends IObservablesListener {
+public interface IListChangeListener<E> extends
+		IObservablesListener<IListChangeListener<E>> {
 
 	/**
 	 * Handle a change to an observable list. The change is described by the

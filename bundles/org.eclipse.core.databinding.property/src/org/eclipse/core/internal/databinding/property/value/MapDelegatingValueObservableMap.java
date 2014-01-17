@@ -147,24 +147,26 @@ public class MapDelegatingValueObservableMap<S, K, I extends S, V> extends
 			fireMapChange(diff);
 		}
 
-		private MapDiff<K, V> convertDiff(MapDiff<K, I> diff) {
+		private MapDiff<K, V> convertDiff(MapDiff<? extends K, ? extends I> diff) {
 			Map<K, V> oldValues = new HashMap<K, V>();
 			Map<K, V> newValues = new HashMap<K, V>();
 
-			Set<K> addedKeys = diff.getAddedKeys();
-			for (Iterator<K> it = addedKeys.iterator(); it.hasNext();) {
+			Set<K> addedKeys = new HashSet<K>();
+			for (Iterator<? extends K> it = diff.getAddedKeys().iterator(); it
+					.hasNext();) {
 				K key = it.next();
 				I masterValue = diff.getNewValue(key);
 				V newValue = cache.get(masterValue);
 				newValues.put(key, newValue);
+				addedKeys.add(key);
 			}
 
-			Set<K> removedKeys = diff.getRemovedKeys();
-			for (Iterator<K> it = removedKeys.iterator(); it.hasNext();) {
-				K key = it.next();
+			Set<K> removedKeys = new HashSet<K>();
+			for (K key : diff.getRemovedKeys()) {
 				I masterValue = diff.getOldValue(key);
 				V oldValue = cache.get(masterValue);
 				oldValues.put(key, oldValue);
+				removedKeys.add(key);
 			}
 
 			Set<K> changedKeys = new HashSet<K>(diff.getChangedKeys());

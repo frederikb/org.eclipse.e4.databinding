@@ -81,10 +81,16 @@ public class TitleAreaDialogSupport {
 	private IListChangeListener<ValidationStatusProvider> validationStatusProvidersListener = new IListChangeListener<ValidationStatusProvider>() {
 		public void handleListChange(
 				ListChangeEvent<ValidationStatusProvider> event) {
-			ListDiff<ValidationStatusProvider> diff = event.diff;
-			List<ListDiffEntry<ValidationStatusProvider>> differences = diff
-					.getDifferencesAsList();
-			for (ListDiffEntry<ValidationStatusProvider> listDiffEntry : differences) {
+			processListChange(event.diff);
+		}
+
+		/**
+		 * @param diff
+		 */
+		private <T extends ValidationStatusProvider> void processListChange(
+				ListDiff<T> diff) {
+			List<ListDiffEntry<T>> differences = diff.getDifferencesAsList();
+			for (ListDiffEntry<? extends ValidationStatusProvider> listDiffEntry : differences) {
 				ValidationStatusProvider validationStatusProvider = listDiffEntry
 						.getElement();
 				IObservableList<IObservable> targets = validationStatusProvider
@@ -107,10 +113,15 @@ public class TitleAreaDialogSupport {
 	};
 	private IListChangeListener<IObservable> validationStatusProviderTargetsListener = new IListChangeListener<IObservable>() {
 		public void handleListChange(ListChangeEvent<IObservable> event) {
-			ListDiff<IObservable> diff = event.diff;
-			List<ListDiffEntry<IObservable>> differences = diff
-					.getDifferencesAsList();
-			for (ListDiffEntry<IObservable> listDiffEntry : differences) {
+			processListDiff(event.diff);
+		}
+
+		/**
+		 * @param diff
+		 */
+		private <T extends IObservable> void processListDiff(ListDiff<T> diff) {
+			List<ListDiffEntry<T>> differences = diff.getDifferencesAsList();
+			for (ListDiffEntry<? extends IObservable> listDiffEntry : differences) {
 				IObservable target = listDiffEntry.getElement();
 				if (listDiffEntry.isAddition()) {
 					target.addChangeListener(uiChangeListener);

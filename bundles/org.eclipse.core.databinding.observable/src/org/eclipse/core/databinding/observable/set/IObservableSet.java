@@ -40,12 +40,12 @@ public interface IObservableSet<E> extends Set<E>, IObservableCollection<E> {
 	/**
 	 * @param listener
 	 */
-	public void addSetChangeListener(ISetChangeListener<? super E> listener);
+	public void addSetChangeListener(ISetChangeListener<E> listener);
 
 	/**
 	 * @param listener
 	 */
-	public void removeSetChangeListener(ISetChangeListener<? super E> listener);
+	public void removeSetChangeListener(ISetChangeListener<E> listener);
 
 	/**
 	 * @return the element type or <code>null</code> if untyped

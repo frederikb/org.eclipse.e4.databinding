@@ -444,12 +444,33 @@ public class Diffs {
 		final Map<K, V> newValues = new HashMap<K, V>();
 
 		for (Object newKey : newMap.keySet()) {
-			addedKeys.add(keyType.cast(newKey));
+			if (keyType == null) {
+				// Unfortunately we don't always have a class object available
+				// here to do a safe cast. In fact this occurs in one of the
+				// test cases.
+				addedKeys.add((K) newKey);
+			} else {
+				addedKeys.add(keyType.cast(newKey));
+			}
 		}
 
 		for (Map.Entry<?, ?> oldEntry : oldMap.entrySet()) {
-			K oldKey = keyType.cast(oldEntry.getKey());
-			V oldValue = valueType.cast(oldEntry.getValue());
+			// Unfortunately we don't always have a class object available
+			// here to do a safe cast. In fact this occurs in one of the
+			// test cases.
+			K oldKey;
+			V oldValue;
+			if (keyType == null) {
+				oldKey = (K) oldEntry.getKey();
+			} else {
+				oldKey = keyType.cast(oldEntry.getKey());
+			}
+			if (valueType == null) {
+				oldValue = (V) oldEntry.getValue();
+			} else {
+				oldValue = valueType.cast(oldEntry.getValue());
+			}
+
 			if (addedKeys.remove(oldKey)) {
 				// potentially changed key since it is in oldMap and newMap
 				V newValue = valueType.cast(newMap.get(oldKey));
@@ -465,7 +486,14 @@ public class Diffs {
 		}
 		for (Iterator<K> it = addedKeys.iterator(); it.hasNext();) {
 			K newKey = it.next();
-			newValues.put(newKey, valueType.cast(newMap.get(newKey)));
+			if (keyType == null) {
+				// Unfortunately we don't always have a class object available
+				// here to do a safe cast. In fact this occurs in one of the
+				// test cases.
+				newValues.put(newKey, (V) newMap.get(newKey));
+			} else {
+				newValues.put(newKey, valueType.cast(newMap.get(newKey)));
+			}
 		}
 		return new MapDiff<K, V>() {
 			public Set<K> getAddedKeys() {
@@ -824,10 +852,19 @@ public class Diffs {
 	 * @param <V>
 	 *            the type of mapped values
 	 * @param addedKeys
+	 *            keys that were previously in the map, so does not include
+	 *            changed keys
 	 * @param removedKeys
+	 *            keys that are no longer in the map, so does not include
+	 *            changed keys
 	 * @param changedKeys
 	 * @param oldValues
+	 *            old values of all removed and changed keys, so the keys in
+	 *            this map will be the keys in removedKeys and the keys in
+	 *            changedKeys
 	 * @param newValues
+	 *            new values of all added and changed keys, so the keys in this
+	 *            map will be the keys in addedKeys and the keys in changedKeys
 	 * @return a map diff
 	 */
 	public static <K, V> MapDiff<K, V> createMapDiff(final Set<K> addedKeys,

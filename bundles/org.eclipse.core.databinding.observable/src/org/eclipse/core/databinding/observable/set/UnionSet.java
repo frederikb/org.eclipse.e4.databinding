@@ -43,17 +43,34 @@ import org.eclipse.core.internal.databinding.observable.StalenessTracker;
  */
 public final class UnionSet<E> extends ObservableSet<E> {
 
+	private class MyListenerManager<E2 extends E> extends
+			SetListenerManager<E2> {
+
+		/**
+		 * @param decoratedSet
+		 */
+		public MyListenerManager(IObservableSet<E2> decoratedSet) {
+			super(decoratedSet);
+		}
+
+		@Override
+		public void handleSetChange(SetChangeEvent<E2> event) {
+			processAddsAndRemoves(event.diff.getAdditions(),
+					event.diff.getRemovals());
+		}
+	}
+
 	/**
 	 * child sets
 	 */
-	private Set<IObservableSet<? extends E>> childSets;
+	private Set<MyListenerManager<?>> childSets;
 
 	private boolean stale = false;
 
 	/**
-	 * Map of elements onto Integer reference counts. This map is constructed
-	 * when the first listener is added to the union set. Null if nobody is
-	 * listening to the UnionSet.
+	 * Map of elements to reference counts, being the number of child sets that
+	 * contain the element. This map is constructed when the first listener is
+	 * added to the union set. Null if nobody is listening to the UnionSet.
 	 */
 	private HashMap<E, Integer> refCounts = null;
 
@@ -93,18 +110,22 @@ public final class UnionSet<E> extends ObservableSet<E> {
 	public UnionSet(Set<IObservableSet<? extends E>> childSets,
 			Object elementType) {
 		super(childSets.iterator().next().getRealm(), null, elementType);
-		this.childSets = childSets;
+
+		this.childSets = new HashSet<MyListenerManager<?>>();
+		for (IObservableSet<? extends E> childSet : childSets) {
+			addChildSet(childSet);
+		}
 
 		this.stalenessTracker = new StalenessTracker(
 				childSets.toArray(new IObservableSet[0]), stalenessConsumer);
 	}
 
-	private ISetChangeListener<E> childSetChangeListener = new ISetChangeListener<E>() {
-		public void handleSetChange(SetChangeEvent<E> event) {
-			processAddsAndRemoves(event.diff.getAdditions(),
-					event.diff.getRemovals());
-		}
-	};
+	/**
+	 * @param childSet
+	 */
+	private <E2 extends E> void addChildSet(IObservableSet<E2> childSet) {
+		this.childSets.add(new MyListenerManager<E2>(childSet));
+	}
 
 	private IStalenessConsumer stalenessConsumer = new IStalenessConsumer() {
 		public void setStale(boolean stale) {
@@ -122,8 +143,8 @@ public final class UnionSet<E> extends ObservableSet<E> {
 			return stale;
 		}
 
-		for (IObservableSet<? extends E> childSet : childSets) {
-			if (childSet.isStale()) {
+		for (MyListenerManager<?> childSet : childSets) {
+			if (childSet.decoratedSet.isStale()) {
 				return true;
 			}
 		}
@@ -177,9 +198,9 @@ public final class UnionSet<E> extends ObservableSet<E> {
 		super.firstListenerAdded();
 
 		refCounts = new HashMap<E, Integer>();
-		for (IObservableSet<? extends E> childSet : childSets) {
-			childSet.addSetChangeListener(childSetChangeListener);
-			incrementRefCounts(childSet);
+		for (MyListenerManager<?> childSet : childSets) {
+			childSet.addListener();
+			incrementRefCounts(childSet.decoratedSet);
 		}
 		stalenessTracker = new StalenessTracker(
 				childSets.toArray(new IObservable[0]), stalenessConsumer);
@@ -189,29 +210,39 @@ public final class UnionSet<E> extends ObservableSet<E> {
 	protected void lastListenerRemoved() {
 		super.lastListenerRemoved();
 
-		for (IObservableSet<? extends E> childSet : childSets) {
-			childSet.removeSetChangeListener(childSetChangeListener);
-			stalenessTracker.removeObservable(childSet);
+		for (MyListenerManager<?> childSet : childSets) {
+			childSet.removeListener();
+			stalenessTracker.removeObservable(childSet.decoratedSet);
 		}
 		refCounts = null;
 		stalenessTracker = null;
 		setWrappedSet(null);
 	}
 
-	private ArrayList<E> incrementRefCounts(Collection<? extends E> added) {
+	/**
+	 * For all the elements given to this method, add one to the reference count
+	 * in our map that maps elements to their reference count.
+	 * 
+	 * @param addedElements
+	 * @return the elements for which the prior reference count was zero, this
+	 *         collection of elements being a subset of the elements passed in
+	 */
+	private ArrayList<E> incrementRefCounts(
+			Collection<? extends E> addedElements) {
 		ArrayList<E> adds = new ArrayList<E>();
 
-		for (Iterator<? extends E> iter = added.iterator(); iter.hasNext();) {
-			E next = iter.next();
+		for (Iterator<? extends E> iter = addedElements.iterator(); iter
+				.hasNext();) {
+			E addedElement = iter.next();
 
-			Integer refCount = refCounts.get(next);
+			Integer refCount = refCounts.get(addedElement);
 			if (refCount == null) {
-				adds.add(next);
+				adds.add(addedElement);
 				refCount = new Integer(1);
-				refCounts.put(next, refCount);
+				refCounts.put(addedElement, refCount);
 			} else {
 				refCount = new Integer(refCount.intValue() + 1);
-				refCounts.put(next, refCount);
+				refCounts.put(addedElement, refCount);
 			}
 		}
 		return adds;
@@ -229,8 +260,8 @@ public final class UnionSet<E> extends ObservableSet<E> {
 		// If there is no cached value, compute the union from scratch
 		if (refCounts == null) {
 			Set<E> result = new HashSet<E>();
-			for (IObservableSet<? extends E> childSet : childSets) {
-				result.addAll(childSet);
+			for (MyListenerManager<?> childSet : childSets) {
+				result.addAll(childSet.decoratedSet);
 			}
 			return result;
 		}

@@ -151,16 +151,17 @@ public class ListDetailValueObservableList<M, E> extends
 		staleDetailObservables.clear();
 	}
 
-	private void handleMasterListChange(ListDiff<M> masterListDiff) {
+	private <M2 extends M> void handleMasterListChange(
+			ListDiff<M2> masterListDiff) {
 		boolean wasStale = isStale();
 
 		boolean hasListeners = hasListeners();
-		List<ListDiffEntry<M>> masterEntries = masterListDiff
+		List<ListDiffEntry<M2>> masterEntries = masterListDiff
 				.getDifferencesAsList();
 		List<ListDiffEntry<E>> detailEntries = new ArrayList<ListDiffEntry<E>>(
 				masterEntries.size());
 		for (int i = 0; i < masterEntries.size(); i++) {
-			ListDiffEntry<M> masterEntry = masterEntries.get(i);
+			ListDiffEntry<M2> masterEntry = masterEntries.get(i);
 			int index = masterEntry.getPosition();
 
 			M masterElement = masterEntry.getElement();

@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.core.databinding.observable.AbstractObservable;
+import org.eclipse.core.databinding.observable.ListenerList;
 import org.eclipse.core.databinding.observable.ObservableTracker;
 import org.eclipse.core.databinding.observable.Realm;
 
@@ -30,7 +31,9 @@ import org.eclipse.core.databinding.observable.Realm;
  * </p>
  * 
  * @param <K>
+ *            type of the keys to the map
  * @param <V>
+ *            type of the values in the map
  * 
  * @since 1.0
  */
@@ -40,6 +43,8 @@ public class ObservableMap<K, V> extends AbstractObservable implements
 	protected Map<K, V> wrappedMap;
 
 	private boolean stale = false;
+
+	private ListenerList<IMapChangeListener<K, V>> mapChangeListenerList = null;
 
 	/**
 	 * @param wrappedMap
@@ -59,12 +64,30 @@ public class ObservableMap<K, V> extends AbstractObservable implements
 
 	public synchronized void addMapChangeListener(
 			IMapChangeListener<K, V> listener) {
-		addListener(MapChangeEvent.TYPE, listener);
+		addListener(getMapChangeListenerList(), listener);
 	}
 
+	/**
+	 * @param listener
+	 */
 	public synchronized void removeMapChangeListener(
 			IMapChangeListener<K, V> listener) {
-		removeListener(MapChangeEvent.TYPE, listener);
+		if (mapChangeListenerList != null) {
+			removeListener(mapChangeListenerList, listener);
+		}
+	}
+
+	private ListenerList<IMapChangeListener<K, V>> getMapChangeListenerList() {
+		if (mapChangeListenerList == null) {
+			mapChangeListenerList = new ListenerList<IMapChangeListener<K, V>>();
+		}
+		return mapChangeListenerList;
+	}
+
+	@Override
+	protected boolean hasListeners() {
+		return (mapChangeListenerList != null && mapChangeListenerList
+				.hasListeners()) || super.hasListeners();
 	}
 
 	/**
@@ -85,13 +108,16 @@ public class ObservableMap<K, V> extends AbstractObservable implements
 		ObservableTracker.getterCalled(this);
 	}
 
-	protected void fireMapChange(MapDiff<K, V> diff) {
+	protected <K2 extends K, V2 extends V> void fireMapChange(
+			MapDiff<K2, V2> diff) {
 		checkRealm();
 
 		// fire general change event first
 		super.fireChange();
-
-		fireEvent(new MapChangeEvent<K, V>(this, diff));
+		if (mapChangeListenerList != null) {
+			mapChangeListenerList
+					.fireEvent(new MapChangeEvent<K, V>(this, diff));
+		}
 	}
 
 	public boolean containsKey(Object key) {
@@ -188,6 +214,7 @@ public class ObservableMap<K, V> extends AbstractObservable implements
 	}
 
 	public synchronized void dispose() {
+		mapChangeListenerList = null;
 		super.dispose();
 	}
 }

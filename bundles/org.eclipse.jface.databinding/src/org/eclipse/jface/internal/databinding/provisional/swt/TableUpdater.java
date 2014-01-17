@@ -19,6 +19,7 @@ import org.eclipse.core.databinding.observable.ObservableTracker;
 import org.eclipse.core.databinding.observable.list.IListChangeListener;
 import org.eclipse.core.databinding.observable.list.IObservableList;
 import org.eclipse.core.databinding.observable.list.ListChangeEvent;
+import org.eclipse.core.databinding.observable.list.ListDiff;
 import org.eclipse.core.databinding.observable.list.ListDiffEntry;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.swt.SWT;
@@ -151,9 +152,15 @@ public abstract class TableUpdater {
 
 	private IListChangeListener<Object> listChangeListener = new IListChangeListener<Object>() {
 		public void handleListChange(ListChangeEvent<Object> event) {
-			List<ListDiffEntry<Object>> differences = event.diff
-					.getDifferencesAsList();
-			for (ListDiffEntry<Object> entry : differences) {
+			processListDiff(event.diff);
+		}
+
+		/**
+		 * @param diff
+		 */
+		private <T extends Object> void processListDiff(ListDiff<T> diff) {
+			List<ListDiffEntry<T>> differences = diff.getDifferencesAsList();
+			for (ListDiffEntry<? extends Object> entry : differences) {
 				if (entry.isAddition()) {
 					TableItem item = new TableItem(table, SWT.NONE,
 							entry.getPosition());
@@ -168,7 +175,7 @@ public abstract class TableUpdater {
 		}
 	};
 
-	private IObservableList<IListChangeListener<Object>> list;
+	private IObservableList<Object> list;
 
 	/**
 	 * Creates an updater for the given control.
@@ -178,8 +185,7 @@ public abstract class TableUpdater {
 	 * @param list
 	 * @since 1.2
 	 */
-	public TableUpdater(Table table,
-			IObservableList<IListChangeListener<Object>> list) {
+	public TableUpdater(Table table, IObservableList<Object> list) {
 		this.table = table;
 		this.list = list;
 		Assert.isLegal((table.getStyle() & SWT.VIRTUAL) != 0,

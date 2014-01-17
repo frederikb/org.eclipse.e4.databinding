@@ -331,7 +331,7 @@ public abstract class ObservableCollectionTreeContentProvider<E> implements
 	 *         elements set
 	 */
 	protected Set<E> findPendingRemovals(Object parent,
-			Collection<E> elementsToBeRemoved) {
+			Collection<? extends E> elementsToBeRemoved) {
 		Set<E> result = ViewerElementSet.withComparer(comparer);
 		Set<Object> parents = ViewerElementSet.withComparer(comparer);
 		parents.add(parent);
@@ -340,8 +340,9 @@ public abstract class ObservableCollectionTreeContentProvider<E> implements
 	}
 
 	private void accumulatePendingRemovals(Set<E> removals,
-			Set<Object> parents, Collection<E> elementsToRemove) {
-		for (Iterator<E> it = elementsToRemove.iterator(); it.hasNext();) {
+			Set<Object> parents, Collection<? extends E> elementsToRemove) {
+		for (Iterator<? extends E> it = elementsToRemove.iterator(); it
+				.hasNext();) {
 			E element = it.next();
 			TreeNode node = getExistingNode(element);
 			if (node != null) {

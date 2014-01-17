@@ -81,12 +81,12 @@ public class ListSimpleValueObservableList<S, M extends S, T> extends
 			knownMasterElements.addAll(identityKnownElements);
 		}
 
-		private ListDiff<T> convertDiff(ListDiff<M> diff) {
+		private <M2 extends M> ListDiff<T> convertDiff(ListDiff<M2> diff) {
 			// Convert diff to detail value
-			List<ListDiffEntry<M>> masterEntries = diff.getDifferencesAsList();
+			List<ListDiffEntry<M2>> masterEntries = diff.getDifferencesAsList();
 			List<ListDiffEntry<T>> detailEntries = new ArrayList<ListDiffEntry<T>>(
 					masterEntries.size());
-			for (ListDiffEntry<M> masterDifference : masterEntries) {
+			for (ListDiffEntry<M2> masterDifference : masterEntries) {
 				int index = masterDifference.getPosition();
 				boolean addition = masterDifference.isAddition();
 				M masterElement = masterDifference.getElement();
@@ -152,16 +152,16 @@ public class ListSimpleValueObservableList<S, M extends S, T> extends
 		staleElements = new IdentitySet<M>();
 		knownMasterElements.addSetChangeListener(new ISetChangeListener<M>() {
 			public void handleSetChange(SetChangeEvent<M> event) {
-				for (Iterator<M> it = event.diff.getRemovals().iterator(); it
-						.hasNext();) {
+				for (Iterator<? extends M> it = event.diff.getRemovals()
+						.iterator(); it.hasNext();) {
 					M key = it.next();
 					if (detailListener != null)
 						detailListener.removeFrom(key);
 					cachedValues.remove(key);
 					staleElements.remove(key);
 				}
-				for (Iterator<M> it = event.diff.getAdditions().iterator(); it
-						.hasNext();) {
+				for (Iterator<? extends M> it = event.diff.getAdditions()
+						.iterator(); it.hasNext();) {
 					M key = it.next();
 					cachedValues.put(key, detailProperty.getValue(key));
 					if (detailListener != null)

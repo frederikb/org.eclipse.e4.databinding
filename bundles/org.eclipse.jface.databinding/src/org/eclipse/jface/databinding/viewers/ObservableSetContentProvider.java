@@ -66,8 +66,8 @@ public class ObservableSetContentProvider<E> implements
 			if (isViewerDisposed())
 				return;
 
-			Set<E> removals = event.diff.getRemovals();
-			Set<E> additions = event.diff.getAdditions();
+			Set<? extends E> removals = event.diff.getRemovals();
+			Set<? extends E> additions = event.diff.getAdditions();
 
 			knownElements.addAll(additions);
 			if (realizedElements != null)

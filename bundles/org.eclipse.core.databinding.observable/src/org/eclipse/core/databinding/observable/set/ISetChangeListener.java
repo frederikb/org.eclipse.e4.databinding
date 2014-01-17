@@ -21,7 +21,8 @@ import org.eclipse.core.databinding.observable.IObservablesListener;
  * @since 1.0
  * 
  */
-public interface ISetChangeListener<E> extends IObservablesListener {
+public interface ISetChangeListener<E> extends
+		IObservablesListener<ISetChangeListener<E>> {
 
 	/**
 	 * Handle a change to an observable set. The given event object must only be

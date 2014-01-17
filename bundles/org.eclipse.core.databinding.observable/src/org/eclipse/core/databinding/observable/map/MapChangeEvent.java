@@ -11,7 +11,6 @@
 
 package org.eclipse.core.databinding.observable.map;
 
-import org.eclipse.core.databinding.observable.IObservablesListener;
 import org.eclipse.core.databinding.observable.ObservableEvent;
 
 /**
@@ -25,7 +24,8 @@ import org.eclipse.core.databinding.observable.ObservableEvent;
  * @since 1.0
  * 
  */
-public class MapChangeEvent<K, V> extends ObservableEvent<MapChangeEvent<K, V>> {
+public class MapChangeEvent<K, V> extends
+		ObservableEvent<MapChangeEvent<K, V>, IMapChangeListener<K, V>> {
 
 	/**
 	 * 
@@ -37,7 +37,7 @@ public class MapChangeEvent<K, V> extends ObservableEvent<MapChangeEvent<K, V>> 
 	 * Description of the change to the source observable map. Listeners must
 	 * not change this field.
 	 */
-	public MapDiff<K, V> diff;
+	public MapDiff<? extends K, ? extends V> diff;
 
 	/**
 	 * Always identical to <code>EventObject.source</code> but the type
@@ -53,7 +53,8 @@ public class MapChangeEvent<K, V> extends ObservableEvent<MapChangeEvent<K, V>> 
 	 * @param diff
 	 *            the map change
 	 */
-	public MapChangeEvent(IObservableMap<K, V> source, MapDiff<K, V> diff) {
+	public MapChangeEvent(IObservableMap<K, V> source,
+			MapDiff<? extends K, ? extends V> diff) {
 		super(source);
 		this.typedSource = source;
 		this.diff = diff;
@@ -68,8 +69,8 @@ public class MapChangeEvent<K, V> extends ObservableEvent<MapChangeEvent<K, V>> 
 		return typedSource;
 	}
 
-	protected void dispatch(IObservablesListener listener) {
-		((IMapChangeListener<K, V>) listener).handleMapChange(this);
+	protected void dispatch(IMapChangeListener<K, V> listener) {
+		listener.handleMapChange(this);
 	}
 
 	protected Object getListenerType() {

@@ -44,8 +44,7 @@ import org.eclipse.core.databinding.observable.value.ValueDiff;
  * 
  * @since 1.2
  */
-public class DelayedObservableValue<T> extends AbstractObservableValue<T>
-		implements IStaleListener, IValueChangeListener<T> {
+public class DelayedObservableValue<T> extends AbstractObservableValue<T> {
 	class ValueUpdater implements Runnable {
 		private final T oldValue;
 
@@ -81,6 +80,20 @@ public class DelayedObservableValue<T> extends AbstractObservableValue<T>
 
 	private ValueUpdater updater = null;
 
+	private IValueChangeListener<T> valueChangeListener = new IValueChangeListener<T>() {
+		public void handleValueChange(ValueChangeEvent<T> event) {
+			if (!updating)
+				makeDirty();
+		}
+	};
+
+	private IStaleListener staleListener = new IStaleListener() {
+		public void handleStale(StaleEvent staleEvent) {
+			if (!updating)
+				fireStale();
+		}
+	};
+
 	/**
 	 * Constructs a new instance bound to the given
 	 * <code>ISWTObservableValue</code> and configured to fire change events
@@ -98,20 +111,10 @@ public class DelayedObservableValue<T> extends AbstractObservableValue<T>
 		this.delay = delayMillis;
 		this.observable = observable;
 
-		observable.addValueChangeListener(this);
-		observable.addStaleListener(this);
+		observable.addValueChangeListener(valueChangeListener);
+		observable.addStaleListener(staleListener);
 
 		cachedValue = doGetValue();
-	}
-
-	public void handleValueChange(ValueChangeEvent<T> event) {
-		if (!updating)
-			makeDirty();
-	}
-
-	public void handleStale(StaleEvent staleEvent) {
-		if (!updating)
-			fireStale();
 	}
 
 	protected T doGetValue() {

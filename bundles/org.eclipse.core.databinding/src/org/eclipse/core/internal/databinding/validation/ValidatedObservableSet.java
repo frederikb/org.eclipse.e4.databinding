@@ -60,7 +60,7 @@ public class ValidatedObservableSet<E> extends ObservableSet<E> {
 					stale = false;
 					updateWrappedSet(new HashSet<E>(target));
 				} else {
-					SetDiff<E> diff = event.diff;
+					SetDiff<? extends E> diff = event.diff;
 					if (computeNextDiff) {
 						diff = Diffs.computeSetDiff(wrappedSet, target);
 						computeNextDiff = false;
@@ -127,12 +127,12 @@ public class ValidatedObservableSet<E> extends ObservableSet<E> {
 		return status.isOK() || status.matches(IStatus.INFO | IStatus.WARNING);
 	}
 
-	private void applyDiff(SetDiff<E> diff, Set<E> set) {
-		for (Iterator<E> iterator = diff.getRemovals().iterator(); iterator
+	private void applyDiff(SetDiff<? extends E> diff, Set<E> set) {
+		for (Iterator<? extends E> iterator = diff.getRemovals().iterator(); iterator
 				.hasNext();) {
 			set.remove(iterator.next());
 		}
-		for (Iterator<E> iterator = diff.getAdditions().iterator(); iterator
+		for (Iterator<? extends E> iterator = diff.getAdditions().iterator(); iterator
 				.hasNext();) {
 			set.add(iterator.next());
 		}

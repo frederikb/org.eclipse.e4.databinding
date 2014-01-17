@@ -22,6 +22,7 @@ import org.eclipse.core.databinding.observable.DisposeEvent;
 import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.IDisposeListener;
 import org.eclipse.core.databinding.observable.IStaleListener;
+import org.eclipse.core.databinding.observable.ListenerList;
 import org.eclipse.core.databinding.observable.ObservableTracker;
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.core.databinding.observable.StaleEvent;
@@ -46,9 +47,7 @@ public abstract class AbstractObservableMap<K, V> extends AbstractMap<K, V>
 		implements IObservableMap<K, V> {
 
 	private final class PrivateChangeSupport extends ChangeSupport {
-		private PrivateChangeSupport(Realm realm) {
-			super(realm);
-		}
+		protected ListenerList<IMapChangeListener<K, V>> mapChangeListenerList = null;
 
 		protected void firstListenerAdded() {
 			AbstractObservableMap.this.firstListenerAdded();
@@ -58,8 +57,41 @@ public abstract class AbstractObservableMap<K, V> extends AbstractMap<K, V>
 			AbstractObservableMap.this.lastListenerRemoved();
 		}
 
+		public synchronized void addMapChangeListener(
+				IMapChangeListener<K, V> listener) {
+			addListener(getMapChangeListenerList(), listener);
+		}
+
+		/**
+		 * @param listener
+		 */
+		public synchronized void removeMapChangeListener(
+				IMapChangeListener<K, V> listener) {
+			if (mapChangeListenerList != null) {
+				removeListener(mapChangeListenerList, listener);
+			}
+		}
+
+		private ListenerList<IMapChangeListener<K, V>> getMapChangeListenerList() {
+			if (mapChangeListenerList == null) {
+				mapChangeListenerList = new ListenerList<IMapChangeListener<K, V>>();
+			}
+			return mapChangeListenerList;
+		}
+
+		@Override
 		protected boolean hasListeners() {
-			return super.hasListeners();
+			return (mapChangeListenerList != null && mapChangeListenerList
+					.hasListeners()) || super.hasListeners();
+		}
+
+		/**
+		 * @param mapChangeEvent
+		 */
+		public void fireMapChange(MapChangeEvent<K, V> mapChangeEvent) {
+			if (mapChangeListenerList != null) {
+				mapChangeListenerList.fireEvent(mapChangeEvent);
+			}
 		}
 	}
 
@@ -94,20 +126,23 @@ public abstract class AbstractObservableMap<K, V> extends AbstractMap<K, V>
 		Assert.isNotNull(realm, "Realm cannot be null"); //$NON-NLS-1$
 		ObservableTracker.observableCreated(this);
 		this.realm = realm;
-		changeSupport = new PrivateChangeSupport(realm);
+		changeSupport = new PrivateChangeSupport();
 	}
 
+	/**
+	 * @param listener
+	 */
 	public synchronized void addMapChangeListener(
 			IMapChangeListener<K, V> listener) {
 		if (!disposed) {
-			changeSupport.addListener(MapChangeEvent.TYPE, listener);
+			changeSupport.addMapChangeListener(listener);
 		}
 	}
 
 	public synchronized void removeMapChangeListener(
 			IMapChangeListener<K, V> listener) {
 		if (!disposed) {
-			changeSupport.removeListener(MapChangeEvent.TYPE, listener);
+			changeSupport.removeMapChangeListener(listener);
 		}
 	}
 
@@ -160,7 +195,7 @@ public abstract class AbstractObservableMap<K, V> extends AbstractMap<K, V>
 		if (!disposed) {
 			disposed = true;
 			changeSupport.fireEvent(new DisposeEvent(this));
-			changeSupport.dispose();
+			// Fastest way to release all our listener references
 			changeSupport = null;
 		}
 	}
@@ -234,10 +269,10 @@ public abstract class AbstractObservableMap<K, V> extends AbstractMap<K, V>
 	 * 
 	 * @param diff
 	 */
-	protected void fireMapChange(MapDiff<K, V> diff) {
+	protected void fireMapChange(MapDiff<? extends K, ? extends V> diff) {
 		checkRealm();
 		fireChange();
-		changeSupport.fireEvent(new MapChangeEvent<K, V>(this, diff));
+		changeSupport.fireMapChange(new MapChangeEvent<K, V>(this, diff));
 	}
 
 	/**

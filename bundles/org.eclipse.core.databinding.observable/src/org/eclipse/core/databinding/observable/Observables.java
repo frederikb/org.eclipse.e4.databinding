@@ -546,7 +546,7 @@ public class Observables {
 			}
 
 			public synchronized void addSetChangeListener(
-					ISetChangeListener<? super E> listener) {
+					ISetChangeListener<E> listener) {
 			}
 		};
 	}
@@ -575,7 +575,7 @@ public class Observables {
 			}
 
 			public synchronized void addSetChangeListener(
-					ISetChangeListener<? super E> listener) {
+					ISetChangeListener<E> listener) {
 			}
 		};
 	}
@@ -723,7 +723,7 @@ public class Observables {
 			}
 
 			public synchronized void addListChangeListener(
-					IListChangeListener<? super E> listener) {
+					IListChangeListener<E> listener) {
 			}
 		};
 	}
@@ -752,7 +752,7 @@ public class Observables {
 			}
 
 			public synchronized void addListChangeListener(
-					IListChangeListener<? super E> listener) {
+					IListChangeListener<E> listener) {
 			}
 		};
 	}

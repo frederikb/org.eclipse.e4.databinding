@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 import org.eclipse.core.databinding.observable.DecoratingObservable;
+import org.eclipse.core.databinding.observable.ListenerList;
 
 /**
  * ObservableList implementation that prevents modification by consumers. Events
@@ -32,11 +33,33 @@ import org.eclipse.core.databinding.observable.DecoratingObservable;
 public class UnmodifiableObservableList<E> extends DecoratingObservable
 		implements IObservableList<E> {
 
-	private IObservableList<? extends E> decorated;
+	private class MyListenerManager<E2 extends E> extends
+			ListListenerManager<E2> {
 
-	private IListChangeListener<E> listChangeListener;
+		/**
+		 * @param decoratedList
+		 */
+		public MyListenerManager(IObservableList<E2> decoratedList) {
+			super(decoratedList);
+		}
+
+		@Override
+		public void handleListChange(ListChangeEvent<E2> event) {
+			ListChangeEvent<E> event2 = new ListChangeEvent<E>(
+					UnmodifiableObservableList.this, event.diff);
+			UnmodifiableObservableList.this.handleListChange(event2);
+		}
+	}
+
+	private MyListenerManager<?> wrapper;
 
 	private Class<E> elementType;
+
+	/**
+	 * The list of list-change listeners, or null if no listeners have yet been
+	 * added
+	 */
+	private ListenerList<IListChangeListener<E>> listChangeListenerList = null;
 
 	/**
 	 * Constructs a UnmodifiableObservableList which cannot be modified.
@@ -44,12 +67,21 @@ public class UnmodifiableObservableList<E> extends DecoratingObservable
 	 * Use this form of the constructor if the type of elements in the given
 	 * underlying list and the type of elements in this list are the same.
 	 * 
-	 * @param decorated
+	 * @param decoratedList
 	 */
-	public UnmodifiableObservableList(IObservableList<E> decorated) {
-		super(decorated, false);
-		this.decorated = decorated;
-		this.elementType = decorated.getElementClass();
+	public UnmodifiableObservableList(IObservableList<E> decoratedList) {
+		super(decoratedList, false);
+
+		this.wrapper = wrap(decoratedList);
+		this.elementType = decoratedList.getElementClass();
+	}
+
+	/**
+	 * @param decoratedList
+	 */
+	private <E2 extends E> MyListenerManager<E2> wrap(
+			IObservableList<E2> decoratedList) {
+		return new MyListenerManager<E2>(decoratedList);
 	}
 
 	/**
@@ -59,13 +91,13 @@ public class UnmodifiableObservableList<E> extends DecoratingObservable
 	 * to be typed to a class that is a super-type of the elements in the given
 	 * underlying list.
 	 * 
-	 * @param decorated
+	 * @param decoratedList
 	 * @param elementType
 	 */
-	public UnmodifiableObservableList(IObservableList<? extends E> decorated,
-			Class<E> elementType) {
-		super(decorated, false);
-		this.decorated = decorated;
+	public UnmodifiableObservableList(
+			IObservableList<? extends E> decoratedList, Class<E> elementType) {
+		super(decoratedList, false);
+		this.wrapper = wrap(decoratedList);
 		this.elementType = elementType;
 	}
 
@@ -91,22 +123,23 @@ public class UnmodifiableObservableList<E> extends DecoratingObservable
 
 	public boolean contains(Object o) {
 		getterCalled();
-		return decorated.contains(o);
+		return wrapper.decoratedList.contains(o);
 	}
 
 	public boolean containsAll(Collection<?> c) {
 		getterCalled();
-		return decorated.containsAll(c);
+		return wrapper.decoratedList.containsAll(c);
 	}
 
 	public boolean isEmpty() {
 		getterCalled();
-		return decorated.isEmpty();
+		return wrapper.decoratedList.isEmpty();
 	}
 
 	public Iterator<E> iterator() {
 		getterCalled();
-		final Iterator<? extends E> decoratedIterator = decorated.iterator();
+		final Iterator<? extends E> decoratedIterator = wrapper.decoratedList
+				.iterator();
 		return new Iterator<E>() {
 			public void remove() {
 				throw new UnsupportedOperationException();
@@ -150,24 +183,24 @@ public class UnmodifiableObservableList<E> extends DecoratingObservable
 
 	public int size() {
 		getterCalled();
-		return decorated.size();
+		return wrapper.decoratedList.size();
 	}
 
 	public Object[] toArray() {
 		getterCalled();
-		return decorated.toArray();
+		return wrapper.decoratedList.toArray();
 	}
 
 	public <T> T[] toArray(T[] a) {
 		getterCalled();
-		return decorated.toArray(a);
+		return wrapper.decoratedList.toArray(a);
 	}
 
 	/**
 	 * @deprecated use getElementClass instead
 	 */
 	public Object getElementType() {
-		return decorated.getElementType();
+		return wrapper.decoratedList.getElementType();
 	}
 
 	/**
@@ -182,33 +215,54 @@ public class UnmodifiableObservableList<E> extends DecoratingObservable
 		if (this == obj) {
 			return true;
 		}
-		return decorated.equals(obj);
+		return wrapper.decoratedList.equals(obj);
 	}
 
 	public int hashCode() {
 		getterCalled();
-		return decorated.hashCode();
+		return wrapper.decoratedList.hashCode();
 	}
 
 	public String toString() {
 		getterCalled();
-		return decorated.toString();
+		return wrapper.decoratedList.toString();
 	}
 
 	public synchronized void addListChangeListener(
-			IListChangeListener<? super E> listener) {
-		addListener(ListChangeEvent.TYPE, listener);
+			IListChangeListener<E> listener) {
+		addListener(getListChangeListenerList(), listener);
 	}
 
+	/**
+	 * @param listener
+	 */
 	public synchronized void removeListChangeListener(
-			IListChangeListener<? super E> listener) {
-		removeListener(ListChangeEvent.TYPE, listener);
+			IListChangeListener<E> listener) {
+		if (listChangeListenerList != null) {
+			removeListener(listChangeListenerList, listener);
+		}
 	}
 
-	protected void fireListChange(ListDiff<E> diff) {
+	private ListenerList<IListChangeListener<E>> getListChangeListenerList() {
+		if (listChangeListenerList == null) {
+			listChangeListenerList = new ListenerList<IListChangeListener<E>>();
+		}
+		return listChangeListenerList;
+	}
+
+	@Override
+	protected boolean hasListeners() {
+		return (listChangeListenerList != null && listChangeListenerList
+				.hasListeners()) || super.hasListeners();
+	}
+
+	protected void fireListChange(ListDiff<? extends E> diff) {
 		// fire general change event first
 		super.fireChange();
-		fireEvent(new ListChangeEvent<E>(this, diff));
+		if (listChangeListenerList != null) {
+			listChangeListenerList
+					.fireEvent(new ListChangeEvent<E>(this, diff));
+		}
 	}
 
 	protected void fireChange() {
@@ -217,23 +271,13 @@ public class UnmodifiableObservableList<E> extends DecoratingObservable
 	}
 
 	protected void firstListenerAdded() {
-		if (listChangeListener == null) {
-			listChangeListener = new IListChangeListener<E>() {
-				public void handleListChange(ListChangeEvent<E> event) {
-					UnmodifiableObservableList.this.handleListChange(event);
-				}
-			};
-		}
-		decorated.addListChangeListener(listChangeListener);
+		wrapper.addListener();
 		super.firstListenerAdded();
 	}
 
 	protected void lastListenerRemoved() {
 		super.lastListenerRemoved();
-		if (listChangeListener != null) {
-			decorated.removeListChangeListener(listChangeListener);
-			listChangeListener = null;
-		}
+		wrapper.removeListener();
 	}
 
 	/**
@@ -251,17 +295,17 @@ public class UnmodifiableObservableList<E> extends DecoratingObservable
 
 	public E get(int index) {
 		getterCalled();
-		return decorated.get(index);
+		return wrapper.decoratedList.get(index);
 	}
 
 	public int indexOf(Object o) {
 		getterCalled();
-		return decorated.indexOf(o);
+		return wrapper.decoratedList.indexOf(o);
 	}
 
 	public int lastIndexOf(Object o) {
 		getterCalled();
-		return decorated.lastIndexOf(o);
+		return wrapper.decoratedList.lastIndexOf(o);
 	}
 
 	public ListIterator<E> listIterator() {
@@ -270,7 +314,7 @@ public class UnmodifiableObservableList<E> extends DecoratingObservable
 
 	public ListIterator<E> listIterator(int index) {
 		getterCalled();
-		final ListIterator<? extends E> iterator = decorated
+		final ListIterator<? extends E> iterator = wrapper.decoratedList
 				.listIterator(index);
 		return new ListIterator<E>() {
 
@@ -320,16 +364,15 @@ public class UnmodifiableObservableList<E> extends DecoratingObservable
 
 	public List<E> subList(int fromIndex, int toIndex) {
 		getterCalled();
-		return Collections.unmodifiableList(decorated.subList(fromIndex,
-				toIndex));
+		return Collections.unmodifiableList(wrapper.decoratedList.subList(
+				fromIndex, toIndex));
 	}
 
 	public synchronized void dispose() {
-		if (decorated != null && listChangeListener != null) {
-			decorated.removeListChangeListener(listChangeListener);
+		if (wrapper != null) {
+			wrapper.removeListener();
 		}
-		decorated = null;
-		listChangeListener = null;
+		wrapper = null;
 		super.dispose();
 	}
 }

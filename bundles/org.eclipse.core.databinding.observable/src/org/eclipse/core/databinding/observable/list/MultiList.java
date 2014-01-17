@@ -239,7 +239,7 @@ public class MultiList<E> extends AbstractObservableList<E> {
 	}
 
 	private void listChanged(ListChangeEvent<E> event) {
-		IObservableList<? extends E> source = event.getObservableList();
+		IObservableList<E> source = event.getObservableList();
 		int offset = 0;
 		for (IObservableList<E> list : lists) {
 			if (source == list) {
@@ -253,23 +253,24 @@ public class MultiList<E> extends AbstractObservableList<E> {
 				"MultiList received a ListChangeEvent from an observable list that is not one of its sources."); //$NON-NLS-1$
 	}
 
-	private ListDiff<E> offsetListDiff(int offset, ListDiff<E> diff) {
+	private ListDiff<? extends E> offsetListDiff(int offset,
+			ListDiff<? extends E> diff) {
 		return Diffs.createListDiff(offsetListDiffEntries(offset,
 				diff.getDifferencesAsList()));
 	}
 
-	private List<ListDiffEntry<E>> offsetListDiffEntries(int offset,
-			List<ListDiffEntry<E>> entries) {
-		List<ListDiffEntry<E>> offsetEntries = new ArrayList<ListDiffEntry<E>>(
+	private <E2 extends E> List<ListDiffEntry<E2>> offsetListDiffEntries(
+			int offset, List<ListDiffEntry<E2>> entries) {
+		List<ListDiffEntry<E2>> offsetEntries = new ArrayList<ListDiffEntry<E2>>(
 				entries.size());
-		for (ListDiffEntry<E> entry : entries) {
+		for (ListDiffEntry<E2> entry : entries) {
 			offsetEntries.add(offsetListDiffEntry(offset, entry));
 		}
 		return offsetEntries;
 	}
 
-	private ListDiffEntry<E> offsetListDiffEntry(int offset,
-			ListDiffEntry<E> entry) {
+	private <E2 extends E> ListDiffEntry<E2> offsetListDiffEntry(int offset,
+			ListDiffEntry<E2> entry) {
 		return Diffs.createListDiffEntry(offset + entry.getPosition(),
 				entry.isAddition(), entry.getElement());
 	}

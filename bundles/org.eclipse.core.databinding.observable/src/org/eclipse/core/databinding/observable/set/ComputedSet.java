@@ -298,8 +298,7 @@ public abstract class ComputedSet<E> extends AbstractObservableSet<E> {
 		computeSetForListeners();
 	}
 
-	public synchronized void addSetChangeListener(
-			ISetChangeListener<? super E> listener) {
+	public synchronized void addSetChangeListener(ISetChangeListener<E> listener) {
 		super.addSetChangeListener(listener);
 		// If somebody is listening, we need to make sure we attach our own
 		// listeners
