@@ -10,6 +10,8 @@ import org.eclipse.core.databinding.observable.IChangeListener;
 import org.eclipse.core.databinding.observable.IObservable;
 import org.eclipse.core.databinding.observable.ObservableTracker;
 import org.eclipse.core.databinding.observable.Realm;
+import org.eclipse.swt.events.DisposeEvent;
+import org.eclipse.swt.events.DisposeListener;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -29,9 +31,10 @@ import org.eclipse.swt.widgets.Display;
  * child controls must not create the controls directly. Instead a control
  * creator is instantiated for each 'type' of control. If a control creator is
  * called to create a control then it will first search the existing unused
- * controls for a control that was previously created by that control creator. A
- * new control is only created if none exist. If the re-used control needs to be
- * moved in the child control order then that is handled by this class.
+ * controls for a control that was previously created by that control creator
+ * (or a control creator that 'equals' it). A new control is only created if
+ * none exist. If the re-used control needs to be moved in the child control
+ * order then that is handled by this class.
  * <P>
  * Any change to one of the observable dependencies causes the child controls to
  * be re-built.
@@ -43,8 +46,9 @@ import org.eclipse.swt.widgets.Display;
  * 
  * <pre>
  * class MyComposite extends UpdatableComposite {
- * 		LabelCreator labelCreator = new LabelCreator(this);
- * 		LabelCreator labelCreator = new LabelCreator(this);
+ * 		ControlCreator labelCreator = new LabelCreator(this);
+ * 		ControlCreator companyNameControlCreator = new CompanyNameControlCreator(this);
+ * 		ControlCreator genderComboCreator = new GenderComboCreator(this);
  * 
  * 	&#064;Override
  * 	protected void createControls() {
@@ -60,9 +64,9 @@ import org.eclipse.swt.widgets.Display;
  * 			companyNameControlCreator.create();
  * 		} else {
  * 			Label label3 = labelCreator.create();
- * 			label3.setText("Sex:");
+ * 			label3.setText("Gender:");
  * 					
- * 			sexComboCreator.create();
+ * 			genderComboCreator.create();
  * 		}
  * 	}
  * </pre>
@@ -215,6 +219,12 @@ public abstract class UpdatingComposite extends Composite {
 		trackControls();
 		// }
 		// });
+
+		addDisposeListener(new DisposeListener() {
+			public void widgetDisposed(DisposeEvent e) {
+				stopListening();
+			}
+		});
 	}
 
 	protected final void makeDirty() {
@@ -229,6 +239,16 @@ public abstract class UpdatingComposite extends Composite {
 			 */
 			Display.getCurrent().asyncExec(new Runnable() {
 				public void run() {
+					/*
+					 * Although we stop listening to the dependencies when this
+					 * composite is disposed, there is a small window in which
+					 * the composite may be disposed before we get back onto the
+					 * UI thread here.
+					 */
+					if (isDisposed()) {
+						return;
+					}
+
 					trackControls();
 					computeSizeObservable.fireChange();
 				}
@@ -289,7 +309,7 @@ public abstract class UpdatingComposite extends Composite {
 
 		T matchingControl = null;
 		for (Control control : remainder) {
-			if (control.getData(key) == controlCreator) {
+			if (controlCreator.equals(control.getData(key))) {
 				matchingControl = controlCreator.typeControl(control);
 				break;
 			}

@@ -17,7 +17,7 @@ import org.eclipse.swt.widgets.Control;
  */
 public abstract class ControlCreator<T extends Control> {
 
-	UpdatingComposite parent;
+	protected UpdatingComposite parent;
 
 	Set<T> controls = new HashSet<T>();
 
