@@ -77,7 +77,7 @@ public abstract class TwoWayBinding<T2> implements ITwoWayBinding<T2>,
 					"When chaining together a binding, you cannot chain more than one target."); //$NON-NLS-1$
 		}
 
-		TwoWayConversionBinding<T3, T2> nextBinding = new TwoWayConversionBinding<T3, T2>(
+		TwoWayTrackedConversionBinding<T3, T2> nextBinding = new TwoWayTrackedConversionBinding<T3, T2>(
 				this, converter, pullInitialValue);
 		targetBinding = nextBinding;
 		return nextBinding;

@@ -56,7 +56,7 @@ public abstract class OneWayBinding<T2> implements IOneWayBinding<T2>,
 					"When chaining together a binding, you cannot chain more than one target."); //$NON-NLS-1$
 		}
 
-		OneWayConversionBinding<T3, T2> nextBinding = new OneWayConversionBinding<T3, T2>(
+		OneWayTrackedConversionBinding<T3, T2> nextBinding = new OneWayTrackedConversionBinding<T3, T2>(
 				this, converter);
 		targetBinding = nextBinding;
 		return nextBinding;
