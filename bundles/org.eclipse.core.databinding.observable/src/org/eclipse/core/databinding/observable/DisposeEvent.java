@@ -35,6 +35,9 @@ public class DisposeEvent extends
 		super(source);
 	}
 
+	/**
+	 * @since 1.5
+	 */
 	protected void dispatch(IDisposeListener listener) {
 		listener.handleDispose(this);
 	}

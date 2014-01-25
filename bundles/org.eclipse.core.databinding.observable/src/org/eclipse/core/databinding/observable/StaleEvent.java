@@ -43,6 +43,9 @@ public class StaleEvent extends ObservableEvent<StaleEvent, IStaleListener> {
 
 	static final Object TYPE = new Object();
 
+	/**
+	 * @since 1.5
+	 */
 	protected void dispatch(IStaleListener listener) {
 		listener.handleStale(this);
 	}

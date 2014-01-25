@@ -66,6 +66,9 @@ public class SetChangeEvent<E> extends
 		return typedSource;
 	}
 
+	/**
+	 * @since 1.5
+	 */
 	protected void dispatch(ISetChangeListener<E> listener) {
 		listener.handleSetChange(this);
 	}

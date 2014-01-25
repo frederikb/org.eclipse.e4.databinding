@@ -69,6 +69,9 @@ public class MapChangeEvent<K, V> extends
 		return typedSource;
 	}
 
+	/**
+	 * @since 1.5
+	 */
 	protected void dispatch(IMapChangeListener<K, V> listener) {
 		listener.handleMapChange(this);
 	}

@@ -14,6 +14,7 @@ package org.eclipse.core.databinding.observable.set;
 /**
  * 
  * @param <E2>
+ * @since 1.5
  */
 public abstract class SetListenerManager<E2> {
 	/**

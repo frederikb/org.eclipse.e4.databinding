@@ -55,7 +55,7 @@ abstract public class AbstractObservableValue<T> extends AbstractObservable
 
 	public synchronized void addValueChangeListener(
 			IValueChangeListener<T> listener) {
-		addListener(getValueChangesetListenerList(), listener);
+		addListener(getValueChangeListenerList(), listener);
 	}
 
 	public synchronized void removeValueChangeListener(
@@ -65,7 +65,7 @@ abstract public class AbstractObservableValue<T> extends AbstractObservable
 		}
 	}
 
-	private ListenerList<IValueChangeListener<T>> getValueChangesetListenerList() {
+	private ListenerList<IValueChangeListener<T>> getValueChangeListenerList() {
 		if (valueListenerList == null) {
 			valueListenerList = new ListenerList<IValueChangeListener<T>>();
 		}

@@ -37,6 +37,9 @@ public class ChangeEvent extends
 		super(source);
 	}
 
+	/**
+	 * @since 1.5
+	 */
 	protected void dispatch(IChangeListener listener) {
 		listener.handleChange(this);
 	}

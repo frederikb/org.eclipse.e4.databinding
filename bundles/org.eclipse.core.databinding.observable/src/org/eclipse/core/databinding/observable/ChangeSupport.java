@@ -28,10 +28,19 @@ package org.eclipse.core.databinding.observable;
  */
 public abstract class ChangeSupport {
 
+	/**
+	 * @since 1.5
+	 */
 	protected ListenerList<IChangeListener> genericListenerList = null;
 
+	/**
+	 * @since 1.5
+	 */
 	protected ListenerList<IStaleListener> staleListenerList = null;
 
+	/**
+	 * @since 1.5
+	 */
 	protected ListenerList<IDisposeListener> disposeListenerList = null;
 
 	/**
@@ -44,7 +53,7 @@ public abstract class ChangeSupport {
 	}
 
 	/**
-	 * 
+	 * @since 1.5
 	 */
 	public ChangeSupport() {
 	}
@@ -190,7 +199,28 @@ public abstract class ChangeSupport {
 	}
 
 	/**
+	 * @param event
+	 * @since 1.5
+	 */
+	protected void fireChange(ChangeEvent event) {
+		if (genericListenerList != null) {
+			genericListenerList.fireEvent(event);
+		}
+	}
+
+	/**
+	 * @param event
+	 * @since 1.5
+	 */
+	protected void fireStale(StaleEvent event) {
+		if (staleListenerList != null) {
+			staleListenerList.fireEvent(event);
+		}
+	}
+
+	/**
 	 * @param disposeEvent
+	 * @since 1.5
 	 */
 	public void fireDispose(DisposeEvent disposeEvent) {
 		if (disposeListenerList != null) {
@@ -201,6 +231,7 @@ public abstract class ChangeSupport {
 	/**
 	 * @param listenerList
 	 * @param listener
+	 * @since 1.5
 	 */
 	protected <EV extends ObservableEvent<EV, L>, L extends IObservablesListener<L>> void addListener(
 			ListenerList<L> listenerList, L listener) {
@@ -214,6 +245,7 @@ public abstract class ChangeSupport {
 	/**
 	 * @param listenerList
 	 * @param listener
+	 * @since 1.5
 	 */
 	protected <EV extends ObservableEvent<EV, L>, L extends IObservablesListener<L>> void removeListener(
 			ListenerList<L> listenerList, L listener) {
@@ -249,6 +281,15 @@ public abstract class ChangeSupport {
 	 * 
 	 */
 	protected void lastListenerRemoved() {
+	}
+
+	/**
+	 * 
+	 */
+	protected void dispose() {
+		genericListenerList = null;
+		staleListenerList = null;
+		disposeListenerList = null;
 	}
 
 	/**

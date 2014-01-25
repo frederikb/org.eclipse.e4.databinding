@@ -69,6 +69,9 @@ public class ListChangeEvent<E> extends
 		return typedSource;
 	}
 
+	/**
+	 * @since 1.5
+	 */
 	protected void dispatch(IListChangeListener<E> listener) {
 		listener.handleListChange(this);
 	}

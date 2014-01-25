@@ -67,6 +67,9 @@ public class ValueChangeEvent<T> extends
 		return typedSource;
 	}
 
+	/**
+	 * @since 1.5
+	 */
 	protected void dispatch(IValueChangeListener<T> listener) {
 		listener.handleValueChange(this);
 	}

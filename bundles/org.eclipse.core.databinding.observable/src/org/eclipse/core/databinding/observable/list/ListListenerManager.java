@@ -12,8 +12,11 @@
 package org.eclipse.core.databinding.observable.list;
 
 /**
+ * This class was essentially created to aid with generics and type-safety. It
+ * allows <?> to be bound to <E2>.
  * 
  * @param <E2>
+ * @since 1.5
  */
 public abstract class ListListenerManager<E2> {
 	/**

@@ -65,6 +65,9 @@ public class ValueChangingEvent<T> extends
 		return (IObservableValue<?>) source;
 	}
 
+	/**
+	 * @since 1.5
+	 */
 	protected void dispatch(IValueChangingListener<T> listener) {
 		listener.handleValueChanging(this);
 	}
