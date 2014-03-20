@@ -36,8 +36,7 @@ import java.util.List;
  * </p>
  * 
  * @param <L>
- * 
- * @since org.eclipse.equinox.common 3.2
+ * @since 1.5
  */
 public class ListenerList<L extends IObservablesListener<L>> {
 
@@ -218,5 +217,33 @@ public class ListenerList<L extends IObservablesListener<L>> {
 	 */
 	public boolean hasListeners() {
 		return !isEmpty();
+	}
+
+	/**
+	 * This method is typically called within a synchronization block. The event
+	 * can then be fired using the immutable list when outside the
+	 * synchronization block. By doing this, the calling code can ensure that
+	 * all the listeners and only the listeners active at the time the change
+	 * was applied will receive the event.
+	 * 
+	 * @return an immutable listener list
+	 */
+	public ListenerListCopy<L> getReadOnlyCopy() {
+		return new ListenerListCopy<L>(listeners);
+	}
+
+	/**
+	 * This method is intended to be called from ListenerListCopy only.
+	 * <P>
+	 * Indicates if the copy of the listener list is still the current listener
+	 * list. Note that if the list was changed and then changed back, this
+	 * method will return <code>false</code>.
+	 * 
+	 * @param copy
+	 *            the copy taken at the time getReadOnlyCopy was called
+	 * @return true if <code>copy</code> is still the current list
+	 */
+	boolean isListStillCurrent(List<L> copy) {
+		return listeners == copy;
 	}
 }

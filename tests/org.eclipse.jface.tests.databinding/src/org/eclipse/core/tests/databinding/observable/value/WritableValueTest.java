@@ -19,7 +19,10 @@ import junit.framework.TestSuite;
 import org.eclipse.core.databinding.observable.IObservable;
 import org.eclipse.core.databinding.observable.Realm;
 import org.eclipse.core.databinding.observable.value.IObservableValue;
+import org.eclipse.core.databinding.observable.value.IValueChangeListener;
+import org.eclipse.core.databinding.observable.value.ValueChangeEvent;
 import org.eclipse.core.databinding.observable.value.WritableValue;
+import org.eclipse.core.tests.databinding.TestBarrier;
 import org.eclipse.jface.databinding.conformance.MutableObservableValueContractTest;
 import org.eclipse.jface.databinding.conformance.delegate.AbstractObservableValueContractDelegate;
 import org.eclipse.jface.databinding.swt.SWTObservables;
@@ -40,6 +43,46 @@ public class WritableValueTest extends AbstractDefaultRealmTestCase {
 				.getDefault()));
 		assertNull(value.getValue());
 		assertNull(value.getValueType());
+	}
+
+	public void testWritableValueSimple() throws Throwable {
+		final TestBarrier barrier = new TestBarrier();
+
+		final WritableValue<String> value = new WritableValue<String>();
+		assertNull(value.getValue());
+		assertNull(value.getValueType());
+
+		final String[] latestReceivedByListener = new String[1];
+
+		new Thread(new Runnable() {
+
+			public void run() {
+				value.setValue("A");
+				barrier.setStatus(1001);
+				barrier.waitForStatus(1002);
+				value.setValue("B");
+				assertEquals("B", latestReceivedByListener[0]);
+				barrier.setStatus(1003);
+			}
+		}).start();
+
+		new Thread(new Runnable() {
+
+			public void run() {
+				barrier.waitForStatus(1001);
+				assertEquals("A", value.getValue());
+				value.addValueChangeListener(new IValueChangeListener<String>() {
+					public void handleValueChange(ValueChangeEvent<String> event) {
+						assertEquals("A", event.diff.getOldValue());
+						assertEquals("B", event.diff.getNewValue());
+						latestReceivedByListener[0] = event.diff.getNewValue();
+					}
+				});
+				barrier.setStatus(1002);
+			}
+		}).start();
+
+		barrier.waitForStatus(1003);
 	}
 
 	public void testWithValueType() throws Exception {
@@ -71,7 +114,7 @@ public class WritableValueTest extends AbstractDefaultRealmTestCase {
 		public Object getValueType(IObservableValue observable) {
 			return String.class;
 		}
-		
+
 		public Object createValue(IObservableValue observable) {
 			return observable.getValue() + "a";
 		}

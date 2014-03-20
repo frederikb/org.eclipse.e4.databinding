@@ -15,7 +15,14 @@
 
 package org.eclipse.core.databinding.observable.value;
 
+import java.util.LinkedList;
+
+import org.eclipse.core.databinding.observable.ChangeEvent;
 import org.eclipse.core.databinding.observable.Diffs;
+import org.eclipse.core.databinding.observable.IChangeListener;
+import org.eclipse.core.databinding.observable.IObservablesListener;
+import org.eclipse.core.databinding.observable.ListenerList;
+import org.eclipse.core.databinding.observable.ListenerListCopy;
 import org.eclipse.core.databinding.observable.Realm;
 
 /**
@@ -51,7 +58,12 @@ public class WritableValue<T> extends AbstractObservableValue<T> {
 	 *            can be <code>null</code>
 	 */
 	public WritableValue(T initialValue, Object valueType) {
-		this(Realm.getDefault(), initialValue, valueType);
+		this(new Realm() {
+			@Override
+			public boolean isCurrent() {
+				return true;
+			}
+		}, initialValue, valueType);
 	}
 
 	/**
@@ -85,19 +97,189 @@ public class WritableValue<T> extends AbstractObservableValue<T> {
 		return value;
 	}
 
+	// public void doSetValue(T value) {
+	// if (this.value != value) {
+	// fireValueChange(Diffs.createValueDiff(this.value,
+	// this.value = value));
+	// }
+	// }
+
+	static class QueuedEvent<T> {
+		public ValueDiff<T> diff;
+		public final ListenerListCopy<IChangeListener> genericListenerList;
+		public final ListenerListCopy<IValueChangeListener<T>> valueListenerList;
+
+		QueuedEvent(ValueDiff<T> diff,
+				ListenerListCopy<IChangeListener> genericChangeListeners,
+				ListenerListCopy<IValueChangeListener<T>> valueChangeListeners) {
+			this.diff = diff;
+			this.genericListenerList = genericChangeListeners;
+			this.valueListenerList = valueChangeListeners;
+		}
+	}
+
+	private boolean isFiring = false;
+	private LinkedList<QueuedEvent<T>> eventQueue = new LinkedList<QueuedEvent<T>>();
+
 	/**
 	 * @param value
 	 *            The value to set.
 	 */
 	public void doSetValue(T value) {
-		if (this.value != value) {
-			fireValueChange(Diffs.createValueDiff(this.value,
-					this.value = value));
+		QueuedEvent<T> myOueuedEvent = null;
+
+		synchronized (this) {
+			if (value != this.value) {
+				T oldValue = this.value;
+				this.value = value;
+
+				if ((genericListenerList != null && !genericListenerList
+						.isEmpty())
+						|| (valueListenerList != null && !valueListenerList
+								.isEmpty())) {
+					if (!isFiring) {
+						// Nothing is currently firing.
+						myOueuedEvent = new QueuedEvent<T>(
+								Diffs.createValueDiff(oldValue, value),
+								genericListenerList == null ? null
+										: genericListenerList.getReadOnlyCopy(),
+								valueListenerList == null ? null
+										: valueListenerList.getReadOnlyCopy());
+						isFiring = true;
+					} else {
+						// Events are currently firing.
+						// So we need to put in the event queue to be fired
+						// later after the currently
+						// firing events have completed.
+						if (eventQueue.isEmpty()) {
+							QueuedEvent<T> queuedEvent = new QueuedEvent<T>(
+									Diffs.createValueDiff(oldValue, value),
+									genericListenerList == null ? null
+											: genericListenerList
+													.getReadOnlyCopy(),
+									valueListenerList == null ? null
+											: valueListenerList
+													.getReadOnlyCopy());
+							eventQueue.addLast(queuedEvent);
+						} else {
+							QueuedEvent<T> lastEvent = eventQueue.getLast();
+
+							/*
+							 * If the listener lists are identical, merge the
+							 * diffs. Otherwise, because different listeners
+							 * need to be told about each diff, queue
+							 * separately.
+							 */
+							if (isIdentical(lastEvent.genericListenerList,
+									genericListenerList)
+									&& isIdentical(lastEvent.valueListenerList,
+											valueListenerList)) {
+								lastEvent.diff = Diffs.createValueDiff(
+										lastEvent.diff.getOldValue(), value);
+							} else {
+								QueuedEvent<T> queuedEvent = new QueuedEvent<T>(
+										Diffs.createValueDiff(oldValue, value),
+										genericListenerList == null ? null
+												: genericListenerList
+														.getReadOnlyCopy(),
+										valueListenerList == null ? null
+												: valueListenerList
+														.getReadOnlyCopy());
+								eventQueue.addLast(queuedEvent);
+							}
+						}
+					}
+				}
+			}
+		}
+
+		/*
+		 * We're now outside the synchronization block, so no access to fields.
+		 * If we have any event firing work then it is all in myQueuedEvent
+		 */
+
+		while (myOueuedEvent != null) {
+			// Actually, as this doesn't take a diff, do we need a copy of
+			// the listeners in the queue at all. Just fire each time?
+			if (myOueuedEvent.genericListenerList != null) {
+				myOueuedEvent.genericListenerList.fireEvent(new ChangeEvent(
+						this));
+			}
+			if (myOueuedEvent.valueListenerList != null) {
+				myOueuedEvent.valueListenerList
+						.fireEvent(new ValueChangeEvent<T>(this,
+								myOueuedEvent.diff));
+			}
+
+			/*
+			 * Synchronize again so we can see if more changes have been made.
+			 */
+			synchronized (this) {
+				if (eventQueue.isEmpty()) {
+					// No, nothing. We're done with all events.
+					myOueuedEvent = null;
+					isFiring = false;
+				} else {
+					myOueuedEvent = eventQueue.removeFirst();
+				}
+			}
+		}
+	}
+
+	/**
+	 * Helper method to determine if two listener lists are the same. This
+	 * supports null values which indicate that no listeners have been added.
+	 * 
+	 * @param listenerList1
+	 * @param listenerList2
+	 * @return true if no changes have been made to the original listener list
+	 *         (listenerList2) since the copy in listenerList1 was taken, false
+	 *         if listeners have been added or removed
+	 */
+	private <L extends IObservablesListener<L>> boolean isIdentical(
+			ListenerListCopy<L> listenerList1, ListenerList<L> listenerList2) {
+		if (listenerList1 == null) {
+			return listenerList2 == null;
+		} else if (listenerList2 == null) {
+			return false;
+		} else {
+			return listenerList1.isIdenticalTo(listenerList2);
 		}
 	}
 
 	public Object getValueType() {
 		return valueType;
+	}
+
+	/**
+	 * Adds a listener and returns the current value. This method synchronizes
+	 * the getting of the current value with the adding of the listener so the
+	 * caller can be sure that the first event fired on the listener will have a
+	 * diff with an 'old value' that matches the value returned by this method.
+	 * 
+	 * @param listener
+	 * @return the current value, which is guaranteed to be the starting value
+	 *         for the diffs received by the listener
+	 * @since 1.5
+	 */
+	public synchronized T addListenerAndGetValue(
+			IValueChangeListener<T> listener) {
+		addValueChangeListener(listener);
+		return doGetValue();
+	}
+
+	@Override
+	public String toString() {
+		StringBuffer buffer = new StringBuffer();
+		Object value = doGetValue();
+		buffer.append((value == null) ? "null" : value.toString()); //$NON-NLS-1$
+		if (this.isStale()) {
+			buffer.append("(stale)"); //$NON-NLS-1$
+		}
+		if (this.isDisposed()) {
+			buffer.append("(disposed)"); //$NON-NLS-1$
+		}
+		return buffer.toString();
 	}
 
 	/**
