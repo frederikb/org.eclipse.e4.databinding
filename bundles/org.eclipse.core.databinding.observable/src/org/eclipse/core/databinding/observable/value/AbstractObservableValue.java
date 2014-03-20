@@ -36,6 +36,8 @@ abstract public class AbstractObservableValue<T> extends AbstractObservable
 	/**
 	 * In addition to the three listener/event types supported by ChangeSupport,
 	 * we add support for one more type.
+	 * 
+	 * @since 1.5
 	 */
 	protected ListenerList<IValueChangeListener<T>> valueListenerList = null;
 

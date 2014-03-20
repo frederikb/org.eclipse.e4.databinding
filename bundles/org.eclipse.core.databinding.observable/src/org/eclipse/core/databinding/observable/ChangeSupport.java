@@ -99,8 +99,8 @@ public abstract class ChangeSupport {
 
 	/**
 	 * @param event
-	 * @deprecated use one of the more specific methods, addChangeListener,
-	 *             addStaleListener, addDisposeListener
+	 * @deprecated use one of the more specific methods, fireValueChange,
+	 *             fireStale, fireDispose
 	 */
 	// It is OK to suppress warnings in deprecated methods
 	@SuppressWarnings("unchecked")
