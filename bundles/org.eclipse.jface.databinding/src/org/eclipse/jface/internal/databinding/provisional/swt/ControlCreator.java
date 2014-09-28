@@ -21,8 +21,11 @@ public abstract class ControlCreator<T extends Control> {
 
 	Set<T> controls = new HashSet<T>();
 
-	protected ControlCreator(UpdatingComposite parent) {
+	private Class<T> classOfControls;
+
+	protected ControlCreator(UpdatingComposite parent, Class<T> classOfControls) {
 		this.parent = parent;
+		this.classOfControls = classOfControls;
 	}
 
 	/**
@@ -75,6 +78,6 @@ public abstract class ControlCreator<T extends Control> {
 				return eachControl;
 			}
 		}
-		throw new RuntimeException("Control not in managed list"); //$NON-NLS-1$
+		return classOfControls.cast(control);
 	}
 }

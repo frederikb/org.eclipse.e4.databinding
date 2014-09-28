@@ -22,7 +22,7 @@ import org.eclipse.swt.widgets.Display;
  * 419415 so it can be decided what to promote to general API.
  * <P>
  * A composite that automatically tracks and registers listeners on its
- * dsependencies as long as all of its dependencies are {@link IObservable}
+ * dependencies as long as all of its dependencies are {@link IObservable}
  * objects. The tracking is done while the child controls for this composite are
  * being created. So when any of the dependencies change, the child controls are
  * re-created.
@@ -50,6 +50,15 @@ import org.eclipse.swt.widgets.Display;
  * 		ControlCreator companyNameControlCreator = new CompanyNameControlCreator(this);
  * 		ControlCreator genderComboCreator = new GenderComboCreator(this);
  * 
+ *  	MyComposite(Composite parent, int style) {
+ *  		super(parent, style);
+ *  
+ *  		// IMPORTANT: Constructors must always call this.  The constructor in the super class
+ *  		// cannot do this for you because trackControls calls createControls which may use fields in this class
+ *  		// that will not have been initialized when the super constructor is called.
+ *  		trackControls();
+ *   	}
+ *   
  * 	&#064;Override
  * 	protected void createControls() {
  * 		Label label1 = labelCreator.create();
@@ -128,7 +137,8 @@ public abstract class UpdatingComposite extends Composite {
 	private IObservable[] dependencies = null;
 
 	/**
-	 * Set to a non-null list only while controls are being re-built.
+	 * Set to a non-null list only while controls are being re-built, this being
+	 * the list of controls available for re-use and must be in order
 	 */
 	List<Control> remainder = null;
 
@@ -197,8 +207,6 @@ public abstract class UpdatingComposite extends Composite {
 			for (Control control : remainder) {
 				remove(control);
 			}
-
-			layout(true);
 		}
 	}
 
@@ -210,15 +218,6 @@ public abstract class UpdatingComposite extends Composite {
 
 	public UpdatingComposite(Composite parent, int style) {
 		super(parent, style);
-		/*
-		 * We must wait until after the derived class fields have been
-		 * initialized before attempting to create the child controls.
-		 */
-		// Display.getCurrent().asyncExec(new Runnable() {
-		// public void run() {
-		trackControls();
-		// }
-		// });
 
 		addDisposeListener(new DisposeListener() {
 			public void widgetDisposed(DisposeEvent e) {
@@ -249,7 +248,21 @@ public abstract class UpdatingComposite extends Composite {
 						return;
 					}
 
-					trackControls();
+					createAndTrackControls();
+
+					/*
+					 * Having added and removed controls, this composite now
+					 * needs to be laid out. The children are okay because they
+					 * should be laid out when they are created or re-used, so
+					 * passing <code>false</code> is fine.
+					 */
+					layout(false);
+
+					/*
+					 * Assume that the preferred size has changed. Parent
+					 * composites may need to re-layout their controls whenever
+					 * the size of this control changes.
+					 */
 					computeSizeObservable.fireChange();
 				}
 			});
@@ -259,12 +272,12 @@ public abstract class UpdatingComposite extends Composite {
 	/**
 	 * This line will do the following:
 	 * <UL>
-	 * <LI>Run the calculate method</LI>
+	 * <LI>Run the <code>createControls</code> method</LI>
 	 * <LI>While doing so, add any observable that is touched to the
 	 * dependencies list</LI>
 	 * </UL>
 	 */
-	protected void trackControls() {
+	protected void createAndTrackControls() {
 		IObservable[] newDependencies = ObservableTracker.runAndMonitor(
 				privateRunnableInterface, privateChangeInterface, null);
 
@@ -305,37 +318,51 @@ public abstract class UpdatingComposite extends Composite {
 		}
 	}
 
+	/**
+	 * This method is called while getters are being tracked. However we want to
+	 * track only getters on observables that were used to determine which
+	 * controls are created and setting properties on those controls outside of
+	 * the control creator. We really don't want to track getters that are used
+	 * while creating the control. For example it may be that
+	 * 
+	 * @param controlCreator
+	 * @return the control, which may be either re-used or just created by the
+	 *         control creator
+	 */
 	<T extends Control> T create(ControlCreator<T> controlCreator) {
-
-		T matchingControl = null;
-		for (Control control : remainder) {
-			if (controlCreator.equals(control.getData(key))) {
-				matchingControl = controlCreator.typeControl(control);
-				break;
+		ObservableTracker.setIgnore(true);
+		try {
+			T matchingControl = null;
+			for (Control control : remainder) {
+				if (controlCreator.equals(control.getData(key))) {
+					matchingControl = controlCreator.typeControl(control);
+					break;
+				}
 			}
+
+			if (matchingControl != null) {
+				/*
+				 * Move this control to be before any other remaining controls.
+				 */
+				if (matchingControl != remainder.get(0)) {
+					matchingControl.moveAbove(remainder.get(0));
+				}
+				remainder.remove(matchingControl);
+			} else {
+				matchingControl = controlCreator.createControl();
+				matchingControl.setData(key, controlCreator);
+				controlCreator.controls.add(matchingControl);
+				/*
+				 * Move this control to be before any other remaining controls.
+				 */
+				if (!remainder.isEmpty()) {
+					matchingControl.moveAbove(remainder.get(0));
+				}
+			}
+			return matchingControl;
+		} finally {
+			ObservableTracker.setIgnore(false);
 		}
-
-		if (matchingControl != null) {
-			/*
-			 * Move this control to be before any other remaining controls.
-			 */
-			if (matchingControl != remainder.get(0)) {
-				matchingControl.moveBelow(remainder.get(0));
-			}
-			remainder.remove(matchingControl);
-		} else {
-			matchingControl = controlCreator.createControl();
-			matchingControl.setData(key, controlCreator);
-			controlCreator.controls.add(matchingControl);
-			/*
-			 * Move this control to be before any other remaining controls.
-			 */
-			if (!remainder.isEmpty()) {
-				matchingControl.moveBelow(remainder.get(0));
-			}
-		}
-
-		return matchingControl;
 	}
 
 	/**
