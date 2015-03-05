@@ -104,7 +104,7 @@ public class TypedSet<E> implements Set<E> {
 
 		int i = 0;
 		for (Object element : wrappedSet) {
-			result[i] = componentType.cast(element);
+			result[i++] = componentType.cast(element);
 		}
 
 		return result;
