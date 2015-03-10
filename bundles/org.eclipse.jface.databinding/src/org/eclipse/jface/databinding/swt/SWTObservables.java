@@ -18,6 +18,7 @@
 package org.eclipse.jface.databinding.swt;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.Iterator;
 
 import org.eclipse.core.databinding.observable.Observables;
@@ -40,6 +41,7 @@ import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Combo;
 import org.eclipse.swt.widgets.Control;
+import org.eclipse.swt.widgets.DateTime;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Item;
 import org.eclipse.swt.widgets.Label;
@@ -491,6 +493,18 @@ public class SWTObservables {
 	/**
 	 * Returns an observable observing the selection attribute of the provided
 	 * <code>org.eclipse.swt.widgets.Spinner</code>.
+	 * 
+	 * @param control
+	 * @return observable value
+	 * @since 1.7
+	 */
+	public static ISWTObservableValue<Date> observeSelection(DateTime control) {
+		return WidgetProperties.selectionDateTime().observe(control);
+	}
+
+	/**
+	 * Returns an observable observing the selection attribute of the provided
+	 * <code>org.eclipse.swt.widgets.DateTime</code>.
 	 * 
 	 * @param control
 	 * @return observable value

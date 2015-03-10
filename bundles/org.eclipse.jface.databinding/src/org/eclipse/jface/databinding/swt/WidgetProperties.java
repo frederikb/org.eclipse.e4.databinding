@@ -13,6 +13,8 @@
 
 package org.eclipse.jface.databinding.swt;
 
+import java.util.Date;
+
 import org.eclipse.core.databinding.property.list.IListProperty;
 import org.eclipse.core.databinding.property.value.IValueProperty;
 import org.eclipse.jface.internal.databinding.swt.ButtonImageProperty;
@@ -40,6 +42,7 @@ import org.eclipse.jface.internal.databinding.swt.ControlLocationProperty;
 import org.eclipse.jface.internal.databinding.swt.ControlSizeProperty;
 import org.eclipse.jface.internal.databinding.swt.ControlTooltipTextProperty;
 import org.eclipse.jface.internal.databinding.swt.ControlVisibleProperty;
+import org.eclipse.jface.internal.databinding.swt.DateTimeSelectionProperty;
 import org.eclipse.jface.internal.databinding.swt.ItemImageProperty;
 import org.eclipse.jface.internal.databinding.swt.ItemTextProperty;
 import org.eclipse.jface.internal.databinding.swt.LabelImageProperty;
@@ -931,6 +934,27 @@ public class WidgetProperties {
 				if (spinner == null)
 					spinner = new SpinnerSelectionProperty();
 				return spinner;
+			}
+		};
+	}
+
+	/**
+	 * 
+	 * @return a value property for observing the selection state of a
+	 *         {@link DateTime}.
+	 * @since 1.7
+	 */
+	public static IWidgetValueProperty<DateTime, Date> selectionDateTime() {
+		return new WidgetDelegatingValueProperty<DateTime, Date>(Date.class) {
+
+			IValueProperty<DateTime, Date> dateTime = null;
+
+			@Override
+			protected IValueProperty<DateTime, Date> doGetDelegate(
+					DateTime source) {
+				if (dateTime == null)
+					dateTime = new DateTimeSelectionProperty();
+				return dateTime;
 			}
 		};
 	}
