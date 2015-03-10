@@ -90,7 +90,9 @@ public class DecoratingObservableMap<K, V> extends DecoratingObservable
 		// fire general change event first
 		super.fireChange();
 
-		mapListenerList.fireEvent(new MapChangeEvent<K, V>(this, diff));
+		if (mapListenerList != null) {
+			mapListenerList.fireEvent(new MapChangeEvent<K, V>(this, diff));
+		}
 	}
 
 	protected void fireChange() {
